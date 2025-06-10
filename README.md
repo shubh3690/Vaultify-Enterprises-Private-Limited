@@ -97,7 +97,6 @@ $ forge build
 
 ```shell
 $ forge test
-$ forge coverage --fork-url https://worldchain-sepolia.g.alchemy.com/v2/${process.env.NODE_ID}
-
+$ forge coverage --fork-url https://polygon-mainnet.infura.io/v3/${process.env.NODE_ID
 ```
 
