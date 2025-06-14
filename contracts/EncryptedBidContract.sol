@@ -11,16 +11,20 @@ contract EncryptedBidContract is OwnableUpgradeable, ReentrancyGuardUpgradeable 
         uint256 timestamp;
     }
 
+    struct Session {
+        uint256 viewWindow;
+        uint256 startTime;
+    }
+
+    // sessionId => Session
+    mapping(string => Session) public sessions;
+
     // sessionId => bidderId => EncryptedBid
     mapping(string => mapping(string => EncryptedBid)) public encryptedSessionBids;
 
     // sessionId => list of bidderIds
     mapping(string => string[]) private sessionBidderIds;
 
-    // sessionId => view window (in seconds)
-    mapping(string => uint256) public sessionViewWindows;
-
-    // Events
     event BidSubmitted(string sessionId, string bidderId);
     event SessionViewWindowSet(string sessionId, uint256 duration);
 
@@ -37,7 +41,12 @@ contract EncryptedBidContract is OwnableUpgradeable, ReentrancyGuardUpgradeable 
     /// @notice Set the viewing window for a specific session
     function setSessionViewWindow(string calldata sessionId, uint256 duration) external onlyOwner {
         require(duration > 0, "Duration must be positive");
-        sessionViewWindows[sessionId] = duration;
+
+        sessions[sessionId] = Session({
+            viewWindow: duration,
+            startTime: block.timestamp
+        });
+
         emit SessionViewWindowSet(sessionId, duration);
     }
 
@@ -48,6 +57,12 @@ contract EncryptedBidContract is OwnableUpgradeable, ReentrancyGuardUpgradeable 
         string calldata encryptedData,
         string calldata iv
     ) external onlyOwner {
+        Session memory session = sessions[sessionId];
+        require(session.viewWindow > 0, "Session not initialized");
+
+        // revent bids after the session has expired
+        require(block.timestamp <= session.startTime + session.viewWindow, "Session expired");
+
         if (bytes(encryptedSessionBids[sessionId][bidderId].encryptedData).length == 0) {
             sessionBidderIds[sessionId].push(bidderId);
         }
@@ -70,9 +85,9 @@ contract EncryptedBidContract is OwnableUpgradeable, ReentrancyGuardUpgradeable 
         EncryptedBid memory bid = encryptedSessionBids[sessionId][bidderId];
         require(bid.timestamp != 0, "Bid does not exist");
 
-        uint256 window = sessionViewWindows[sessionId];
-        require(window > 0, "Session window not set");
-        require(block.timestamp <= bid.timestamp + window, "Bid expired");
+        Session memory session = sessions[sessionId];
+        require(session.viewWindow > 0, "Session not set");
+        require(block.timestamp <= session.startTime + session.viewWindow, "Bid expired");
 
         return bid;
     }
@@ -84,5 +99,10 @@ contract EncryptedBidContract is OwnableUpgradeable, ReentrancyGuardUpgradeable 
         returns (string[] memory)
     {
         return sessionBidderIds[sessionId];
+    }
+
+    function isSessionActive(string calldata sessionId) public view returns (bool) {
+        Session memory session = sessions[sessionId];
+        return session.viewWindow > 0 && block.timestamp <= session.startTime + session.viewWindow;
     }
 }
