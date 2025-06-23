@@ -9,8 +9,8 @@ contract EncryptedBidContractTest is Test {
     address public owner = address(0xABCD);
     address public nonOwner = address(0x1234);
 
-    string public sessionId = "S1";
-    string public bidderId = "B1";
+    string public sessionId = "87";
+    string public bidderId = "130";
     string public encryptedData = "0xdeadbeef";
     string public iv = "0xbeefdead";
     uint256 public viewWindow = 86400; // 1 day
@@ -70,6 +70,21 @@ contract EncryptedBidContractTest is Test {
 
         vm.expectRevert("Session expired");
         contractInstance.submitBid(sessionId, bidderId, encryptedData, iv);
+        vm.stopPrank();
+    }
+
+    function testSubmitBidTwiceOverridesExisting() public {
+        vm.startPrank(owner);
+        contractInstance.setSessionViewWindow(sessionId, viewWindow);
+        contractInstance.submitBid(sessionId, bidderId, encryptedData, iv);
+
+        string memory newData = "0xabc123";
+        string memory newIv = "0x321cba";
+        contractInstance.submitBid(sessionId, bidderId, newData, newIv);
+
+        (string memory storedData, string memory storedIv, ) = contractInstance.encryptedSessionBids(sessionId, bidderId);
+        assertEq(storedData, newData);
+        assertEq(storedIv, newIv);
         vm.stopPrank();
     }
 
@@ -137,5 +152,17 @@ contract EncryptedBidContractTest is Test {
         vm.warp(block.timestamp + 101);
         bool active = contractInstance.isSessionActive(sessionId);
         assertFalse(active);
+    }
+
+    function testSubmitBidAddsOnlyUniqueBidderIds() public {
+        vm.startPrank(owner);
+        contractInstance.setSessionViewWindow(sessionId, viewWindow);
+
+        contractInstance.submitBid(sessionId, bidderId, encryptedData, iv);
+        contractInstance.submitBid(sessionId, bidderId, encryptedData, iv); // duplicate
+
+        string[] memory bidders = contractInstance.getAllBidderIds(sessionId);
+        assertEq(bidders.length, 1); // should not add duplicate bidderId
+        vm.stopPrank();
     }
 }
