@@ -75,7 +75,7 @@ export default async function CalculatorPage({
 }: {
     params: { slug: string }
 }) {
-    const { slug } = params
+    const { slug } = await params
     const calculators = getAllCalculators()
     const calculator = calculators.find((calc) => calc.slug === slug)
 

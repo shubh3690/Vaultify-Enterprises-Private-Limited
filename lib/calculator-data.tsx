@@ -219,8 +219,8 @@ export const calculatorCategories: CalculatorCategory[] = [
             },
             {
                 slug: "mma-calculator",
-                title: "Money Market Account Calculator",
-                description: "Calculate MMA returns and growth",
+                title: "MMA Calculator",
+                description: "Calculate Money Market Account returns and growth",
                 category: "banking",
             },
         ],
