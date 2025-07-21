@@ -38,7 +38,7 @@ export function DailyCompoundInterestCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="principal">Initial Investment</Label>
+                        <Label htmlFor="principal">Initial Investment (₹)</Label>
                         <Input
                             id="principal"
                             type="number"

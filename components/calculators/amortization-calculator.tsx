@@ -33,7 +33,7 @@ export function AmortizationCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="principal">Loan Amount</Label>
+                        <Label htmlFor="principal">Loan Amount (₹)</Label>
                         <Input
                             id="principal"
                             type="number"
@@ -91,7 +91,7 @@ export function AmortizationCalculator() {
                                 <CardTitle>Yearly Amortization Summary</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="space-y-2 max-h-96 overflow-y-auto">
+                                <div className="space-y-2 max-h-80 overflow-y-auto">
                                     <div className="grid grid-cols-4 gap-2 text-sm font-medium border-b pb-2">
                                         <span>Year</span>
                                         <span>Principal</span>
@@ -127,7 +127,7 @@ export function AmortizationCalculator() {
                                 <CardTitle>Monthly Amortization Schedule (First Year)</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="space-y-2 max-h-96 overflow-y-auto">
+                                <div className="space-y-2 max-h-80 overflow-y-auto">
                                     <div className="grid grid-cols-5 gap-2 text-sm font-medium border-b pb-2">
                                         <span>Month</span>
                                         <span>Payment</span>

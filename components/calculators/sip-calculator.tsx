@@ -32,7 +32,7 @@ export function SIPCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyInvestment">Monthly Investment</Label>
+                        <Label htmlFor="monthlyInvestment">Monthly Investment (₹)</Label>
                         <Input
                             id="monthlyInvestment"
                             type="number"
@@ -74,7 +74,7 @@ export function SIPCalculator() {
                         { label: "Maturity Amount", value: formatCurrency(results.maturityAmount) },
                         { label: "Total Investment", value: formatCurrency(results.totalInvestment) },
                         { label: "Total Returns", value: formatCurrency(results.totalReturns) },
-                        { label: "Return Multiple", value: `${(results.maturityAmount / results.totalInvestment).toFixed(2)}x` },
+                        { label: "Return Multiplier", value: `${(results.maturityAmount / results.totalInvestment).toFixed(2)}x` },
                     ]}
                 />
 
@@ -91,7 +91,7 @@ export function SIPCalculator() {
                             <div className="flex justify-between">
                                 <span>Investment Period:</span>
                                 <span className="font-medium">
-                                    {params.timePeriod} years ({params.timePeriod * 12} months)
+                                    {params.timePeriod} years ({Math.round(params.timePeriod * 12)} months)
                                 </span>
                             </div>
                             <div className="flex justify-between">

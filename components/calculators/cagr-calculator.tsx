@@ -40,7 +40,7 @@ export function CAGRCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="beginningValue">Beginning Value</Label>
+                        <Label htmlFor="beginningValue">Beginning Value (₹)</Label>
                         <Input
                             id="beginningValue"
                             type="number"
@@ -51,7 +51,7 @@ export function CAGRCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="endingValue">Ending Value</Label>
+                        <Label htmlFor="endingValue">Ending Value (₹)</Label>
                         <Input
                             id="endingValue"
                             type="number"

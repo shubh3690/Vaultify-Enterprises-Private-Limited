@@ -41,7 +41,7 @@ export function CashBackCalculator() {
 
                         <TabsContent value="single" className="space-y-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="purchaseAmount">Purchase Amount</Label>
+                                <Label htmlFor="purchaseAmount">Purchase Amount (₹)</Label>
                                 <Input
                                     id="purchaseAmount"
                                     type="number"
@@ -67,7 +67,7 @@ export function CashBackCalculator() {
 
                         <TabsContent value="annual" className="space-y-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="annualSpending">Annual Spending</Label>
+                                <Label htmlFor="annualSpending">Annual Spending (₹)</Label>
                                 <Input
                                     id="annualSpending"
                                     type="number"

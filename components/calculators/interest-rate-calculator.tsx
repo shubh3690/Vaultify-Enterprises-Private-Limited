@@ -40,7 +40,7 @@ export function InterestRateCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="presentValue">Present Value</Label>
+                        <Label htmlFor="presentValue">Present Value (₹)</Label>
                         <Input
                             id="presentValue"
                             type="number"
@@ -51,7 +51,7 @@ export function InterestRateCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="futureValue">Future Value Goal</Label>
+                        <Label htmlFor="futureValue">Future Value Goal (₹)</Label>
                         <Input
                             id="futureValue"
                             type="number"

@@ -33,7 +33,9 @@ export function MillionToBillionConverter() {
     const units = [
         { value: "ones", label: "Ones" },
         { value: "thousands", label: "Thousands" },
+        { value: "lakhs", label: "Lakhs" },
         { value: "millions", label: "Millions" },
+        { value: "crores", label: "Crores" },
         { value: "billions", label: "Billions" },
         { value: "trillions", label: "Trillions" },
     ]
@@ -42,8 +44,8 @@ export function MillionToBillionConverter() {
         <div className="grid gap-6 lg:grid-cols-2">
             <Card>
                 <CardHeader>
-                    <CardTitle>Million to Billion Converter</CardTitle>
-                    <CardDescription>Convert between different large number units</CardDescription>
+                    <CardTitle>Large Number Converter</CardTitle>
+                    <CardDescription>Convert between large number units</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
@@ -51,10 +53,10 @@ export function MillionToBillionConverter() {
                         <Input
                             id="value"
                             type="number"
-                            step="0.001"
+                            step="1"
                             value={value}
                             onChange={(e) => updateValue(Number(e.target.value))}
-                            placeholder="1"
+                            placeholder="1000"
                         />
                     </div>
 
@@ -96,7 +98,7 @@ export function MillionToBillionConverter() {
                 <ResultsDisplay
                     title="Conversion Results"
                     results={[
-                        { label: `${formatNumber(value)} ${fromUnit}`, value: `${formatNumber(result)} ${toUnit}` },
+                        { label: `${formatNumber(value)} ${fromUnit}`, value: `${formatNumber(result, 2)} ${toUnit}` },
                         { label: "Scientific Notation", value: result.toExponential(3) },
                         { label: "Full Number", value: formatNumber(result * getMultiplier(toUnit)) },
                     ]}
@@ -113,8 +115,16 @@ export function MillionToBillionConverter() {
                                 <span>1,000</span>
                             </div>
                             <div className="flex justify-between">
+                                <span>1 Lakh:</span>
+                                <span>100,000</span>
+                            </div>
+                            <div className="flex justify-between">
                                 <span>1 Million:</span>
                                 <span>1,000,000</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>1 Crore:</span>
+                                <span>10,000,000</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>1 Billion:</span>
@@ -127,20 +137,6 @@ export function MillionToBillionConverter() {
                         </div>
                     </CardContent>
                 </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Conversion Examples</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-2 text-sm">
-                            <p>• 1 million = 0.001 billion</p>
-                            <p>• 1 billion = 1,000 million</p>
-                            <p>• 1 trillion = 1,000 billion</p>
-                            <p>• 1 trillion = 1,000,000 million</p>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
         </div>
     )
@@ -149,10 +145,12 @@ export function MillionToBillionConverter() {
 function getMultiplier(unit: string): number {
     const multipliers = {
         ones: 1,
-        thousands: 1000,
-        millions: 1000000,
-        billions: 1000000000,
-        trillions: 1000000000000,
+        thousands: 1_000,
+        lakhs: 100_000,
+        millions: 1_000_000,
+        crores: 10_000_000,
+        billions: 1_000_000_000,
+        trillions: 1_000_000_000_000,
     }
     return multipliers[unit as keyof typeof multipliers] || 1
 }

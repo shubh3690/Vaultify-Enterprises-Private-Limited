@@ -43,7 +43,7 @@ export function IRRCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-3">
-                        <Label>Cash Flows (Negative for outflows, Positive for inflows)</Label>
+                        <Label>Cash Flows (₹) (Negative for outflows, Positive for inflows)</Label>
                         {cashFlows.map((flow, index) => (
                             <div key={index} className="flex gap-2 items-center">
                                 <div className="flex-1">
@@ -77,10 +77,10 @@ export function IRRCalculator() {
                     title="IRR Results"
                     results={[
                         { label: "Internal Rate of Return (IRR)", value: formatPercentage(irr) },
-                        { label: "Initial Investment", value: `$${Math.abs(cashFlows[0]).toLocaleString()}` },
+                        { label: "Initial Investment", value: `₹${Math.abs(cashFlows[0]).toLocaleString()}` },
                         {
                             label: "Total Inflows",
-                            value: `$${cashFlows
+                            value: `₹${cashFlows
                                 .slice(1)
                                 .filter((flow) => flow > 0)
                                 .reduce((sum, flow) => sum + flow, 0)
@@ -99,7 +99,7 @@ export function IRRCalculator() {
                             {cashFlows.map((flow, index) => (
                                 <div key={index} className="flex justify-between text-sm">
                                     <span>{index === 0 ? "Initial Investment" : `Year ${index}`}:</span>
-                                    <span className={flow < 0 ? "text-red-600" : "text-green-600"}>${flow.toLocaleString()}</span>
+                                    <span className={flow < 0 ? "text-red-600" : "text-green-600"}>₹{flow.toLocaleString()}</span>
                                 </div>
                             ))}
                         </div>

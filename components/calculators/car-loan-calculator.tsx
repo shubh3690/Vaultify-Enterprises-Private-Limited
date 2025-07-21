@@ -40,7 +40,7 @@ export function CarLoanCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="carPrice">Car Price</Label>
+                        <Label htmlFor="carPrice">Car Price (₹)</Label>
                         <Input
                             id="carPrice"
                             type="number"
@@ -51,7 +51,7 @@ export function CarLoanCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="downPayment">Down Payment</Label>
+                        <Label htmlFor="downPayment">Down Payment (₹)</Label>
                         <Input
                             id="downPayment"
                             type="number"
@@ -62,7 +62,7 @@ export function CarLoanCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="tradeInValue">Trade-in Value</Label>
+                        <Label htmlFor="tradeInValue">Trade-in Value (₹)</Label>
                         <Input
                             id="tradeInValue"
                             type="number"

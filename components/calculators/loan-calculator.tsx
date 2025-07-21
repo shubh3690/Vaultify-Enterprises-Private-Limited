@@ -33,7 +33,7 @@ export function LoanCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="principal">Loan Amount</Label>
+                        <Label htmlFor="principal">Loan Amount (₹)</Label>
                         <Input
                             id="principal"
                             type="number"
@@ -118,7 +118,7 @@ export function LoanCalculator() {
                                 <CardTitle>Amortization Schedule (First 12 Months)</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="space-y-2 max-h-96 overflow-y-auto">
+                                <div className="space-y-2 max-h-36 overflow-y-auto">
                                     <div className="grid grid-cols-5 gap-2 text-sm font-medium border-b pb-2">
                                         <span>Month</span>
                                         <span>Payment</span>

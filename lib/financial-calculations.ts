@@ -22,10 +22,11 @@ export interface CompoundInterestResult {
 }
 
 export function calculateCompoundInterest(params: CompoundInterestParams): CompoundInterestResult {
-    const { principal, rate, time, monthlyDeposit = 0, monthlyWithdrawal = 0 } = params
+    const { principal, rate, time, compoundingFrequency = 1, monthlyDeposit = 0, monthlyWithdrawal = 0 } = params
 
-    const monthlyRate = rate / 100 / 12
     const totalMonths = time * 12
+    const periodicRate = rate / 100 / compoundingFrequency
+    const monthsPerPeriod = 12 / compoundingFrequency
 
     let balance = principal
     let totalInterest = 0
@@ -45,9 +46,11 @@ export function calculateCompoundInterest(params: CompoundInterestParams): Compo
             totalWithdrawals += monthlyWithdrawal
         }
 
-        const monthlyInterest = balance * monthlyRate
-        balance += monthlyInterest
-        totalInterest += monthlyInterest
+        if (month % monthsPerPeriod === 0) {
+            const interest = balance * periodicRate
+            balance += interest
+            totalInterest += interest
+        }
 
         if (month % 12 === 0) {
             yearlyBreakdown.push({
@@ -152,6 +155,74 @@ export function calculateLoan(params: LoanParams): LoanResult {
         totalPayment,
         totalInterest,
         amortizationSchedule
+    }
+}
+
+export interface MortgageRefinanceParams {
+    currentBalance: number
+    currentMonthlyPayment: number
+    currentRate: number
+    refinanceRate: number
+    refinanceTerm: number
+    closingCosts?: number
+}
+
+export interface MortgageRefinanceResult {
+    newMonthlyPayment: number
+    monthlyPaymentReduction: number
+    currentTotalInterest: number
+    refinanceTotalInterest: number
+    interestSaved: number
+    netSavings: number
+    breakEvenMonths: number
+    currentRemainingTerm: number
+}
+
+export function calculateMortgageRefinance(params: MortgageRefinanceParams): MortgageRefinanceResult {
+    const { currentBalance, currentMonthlyPayment, currentRate, refinanceRate, refinanceTerm, closingCosts = 0 } = params
+
+    // Calculate new loan details
+    const refinanceMonthlyRate = refinanceRate / 100 / 12
+    const refinanceMonths = refinanceTerm * 12
+
+    const newMonthlyPayment = refinanceMonthlyRate > 0 ? (currentBalance * (refinanceMonthlyRate * Math.pow(1 + refinanceMonthlyRate, refinanceMonths))) / (Math.pow(1 + refinanceMonthlyRate, refinanceMonths) - 1) : currentBalance / refinanceMonths
+    const monthlyPaymentReduction = currentMonthlyPayment - newMonthlyPayment
+
+    // Calculate remaining term on current mortgage
+    const currentMonthlyRate = currentRate / 100 / 12
+    let remainingBalance = currentBalance
+    let currentRemainingMonths = 0
+
+    // Estimate remaining months on current mortgage
+    while (remainingBalance > 0.01 && currentRemainingMonths < 600) {
+        const interestPayment = remainingBalance * currentMonthlyRate
+        const principalPayment = currentMonthlyPayment - interestPayment
+        remainingBalance -= principalPayment
+        currentRemainingMonths++
+    }
+
+    // Calculate total interest for current mortgage (remaining term)
+    const currentTotalInterest = currentMonthlyPayment * currentRemainingMonths - currentBalance
+
+    // Calculate total interest for refinanced mortgage
+    const refinanceTotalPayment = newMonthlyPayment * refinanceMonths
+    const refinanceTotalInterest = refinanceTotalPayment - currentBalance
+
+    const interestSaved = currentTotalInterest - refinanceTotalInterest
+    const netSavings = interestSaved - closingCosts
+
+    // Calculate break-even point
+    const breakEvenMonths = monthlyPaymentReduction > 0 ? closingCosts / monthlyPaymentReduction : 0
+
+    return {
+        newMonthlyPayment,
+        monthlyPaymentReduction,
+        currentTotalInterest,
+        refinanceTotalInterest,
+        interestSaved,
+        netSavings,
+        breakEvenMonths,
+        currentRemainingTerm: currentRemainingMonths / 12,
     }
 }
 
@@ -512,7 +583,9 @@ export function convertLargeNumbers(value: number, fromUnit: string, toUnit: str
     const units = {
         ones: 1,
         thousands: 1000,
+        lakhs: 100000,
         millions: 1000000,
+        crores: 10000000,
         billions: 1000000000,
         trillions: 1000000000000,
     }
@@ -530,18 +603,15 @@ export interface MoneyCountResult {
 
 export function calculateMoneyCount(denominations: { [key: string]: number }): MoneyCountResult {
     const denominationValues = {
-        pennies: 0.01,
-        nickels: 0.05,
-        dimes: 0.1,
-        quarters: 0.25,
-        half_dollars: 0.5,
-        dollars: 1.0,
+        ones: 1.0,
         twos: 2.0,
         fives: 5.0,
         tens: 10.0,
         twenties: 20.0,
         fifties: 50.0,
         hundreds: 100.0,
+        fiveHundreds: 500.0,
+        twoThousands: 2000.0
     }
 
     let total = 0

@@ -7,6 +7,7 @@ import { CompoundInterestCalculator } from "@/components/calculators/compound-in
 import { DailyCompoundInterestCalculator } from "@/components/calculators/daily-compound-interest-calculator"
 import { LoanCalculator } from "@/components/calculators/loan-calculator"
 import { MortgageCalculator } from "@/components/calculators/mortgage-calculator"
+import { MortgageRefinanceCalculator } from "@/components/calculators/mortgage-refinance-calculator"
 import { SavingsCalculator } from "@/components/calculators/savings-calculator"
 import { APYCalculator } from "@/components/calculators/apy-calculator"
 import { CAGRCalculator } from "@/components/calculators/cagr-calculator"
@@ -37,6 +38,7 @@ const calculatorComponents = {
     "daily-compound-interest": DailyCompoundInterestCalculator,
     "loan-calculator": LoanCalculator,
     "mortgage-calculator": MortgageCalculator,
+    "mortgage-refinance": MortgageRefinanceCalculator,
     "savings-calculator": SavingsCalculator,
     "apy-calculator": APYCalculator,
     "cagr-calculator": CAGRCalculator,

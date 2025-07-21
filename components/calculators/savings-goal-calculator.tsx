@@ -34,7 +34,7 @@ export function SavingsGoalCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="targetAmount">Savings Goal</Label>
+                        <Label htmlFor="targetAmount">Savings Goal (₹)</Label>
                         <Input
                             id="targetAmount"
                             type="number"
@@ -45,7 +45,7 @@ export function SavingsGoalCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="currentSavings">Current Savings</Label>
+                        <Label htmlFor="currentSavings">Current Savings (₹)</Label>
                         <Input
                             id="currentSavings"
                             type="number"
@@ -56,7 +56,7 @@ export function SavingsGoalCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyContribution">Monthly Contribution</Label>
+                        <Label htmlFor="monthlyContribution">Monthly Contribution (₹)</Label>
                         <Input
                             id="monthlyContribution"
                             type="number"
@@ -118,7 +118,7 @@ export function SavingsGoalCalculator() {
                             </div>
                             <div className="flex justify-between">
                                 <span>Time to Goal:</span>
-                                <span className="font-medium text-green-600">{results.yearsToGoal.toFixed(1)} years</span>
+                                <span className={`font-medium ${Number(results.yearsToGoal.toFixed(1)) < 30 ? "text-green-600" : (Number(results.yearsToGoal.toFixed(1)) < 50 ? "text-yellow-600" : "text-red-600")}`}>{results.yearsToGoal.toFixed(1)} years</span>
                             </div>
                             <div className="p-3 bg-blue-50 border border-blue-200 rounded">
                                 <p className="text-sm text-blue-800">

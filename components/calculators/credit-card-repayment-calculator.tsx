@@ -32,7 +32,7 @@ export function CreditCardRepaymentCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="balance">Current Balance</Label>
+                        <Label htmlFor="balance">Current Balance (₹)</Label>
                         <Input
                             id="balance"
                             type="number"
@@ -55,7 +55,7 @@ export function CreditCardRepaymentCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyPayment">Monthly Payment</Label>
+                        <Label htmlFor="monthlyPayment">Monthly Payment (₹)</Label>
                         <Input
                             id="monthlyPayment"
                             type="number"
@@ -105,7 +105,7 @@ export function CreditCardRepaymentCalculator() {
                     <CardContent>
                         <div className="space-y-3 text-sm">
                             <p>
-                                <strong>Pay more than the minimum:</strong> Even an extra $50/month can significantly reduce payoff time
+                                <strong>Pay more than the minimum:</strong> Even an extra ₹500/month can significantly reduce payoff time
                                 and interest paid.
                             </p>
                             <p>

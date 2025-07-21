@@ -25,18 +25,19 @@ export function CompoundInterestCalculator() {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
         setResults(calculateCompoundInterest(newParams))
+        console.log(results)
     }
 
     return (
         <div className="grid gap-6 lg:grid-cols-2">
             <Card>
                 <CardHeader>
-                    <CardTitle>Calculator Settings</CardTitle>
-                    <CardDescription>Enter your investment details to calculate compound interest</CardDescription>
+                    <CardTitle>Compound Interest Calculator</CardTitle>
+                    <CardDescription>Calculate compound interest with regular deposits or Withdrawals</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="principal">Initial Investment</Label>
+                        <Label htmlFor="principal">Initial Investment (₹)</Label>
                         <Input
                             id="principal"
                             type="number"
@@ -70,7 +71,7 @@ export function CompoundInterestCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="compounding">Compounding Frequency</Label>
+                        <Label htmlFor="compoundingFrequency">Compounding Frequency</Label>
                         <Select
                             value={params.compoundingFrequency.toString()}
                             onValueChange={(value) => updateParam("compoundingFrequency", Number(value))}
@@ -83,13 +84,12 @@ export function CompoundInterestCalculator() {
                                 <SelectItem value="2">Semi-annually</SelectItem>
                                 <SelectItem value="4">Quarterly</SelectItem>
                                 <SelectItem value="12">Monthly</SelectItem>
-                                <SelectItem value="365">Daily</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyDeposit">Monthly Deposit (Optional)</Label>
+                        <Label htmlFor="monthlyDeposit">Monthly Deposit (₹) (Optional)</Label>
                         <Input
                             id="monthlyDeposit"
                             type="number"
@@ -100,7 +100,7 @@ export function CompoundInterestCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyWithdrawal">Monthly Withdrawal (Optional)</Label>
+                        <Label htmlFor="monthlyWithdrawal">Monthly Withdrawal (₹) (Optional)</Label>
                         <Input
                             id="monthlyWithdrawal"
                             type="number"
@@ -128,7 +128,7 @@ export function CompoundInterestCalculator() {
                         <CardTitle>Yearly Breakdown</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
+                        <div className="space-y-2 max-h-56 overflow-y-auto">
                             <div className="grid grid-cols-4 gap-2 text-sm font-medium border-b pb-2">
                                 <span>Year</span>
                                 <span>Balance</span>

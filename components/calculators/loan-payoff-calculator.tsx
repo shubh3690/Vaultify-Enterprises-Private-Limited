@@ -33,7 +33,7 @@ export function LoanPayoffCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="currentBalance">Current Loan Balance</Label>
+                        <Label htmlFor="currentBalance">Current Loan Balance (₹)</Label>
                         <Input
                             id="currentBalance"
                             type="number"
@@ -56,7 +56,7 @@ export function LoanPayoffCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="currentPayment">Current Monthly Payment</Label>
+                        <Label htmlFor="currentPayment">Current Monthly Payment (₹)</Label>
                         <Input
                             id="currentPayment"
                             type="number"
@@ -67,7 +67,7 @@ export function LoanPayoffCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="extraPayment">Extra Monthly Payment</Label>
+                        <Label htmlFor="extraPayment">Extra Monthly Payment (₹)</Label>
                         <Input
                             id="extraPayment"
                             type="number"

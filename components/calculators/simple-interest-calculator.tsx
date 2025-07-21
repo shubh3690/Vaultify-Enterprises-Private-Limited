@@ -40,7 +40,7 @@ export function SimpleInterestCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="principal">Principal Amount</Label>
+                        <Label htmlFor="principal">Principal Amount (₹)</Label>
                         <Input
                             id="principal"
                             type="number"

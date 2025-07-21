@@ -10,16 +10,15 @@ import { ResultsDisplay } from "@/components/ui/results-display"
 
 export function MoneyCounterCalculator() {
     const [denominations, setDenominations] = useState({
+        twoThousands: 0,
+        fiveHundreds: 0,
         hundreds: 0,
         fifties: 0,
         twenties: 0,
         tens: 0,
         fives: 0,
-        dollars: 0,
-        quarters: 0,
-        dimes: 0,
-        nickels: 0,
-        pennies: 0,
+        twos: 0,
+        ones: 0
     })
 
     const [results, setResults] = useState(calculateMoneyCount(denominations))
@@ -31,16 +30,15 @@ export function MoneyCounterCalculator() {
     }
 
     const denominationLabels = {
-        hundreds: "$100 Bills",
-        fifties: "$50 Bills",
-        twenties: "$20 Bills",
-        tens: "$10 Bills",
-        fives: "$5 Bills",
-        dollars: "$1 Bills",
-        quarters: "Quarters",
-        dimes: "Dimes",
-        nickels: "Nickels",
-        pennies: "Pennies",
+        twoThousands: "₹2000 Bills",
+        fiveHundreds: "₹500 Bills",
+        hundreds: "₹100 Bills",
+        fifties: "₹50 Bills",
+        twenties: "₹20 Bills",
+        tens: "₹10 Bills",
+        fives: "₹5 Bills",
+        twos: "₹2 Bills",
+        ones: "₹1 Bills"
     }
 
     return (
@@ -48,28 +46,12 @@ export function MoneyCounterCalculator() {
             <Card>
                 <CardHeader>
                     <CardTitle>Money Counter</CardTitle>
-                    <CardDescription>Count and calculate total value of cash and coins</CardDescription>
+                    <CardDescription>Count and calculate total value of cash</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-3">
                         <h3 className="font-medium">Bills</h3>
-                        {["hundreds", "fifties", "twenties", "tens", "fives", "dollars"].map((denom) => (
-                            <div key={denom} className="grid grid-cols-2 gap-2 items-center">
-                                <Label htmlFor={denom}>{denominationLabels[denom as keyof typeof denominationLabels]}</Label>
-                                <Input
-                                    id={denom}
-                                    type="number"
-                                    value={denominations[denom as keyof typeof denominations]}
-                                    onChange={(e) => updateDenomination(denom, Number(e.target.value))}
-                                    placeholder="0"
-                                />
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="space-y-3">
-                        <h3 className="font-medium">Coins</h3>
-                        {["quarters", "dimes", "nickels", "pennies"].map((denom) => (
+                        {["twoThousands", "fiveHundreds", "hundreds", "fifties", "twenties", "tens", "fives", "twos", "ones"].map((denom) => (
                             <div key={denom} className="grid grid-cols-2 gap-2 items-center">
                                 <Label htmlFor={denom}>{denominationLabels[denom as keyof typeof denominationLabels]}</Label>
                                 <Input
@@ -89,27 +71,7 @@ export function MoneyCounterCalculator() {
                 <ResultsDisplay
                     title="Money Count Results"
                     results={[
-                        { label: "Total Value", value: formatCurrency(results.total) },
-                        {
-                            label: "Bills Total",
-                            value: formatCurrency(
-                                (results.breakdown.hundreds?.total || 0) +
-                                (results.breakdown.fifties?.total || 0) +
-                                (results.breakdown.twenties?.total || 0) +
-                                (results.breakdown.tens?.total || 0) +
-                                (results.breakdown.fives?.total || 0) +
-                                (results.breakdown.dollars?.total || 0),
-                            ),
-                        },
-                        {
-                            label: "Coins Total",
-                            value: formatCurrency(
-                                (results.breakdown.quarters?.total || 0) +
-                                (results.breakdown.dimes?.total || 0) +
-                                (results.breakdown.nickels?.total || 0) +
-                                (results.breakdown.pennies?.total || 0),
-                            ),
-                        },
+                        { label: "Total Value", value: formatCurrency(results.total) }
                     ]}
                 />
 

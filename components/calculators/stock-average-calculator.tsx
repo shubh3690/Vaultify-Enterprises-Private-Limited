@@ -49,7 +49,7 @@ export function StockAverageCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-3">
-                        <Label>Stock Purchases</Label>
+                        <Label>Stock Purchases (Qtn : Price)</Label>
                         {purchases.map((purchase, index) => (
                             <div key={index} className="grid grid-cols-3 gap-2 items-center">
                                 <Input

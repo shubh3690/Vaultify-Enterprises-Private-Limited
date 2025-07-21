@@ -44,7 +44,7 @@ export function FutureValueCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="presentValue">Present Value</Label>
+                        <Label htmlFor="presentValue">Present Value (₹)</Label>
                         <Input
                             id="presentValue"
                             type="number"
@@ -78,7 +78,7 @@ export function FutureValueCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="payment">Annual Payment (Optional)</Label>
+                        <Label htmlFor="payment">Annual Payment (₹) (Optional)</Label>
                         <Input
                             id="payment"
                             type="number"

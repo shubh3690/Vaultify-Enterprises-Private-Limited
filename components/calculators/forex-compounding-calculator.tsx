@@ -48,7 +48,7 @@ export function ForexCompoundingCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="initialDeposit">Initial Deposit</Label>
+                        <Label htmlFor="initialDeposit">Initial Deposit (₹)</Label>
                         <Input
                             id="initialDeposit"
                             type="number"
@@ -82,7 +82,7 @@ export function ForexCompoundingCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyDeposit">Monthly Deposit (Optional)</Label>
+                        <Label htmlFor="monthlyDeposit">Monthly Deposit (₹) (Optional)</Label>
                         <Input
                             id="monthlyDeposit"
                             type="number"

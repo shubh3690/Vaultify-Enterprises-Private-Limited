@@ -11,7 +11,7 @@ import { ResultsDisplay } from "@/components/ui/results-display"
 export function MMACalculator() {
     const [params, setParams] = useState<CompoundInterestParams>({
         principal: 25000,
-        rate: 3.5,
+        rate: 6.5,
         compoundingFrequency: 12,
         time: 3,
         monthlyDeposit: 500,
@@ -35,7 +35,7 @@ export function MMACalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="principal">Initial Deposit</Label>
+                        <Label htmlFor="principal">Initial Deposit (₹)</Label>
                         <Input
                             id="principal"
                             type="number"
@@ -53,7 +53,7 @@ export function MMACalculator() {
                             step="0.1"
                             value={params.rate}
                             onChange={(e) => updateParam("rate", Number(e.target.value))}
-                            placeholder="3.5"
+                            placeholder="6.5"
                         />
                     </div>
 
@@ -69,7 +69,7 @@ export function MMACalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyDeposit">Monthly Deposit</Label>
+                        <Label htmlFor="monthlyDeposit">Monthly Deposit (₹)</Label>
                         <Input
                             id="monthlyDeposit"
                             type="number"

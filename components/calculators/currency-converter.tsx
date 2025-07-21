@@ -157,7 +157,7 @@ export function CurrencyConverter() {
                                 <strong>Converted Amount:</strong> {formatNumber(convertedAmount, 2)} {toCurrency}
                             </p>
                             <p className="text-muted-foreground">
-                                Rates are fetched from <code>Frankfurter.app</code> (based on the European Central Bank).
+                                Rates are based on the European Central Bank. (Frankfurter.app)
                             </p>
                         </div>
                     </CardContent>

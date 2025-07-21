@@ -35,7 +35,7 @@ export function SavingsCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="principal">Current Savings Balance</Label>
+                        <Label htmlFor="principal">Current Savings Balance (₹)</Label>
                         <Input
                             id="principal"
                             type="number"
@@ -69,7 +69,7 @@ export function SavingsCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyDeposit">Monthly Deposit</Label>
+                        <Label htmlFor="monthlyDeposit">Monthly Deposit (₹)</Label>
                         <Input
                             id="monthlyDeposit"
                             type="number"

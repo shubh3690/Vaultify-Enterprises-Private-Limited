@@ -33,7 +33,7 @@ export function MarginCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="stockPrice">Stock Price</Label>
+                        <Label htmlFor="stockPrice">Stock Price (₹)</Label>
                         <Input
                             id="stockPrice"
                             type="number"

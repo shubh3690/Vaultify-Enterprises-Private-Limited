@@ -60,7 +60,7 @@ export function RetirementPlanningCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="currentSavings">Current Savings</Label>
+                        <Label htmlFor="currentSavings">Current Savings (₹)</Label>
                         <Input
                             id="currentSavings"
                             type="number"
@@ -71,7 +71,7 @@ export function RetirementPlanningCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyContribution">Monthly Contribution</Label>
+                        <Label htmlFor="monthlyContribution">Monthly Contribution (₹)</Label>
                         <Input
                             id="monthlyContribution"
                             type="number"
@@ -106,7 +106,7 @@ export function RetirementPlanningCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="desiredMonthlyIncome">Desired Monthly Income</Label>
+                        <Label htmlFor="desiredMonthlyIncome">Desired Monthly Income (₹)</Label>
                         <Input
                             id="desiredMonthlyIncome"
                             type="number"

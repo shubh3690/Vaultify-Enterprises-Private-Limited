@@ -39,7 +39,7 @@ export function MortgageCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="homePrice">Home Price</Label>
+                        <Label htmlFor="homePrice">Home Price (₹)</Label>
                         <Input
                             id="homePrice"
                             type="number"
@@ -50,7 +50,7 @@ export function MortgageCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="downPayment">Down Payment</Label>
+                        <Label htmlFor="downPayment">Down Payment (₹)</Label>
                         <Input
                             id="downPayment"
                             type="number"

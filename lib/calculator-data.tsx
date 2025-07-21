@@ -139,6 +139,12 @@ export const calculatorCategories: CalculatorCategory[] = [
                 description: "Calculate mortgage payments and amortization",
                 category: "loans-credit",
             },
+            {
+                slug: "mortgage-refinance",
+                title: "Mortgage Refinance Calculator",
+                description: "Compare current mortgage with refinancing options",
+                category: "loans-credit",
+            },
         ],
     },
     {

@@ -41,7 +41,7 @@ export function HowLongMoneyLastsCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="currentAmount">Current Amount</Label>
+                        <Label htmlFor="currentAmount">Current Amount (₹)</Label>
                         <Input
                             id="currentAmount"
                             type="number"
@@ -52,7 +52,7 @@ export function HowLongMoneyLastsCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyWithdrawal">Monthly Withdrawal</Label>
+                        <Label htmlFor="monthlyWithdrawal">Monthly Withdrawal (₹)</Label>
                         <Input
                             id="monthlyWithdrawal"
                             type="number"
