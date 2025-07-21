@@ -2,12 +2,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { calculatorCategories } from "@/lib/calculator-data"
 import Link from "next/link"
 
+function greenTick() {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-4 text-green-400"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+        >
+            <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8.5 8.5a1 1 0 01-1.414 0l-4.5-4.5a1 1 0 011.414-1.414L7.5 12.086l7.793-7.793a1 1 0 011.414 0z"
+                clipRule="evenodd"
+            />
+        </svg>
+    )
+}
+
 export default function HomePage() {
     return (
         <div className="min-h-screen">
             {/* Hero Section */}
             <div className="container mx-auto px-4 py-12">
-                <div className="bg-blue-900 rounded-2xl text-white p-8 md:p-12 max-w-6xl mx-auto">
+                <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 rounded-3xl text-white p-8 md:p-12 max-w-6xl mx-auto shadow-2xl">
                     <div className="text-center">
                         <h1 className="text-2xl md:text-4xl font-bold mb-4">WELCOME TO FINANCIAL CALCULATORS</h1>
                         <p className="text-base md:text-lg mb-8 text-blue-100 max-w-3xl mx-auto">
@@ -16,15 +33,15 @@ export default function HomePage() {
                         </p>
                         <div className="flex flex-wrap justify-center gap-4 md:gap-6">
                             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
-                                <span className="text-green-400">✓</span>
+                                {greenTick()}
                                 <span className="text-sm font-medium">30+ Financial Calculators</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
-                                <span className="text-green-400">✓</span>
+                                {greenTick()}
                                 <span className="text-sm font-medium">Real-time Calculations</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
-                                <span className="text-green-400">✓</span>
+                                {greenTick()}
                                 <span className="text-sm font-medium">100% Free to Use</span>
                             </div>
                         </div>

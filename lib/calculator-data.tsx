@@ -21,7 +21,7 @@ export const calculatorCategories: CalculatorCategory[] = [
         id: "savings-investments",
         title: "Savings & Investments",
         description: "Calculate compound interest, savings growth, and investment returns",
-        icon: <TrendingUp className="h-5 w-5 text-primary" />,
+        icon: <TrendingUp className="h-5 w-5 text-white" />,
         calculators: [
             {
                 slug: "compound-interest",
@@ -101,7 +101,7 @@ export const calculatorCategories: CalculatorCategory[] = [
         id: "loans-credit",
         title: "Loans & Credit",
         description: "Calculate loan payments, mortgage costs, and credit scenarios",
-        icon: <Home className="h-5 w-5 text-primary" />,
+        icon: <Home className="h-5 w-5 text-white" />,
         calculators: [
             {
                 slug: "amortization-calculator",
@@ -145,7 +145,7 @@ export const calculatorCategories: CalculatorCategory[] = [
         id: "investment-analysis",
         title: "Investment Analysis",
         description: "Advanced investment analysis and calculation tools",
-        icon: <BarChart3 className="h-5 w-5 text-primary" />,
+        icon: <BarChart3 className="h-5 w-5 text-white" />,
         calculators: [
             {
                 slug: "irr-calculator",
@@ -171,7 +171,7 @@ export const calculatorCategories: CalculatorCategory[] = [
         id: "conversion-utility",
         title: "Conversion & Utility",
         description: "Currency conversion and utility calculators",
-        icon: <Globe className="h-5 w-5 text-primary" />,
+        icon: <Globe className="h-5 w-5 text-white" />,
         calculators: [
             {
                 slug: "currency-converter",
@@ -209,7 +209,7 @@ export const calculatorCategories: CalculatorCategory[] = [
         id: "banking",
         title: "Banking",
         description: "Banking and account-related calculators",
-        icon: <DollarSign className="h-5 w-5 text-primary" />,
+        icon: <DollarSign className="h-5 w-5 text-white" />,
         calculators: [
             {
                 slug: "cash-back-calculator",

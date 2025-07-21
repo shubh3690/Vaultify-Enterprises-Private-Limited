@@ -22,7 +22,7 @@ export interface CompoundInterestResult {
 }
 
 export function calculateCompoundInterest(params: CompoundInterestParams): CompoundInterestResult {
-    const { principal, rate, compoundingFrequency, time, monthlyDeposit = 0, monthlyWithdrawal = 0 } = params
+    const { principal, rate, time, monthlyDeposit = 0, monthlyWithdrawal = 0 } = params
 
     const monthlyRate = rate / 100 / 12
     const totalMonths = time * 12
@@ -50,13 +50,12 @@ export function calculateCompoundInterest(params: CompoundInterestParams): Compo
         totalInterest += monthlyInterest
 
         if (month % 12 === 0) {
-            const year = month / 12
             yearlyBreakdown.push({
-                year,
+                year: month / 12,
                 balance,
                 interestEarned: totalInterest,
                 deposits: totalDeposits,
-                withdrawals: totalWithdrawals,
+                withdrawals: totalWithdrawals
             })
         }
     }
@@ -66,7 +65,7 @@ export function calculateCompoundInterest(params: CompoundInterestParams): Compo
         totalInterest,
         totalDeposits,
         totalWithdrawals,
-        yearlyBreakdown,
+        yearlyBreakdown
     }
 }
 
@@ -83,13 +82,12 @@ export function calculateDailyCompoundInterest(principal: number, rate: number, 
         totalInterest += dailyInterest
 
         if (day % 365 === 0) {
-            const year = day / 365
             yearlyBreakdown.push({
-                year,
+                year: day / 365,
                 balance,
                 interestEarned: totalInterest,
                 deposits: principal,
-                withdrawals: 0,
+                withdrawals: 0
             })
         }
     }
@@ -99,7 +97,7 @@ export function calculateDailyCompoundInterest(principal: number, rate: number, 
         totalInterest,
         totalDeposits: principal,
         totalWithdrawals: 0,
-        yearlyBreakdown,
+        yearlyBreakdown
     }
 }
 
@@ -127,8 +125,7 @@ export function calculateLoan(params: LoanParams): LoanResult {
     const monthlyRate = rate / 100 / 12
     const totalMonths = term * 12
 
-    const monthlyPayment =
-        (principal * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths))) / (Math.pow(1 + monthlyRate, totalMonths) - 1)
+    const monthlyPayment = (principal * (monthlyRate * Math.pow(monthlyRate + 1, totalMonths))) / (Math.pow(monthlyRate + 1, totalMonths) - 1)
 
     let balance = principal
     const amortizationSchedule: LoanResult["amortizationSchedule"] = []
@@ -143,7 +140,7 @@ export function calculateLoan(params: LoanParams): LoanResult {
             payment: monthlyPayment,
             principal: principalPayment,
             interest: interestPayment,
-            balance: Math.max(0, balance),
+            balance: Math.max(0, balance)
         })
     }
 
@@ -154,7 +151,7 @@ export function calculateLoan(params: LoanParams): LoanResult {
         monthlyPayment,
         totalPayment,
         totalInterest,
-        amortizationSchedule,
+        amortizationSchedule
     }
 }
 
@@ -187,15 +184,14 @@ export function calculateSIP(params: SIPParams): SIPResult {
     const monthlyRate = expectedReturn / 100 / 12
     const totalMonths = timePeriod * 12
 
-    const maturityAmount =
-        monthlyInvestment * (((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate))
+    const maturityAmount = monthlyInvestment * (((Math.pow(monthlyRate + 1, totalMonths) - 1) / monthlyRate) * (monthlyRate + 1))
     const totalInvestment = monthlyInvestment * totalMonths
     const totalReturns = maturityAmount - totalInvestment
 
     return {
         maturityAmount,
         totalInvestment,
-        totalReturns,
+        totalReturns
     }
 }
 
@@ -220,31 +216,31 @@ export function calculateCreditCardPayoff(params: CreditCardParams): CreditCardR
     let months = 0
 
     while (currentBalance > 0.01 && months < 600) {
-        // Max 50 years
         const interestCharge = currentBalance * monthlyRate
         const principalPayment = monthlyPayment - interestCharge
 
         if (principalPayment <= 0) {
-            return { payoffTime: -1, totalInterest: -1, totalPayment: -1 } // Payment too low
+            return { payoffTime: -1, totalInterest: -1, totalPayment: -1 }
         }
 
         totalInterest += interestCharge
         currentBalance -= principalPayment
         months++
 
-        if (currentBalance < 0) currentBalance = 0
+        if (currentBalance < 0)
+            currentBalance = 0
     }
 
     return {
         payoffTime: months,
         totalInterest,
-        totalPayment: balance + totalInterest,
+        totalPayment: balance + totalInterest
     }
 }
 
 export function calculateIRR(cashFlows: number[]): number {
     // Newton-Raphson method for IRR calculation
-    let rate = 0.1 // Initial guess
+    let rate = 0.1          // Initial guess
     const tolerance = 0.000001
     const maxIterations = 100
 
@@ -258,7 +254,6 @@ export function calculateIRR(cashFlows: number[]): number {
         }
 
         const newRate = rate - npv / dnpv
-
         if (Math.abs(newRate - rate) < tolerance) {
             return newRate * 100
         }
@@ -287,24 +282,15 @@ export interface RetirementResult {
 }
 
 export function calculateRetirement(params: RetirementParams): RetirementResult {
-    const {
-        currentAge,
-        retirementAge,
-        currentSavings,
-        monthlyContribution,
-        expectedReturn,
-        inflationRate,
-        desiredMonthlyIncome,
-    } = params
+    const { currentAge, retirementAge, currentSavings, monthlyContribution, expectedReturn, inflationRate, desiredMonthlyIncome } = params
 
     const yearsToRetirement = retirementAge - currentAge
     const monthsToRetirement = yearsToRetirement * 12
     const monthlyReturn = expectedReturn / 100 / 12
 
     // Calculate total savings at retirement
-    const futureValueCurrentSavings = currentSavings * Math.pow(1 + monthlyReturn, monthsToRetirement)
-    const futureValueContributions =
-        monthlyContribution * ((Math.pow(1 + monthlyReturn, monthsToRetirement) - 1) / monthlyReturn)
+    const futureValueCurrentSavings = currentSavings * Math.pow(monthlyReturn + 1, monthsToRetirement)
+    const futureValueContributions = monthlyContribution * ((Math.pow(monthlyReturn + 1, monthsToRetirement) - 1) / monthlyReturn)
     const totalSavingsAtRetirement = futureValueCurrentSavings + futureValueContributions
 
     // Calculate monthly income that can be generated (4% rule)
@@ -312,20 +298,18 @@ export function calculateRetirement(params: RetirementParams): RetirementResult 
 
     // Adjust desired income for inflation
     const inflationAdjustedIncome = desiredMonthlyIncome * Math.pow(1 + inflationRate / 100, yearsToRetirement)
-
     const shortfall = Math.max(0, inflationAdjustedIncome - monthlyIncomeGenerated)
 
     // Calculate recommended monthly savings to meet goal
     const requiredSavings = (inflationAdjustedIncome * 12) / 0.04
     const additionalSavingsNeeded = Math.max(0, requiredSavings - futureValueCurrentSavings)
-    const recommendedMonthlySavings =
-        additionalSavingsNeeded / ((Math.pow(1 + monthlyReturn, monthsToRetirement) - 1) / monthlyReturn)
+    const recommendedMonthlySavings = additionalSavingsNeeded / ((Math.pow(monthlyReturn + 1, monthsToRetirement) - 1) / monthlyReturn)
 
     return {
         totalSavingsAtRetirement,
         monthlyIncomeGenerated,
         shortfall,
-        recommendedMonthlySavings,
+        recommendedMonthlySavings
     }
 }
 
@@ -353,11 +337,9 @@ export function calculateSavingsGoal(params: SavingsGoalParams): SavingsGoalResu
     let totalContributions = 0
 
     while (balance < targetAmount && months < 1200) {
-        // Max 100 years
         balance += monthlyContribution
         totalContributions += monthlyContribution
 
-        // Apply compound interest
         const monthlyInterest = balance * monthlyRate
         balance += monthlyInterest
 
@@ -370,26 +352,17 @@ export function calculateSavingsGoal(params: SavingsGoalParams): SavingsGoalResu
         monthsToGoal: months,
         yearsToGoal: months / 12,
         totalContributions,
-        interestEarned,
+        interestEarned
     }
 }
 
-export function calculateFutureValue(
-    presentValue: number,
-    rate: number,
-    periods: number,
-    paymentPerPeriod = 0,
-): number {
+export function calculateFutureValue(presentValue: number, rate: number, periods: number, paymentPerPeriod = 0): number {
     const futureValueLumpSum = presentValue * Math.pow(1 + rate / 100, periods)
     const futureValueAnnuity = paymentPerPeriod * ((Math.pow(1 + rate / 100, periods) - 1) / (rate / 100))
     return futureValueLumpSum + futureValueAnnuity
 }
 
-export function calculateHowLongMoneyLasts(
-    currentAmount: number,
-    monthlyWithdrawal: number,
-    interestRate: number,
-): number {
+export function calculateHowLongMoneyLasts(currentAmount: number, monthlyWithdrawal: number, interestRate: number): number {
     const monthlyRate = interestRate / 100 / 12
     let balance = currentAmount
     let months = 0
@@ -399,7 +372,8 @@ export function calculateHowLongMoneyLasts(
         balance = balance + interestEarned - monthlyWithdrawal
         months++
 
-        if (balance <= 0) break
+        if (balance <= 0)
+            break
     }
 
     return months
@@ -469,7 +443,6 @@ export interface MarginParams {
     maintenanceMargin: number
 }
 
-// Update MarginResult interface to include marginCallPrice:
 export interface MarginResult {
     totalValue: number
     marginRequired: number
@@ -482,10 +455,9 @@ export function calculateMargin(params: MarginParams): MarginResult {
     const { stockPrice, shares, marginRate, maintenanceMargin } = params
     const totalValue = stockPrice * shares
     const marginRequired = totalValue * (marginRate / 100)
-    const buyingPower = totalValue / (marginRate / 100) // Correct buying power calculation
+    const buyingPower = totalValue / (marginRate / 100)
     const maintenanceRequired = totalValue * (maintenanceMargin / 100)
 
-    // Calculate margin call price
     const loanAmount = totalValue - marginRequired
     const marginCallPrice = loanAmount / (shares * (1 - maintenanceMargin / 100))
 
@@ -494,16 +466,11 @@ export function calculateMargin(params: MarginParams): MarginResult {
         marginRequired,
         buyingPower,
         maintenanceRequired,
-        marginCallPrice,
+        marginCallPrice
     }
 }
 
-export function calculateForexCompounding(
-    initialDeposit: number,
-    monthlyReturn: number,
-    months: number,
-    monthlyDeposit = 0,
-): CompoundInterestResult {
+export function calculateForexCompounding(initialDeposit: number, monthlyReturn: number, months: number, monthlyDeposit = 0): CompoundInterestResult {
     let balance = initialDeposit
     let totalInterest = 0
     let totalDeposits = initialDeposit
@@ -522,13 +489,12 @@ export function calculateForexCompounding(
         totalInterest += monthlyGain
 
         if (month % 12 === 0) {
-            const year = month / 12
             yearlyBreakdown.push({
-                year,
+                year: month / 12,
                 balance,
                 interestEarned: totalInterest,
                 deposits: totalDeposits,
-                withdrawals: totalWithdrawals,
+                withdrawals: totalWithdrawals
             })
         }
     }
@@ -538,7 +504,7 @@ export function calculateForexCompounding(
         totalInterest,
         totalDeposits,
         totalWithdrawals,
-        yearlyBreakdown,
+        yearlyBreakdown
     }
 }
 
