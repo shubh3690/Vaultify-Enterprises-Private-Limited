@@ -3,7 +3,7 @@ import { Calculator } from "lucide-react"
 
 export function Header() {
     return (
-        <header className="bg-black text-white border-b border-gray-800 h-24">
+        <header className="bg-black text-white border-b border-b-1 h-24 sticky top-0 shadow-2xl z-50">
             <div className="container mx-auto px-4 sm:px-16 h-full">
                 <div className="flex h-full items-center">
                     <Link href="/" className="flex items-center gap-2">
