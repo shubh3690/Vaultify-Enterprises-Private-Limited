@@ -1,29 +1,47 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { calculateMMA, type MMAParams } from "@/lib/financial-calculations"
+import { formatCurrency } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { calculateCompoundInterest, type CompoundInterestParams } from "@/lib/financial-calculations"
-import { formatCurrency } from "@/lib/utils"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 import { ResultsDisplay } from "@/components/ui/results-display"
 
+const COMPOUND_FREQUENCIES = [
+    { label: "Yearly (1/yr)", value: "1" },
+    { label: "Half-yearly (2/yr)", value: "2" },
+    { label: "Quarterly (4/yr)", value: "4" },
+    { label: "Monthly (12/yr)", value: "12" },
+    { label: "Weekly (52/yr)", value: "52" },
+    { label: "Daily (365/yr)", value: "365" },
+]
+
+const DEPOSIT_FREQUENCIES = [
+    { label: "None", value: "0" },
+    { label: "Yearly (1/yr)", value: "1" },
+    { label: "Half-yearly (2/yr)", value: "2" },
+    { label: "Quarterly (4/yr)", value: "4" },
+    { label: "Monthly (12/yr)", value: "12" },
+]
+
 export function MMACalculator() {
-    const [params, setParams] = useState<CompoundInterestParams>({
+    const [params, setParams] = useState<MMAParams>({
         principal: 25000,
         rate: 6.5,
-        compoundingFrequency: 12,
-        time: 3,
-        monthlyDeposit: 500,
-        monthlyWithdrawal: 0,
+        compoundFrequency: 12,
+        years: 3,
+        depositAmount: 0,
+        depositFrequency: 0,
     })
 
-    const [results, setResults] = useState(calculateCompoundInterest(params))
+    const [results, setResults] = useState(calculateMMA(params))
 
-    const updateParam = (key: keyof CompoundInterestParams, value: number) => {
+    const updateParam = (key: keyof MMAParams, value: number) => {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
-        setResults(calculateCompoundInterest(newParams))
+        setResults(calculateMMA(newParams))
     }
 
     return (
@@ -33,7 +51,7 @@ export function MMACalculator() {
                     <CardTitle>Money Market Account Calculator</CardTitle>
                     <CardDescription>Calculate returns from your Money Market Account</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="grid sm:grid-cols-2 gap-8">
                     <div className="grid gap-2">
                         <Label htmlFor="principal">Initial Deposit (₹)</Label>
                         <Input
@@ -46,7 +64,7 @@ export function MMACalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="rate">Annual Interest Rate (%)</Label>
+                        <Label htmlFor="rate">Annual Interest Rate (%) (APY)</Label>
                         <Input
                             id="rate"
                             type="number"
@@ -58,25 +76,55 @@ export function MMACalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="time">Time Period (Years)</Label>
+                        <Label htmlFor="years">Time Period (Years)</Label>
                         <Input
-                            id="time"
+                            id="years"
                             type="number"
-                            value={params.time}
-                            onChange={(e) => updateParam("time", Number(e.target.value))}
+                            value={params.years}
+                            onChange={(e) => updateParam("years", Number(e.target.value))}
                             placeholder="3"
                         />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyDeposit">Monthly Deposit (₹)</Label>
+                        <Label>Interest Frequency</Label>
+                        <Select
+                            value={params.compoundFrequency ? params.compoundFrequency.toString() : ""}
+                            onValueChange={(val) => updateParam("compoundFrequency", Number(val))}
+                        >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {COMPOUND_FREQUENCIES.map(({ label, value }) => (
+                                    <SelectItem key={value} value={value.toString()}>{label}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label className="optional" htmlFor="depositAmount">Regular Deposit (₹) (optional)</Label>
                         <Input
-                            id="monthlyDeposit"
+                            id="depositAmount"
                             type="number"
-                            value={params.monthlyDeposit}
-                            onChange={(e) => updateParam("monthlyDeposit", Number(e.target.value))}
+                            value={params.depositAmount}
+                            onChange={(e) => updateParam("depositAmount", Number(e.target.value))}
                             placeholder="500"
                         />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label className="optional">Deposit Frequency (optional)</Label>
+                        <Select
+                            value={params.depositFrequency ? params.depositFrequency.toString() : ""}
+                            onValueChange={(val) => updateParam("depositFrequency", Number(val))}
+                        >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {DEPOSIT_FREQUENCIES.map(({ label, value }) => (
+                                    <SelectItem key={value} value={value.toString()}>{label}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </CardContent>
             </Card>
@@ -85,7 +133,7 @@ export function MMACalculator() {
                 <ResultsDisplay
                     title="Money Market Account Results"
                     results={[
-                        { label: "Final Balance", value: formatCurrency(results.finalAmount) },
+                        { label: "Final Balance", value: formatCurrency(results.finalBalance) },
                         { label: "Total Interest Earned", value: formatCurrency(results.totalInterest) },
                         { label: "Total Deposits", value: formatCurrency(results.totalDeposits) },
                         { label: "Effective Yield", value: `${params.rate}% APY` },
@@ -103,16 +151,12 @@ export function MMACalculator() {
                                 <span className="font-medium">{formatCurrency(params.principal)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Monthly Contributions:</span>
-                                <span className="font-medium">{formatCurrency(params.monthlyDeposit || 0)}</span>
-                            </div>
-                            <div className="flex justify-between">
                                 <span>Interest Rate:</span>
                                 <span className="font-medium">{params.rate}% APY</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Account Term:</span>
-                                <span className="font-medium">{params.time} years</span>
+                                <span className="font-medium">{params.years} years</span>
                             </div>
                             <div className="p-3 bg-blue-50 border border-blue-200 rounded">
                                 <p className="text-sm text-blue-800">

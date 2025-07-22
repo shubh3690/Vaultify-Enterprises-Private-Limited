@@ -674,3 +674,51 @@ export function calculateCashBack(params: CashBackParams): CashBackResult {
         annualCashBack: annualCashBack,
     }
 }
+
+export interface MMAParams {
+    principal: number
+    rate: number
+    years: number
+    compoundFrequency: number
+    depositAmount?: number
+    depositFrequency?: number
+}
+
+export interface MMAResult {
+    finalBalance: number
+    totalInterest: number
+    totalDeposits: number
+}
+
+export function calculateMMA(params: MMAParams): MMAResult {
+    const { principal, rate, years, compoundFrequency, depositAmount = 0, depositFrequency = 0 } = params
+
+    const totalPeriods = compoundFrequency * years
+    const periodRate = Math.pow(1 + rate / 100, 1 / compoundFrequency) - 1
+
+    const depositEveryNPeriods = depositFrequency ? compoundFrequency / depositFrequency : 0
+    const depositPerPeriod = depositAmount
+
+    let balance = principal
+    let totalInterest = 0
+    let totalDeposits = principal
+
+    for (let period = 1; period <= totalPeriods; period++) {
+        // Interest first
+        const interest = balance * periodRate
+        balance += interest
+        totalInterest += interest
+
+        // Then deposit at end of period
+        if (depositFrequency && period % depositEveryNPeriods === 0) {
+            balance += depositPerPeriod
+            totalDeposits += depositPerPeriod
+        }
+    }
+
+    return {
+        finalBalance: parseFloat(balance.toFixed(2)),
+        totalInterest: parseFloat(totalInterest.toFixed(2)),
+        totalDeposits: parseFloat(totalDeposits.toFixed(2)),
+    }
+}
