@@ -158,74 +158,6 @@ export function calculateLoan(params: LoanParams): LoanResult {
     }
 }
 
-export interface MortgageRefinanceParams {
-    currentBalance: number
-    currentMonthlyPayment: number
-    currentRate: number
-    refinanceRate: number
-    refinanceTerm: number
-    closingCosts?: number
-}
-
-export interface MortgageRefinanceResult {
-    newMonthlyPayment: number
-    monthlyPaymentReduction: number
-    currentTotalInterest: number
-    refinanceTotalInterest: number
-    interestSaved: number
-    netSavings: number
-    breakEvenMonths: number
-    currentRemainingTerm: number
-}
-
-export function calculateMortgageRefinance(params: MortgageRefinanceParams): MortgageRefinanceResult {
-    const { currentBalance, currentMonthlyPayment, currentRate, refinanceRate, refinanceTerm, closingCosts = 0 } = params
-
-    // Calculate new loan details
-    const refinanceMonthlyRate = refinanceRate / 100 / 12
-    const refinanceMonths = refinanceTerm * 12
-
-    const newMonthlyPayment = refinanceMonthlyRate > 0 ? (currentBalance * (refinanceMonthlyRate * Math.pow(1 + refinanceMonthlyRate, refinanceMonths))) / (Math.pow(1 + refinanceMonthlyRate, refinanceMonths) - 1) : currentBalance / refinanceMonths
-    const monthlyPaymentReduction = currentMonthlyPayment - newMonthlyPayment
-
-    // Calculate remaining term on current mortgage
-    const currentMonthlyRate = currentRate / 100 / 12
-    let remainingBalance = currentBalance
-    let currentRemainingMonths = 0
-
-    // Estimate remaining months on current mortgage
-    while (remainingBalance > 0.01 && currentRemainingMonths < 600) {
-        const interestPayment = remainingBalance * currentMonthlyRate
-        const principalPayment = currentMonthlyPayment - interestPayment
-        remainingBalance -= principalPayment
-        currentRemainingMonths++
-    }
-
-    // Calculate total interest for current mortgage (remaining term)
-    const currentTotalInterest = currentMonthlyPayment * currentRemainingMonths - currentBalance
-
-    // Calculate total interest for refinanced mortgage
-    const refinanceTotalPayment = newMonthlyPayment * refinanceMonths
-    const refinanceTotalInterest = refinanceTotalPayment - currentBalance
-
-    const interestSaved = currentTotalInterest - refinanceTotalInterest
-    const netSavings = interestSaved - closingCosts
-
-    // Calculate break-even point
-    const breakEvenMonths = monthlyPaymentReduction > 0 ? closingCosts / monthlyPaymentReduction : 0
-
-    return {
-        newMonthlyPayment,
-        monthlyPaymentReduction,
-        currentTotalInterest,
-        refinanceTotalInterest,
-        interestSaved,
-        netSavings,
-        breakEvenMonths,
-        currentRemainingTerm: currentRemainingMonths / 12,
-    }
-}
-
 export function calculateAPY(nominalRate: number, compoundingFrequency: number): number {
     return (Math.pow(1 + nominalRate / 100 / compoundingFrequency, compoundingFrequency) - 1) * 100
 }
@@ -307,32 +239,6 @@ export function calculateCreditCardPayoff(params: CreditCardParams): CreditCardR
         totalInterest,
         totalPayment: balance + totalInterest
     }
-}
-
-export function calculateIRR(cashFlows: number[]): number {
-    // Newton-Raphson method for IRR calculation
-    let rate = 0.1          // Initial guess
-    const tolerance = 0.000001
-    const maxIterations = 100
-
-    for (let i = 0; i < maxIterations; i++) {
-        let npv = 0
-        let dnpv = 0
-
-        for (let j = 0; j < cashFlows.length; j++) {
-            npv += cashFlows[j] / Math.pow(1 + rate, j)
-            dnpv -= (j * cashFlows[j]) / Math.pow(1 + rate, j + 1)
-        }
-
-        const newRate = rate - npv / dnpv
-        if (Math.abs(newRate - rate) < tolerance) {
-            return newRate * 100
-        }
-
-        rate = newRate
-    }
-
-    return rate * 100
 }
 
 export interface RetirementParams {
@@ -454,6 +360,58 @@ export function calculateRequiredInterestRate(presentValue: number, futureValue:
     return (Math.pow(futureValue / presentValue, 1 / periods) - 1) * 100
 }
 
+export interface CarLoanParams {
+    principal: number
+    rate: number
+    term: number
+    ballonPayment: number
+}
+
+export interface CarLoanResult {
+    monthlyPayment: number
+    totalPayment: number
+    totalInterest: number
+    amortizationSchedule: Array<{
+        month: number
+        payment: number
+        principal: number
+        interest: number
+        balance: number
+    }>
+}
+
+export function calculateCarLoan(params: CarLoanParams): CarLoanResult {
+    const { principal: P, rate, term, ballonPayment: B } = params;
+    const r = rate / 100 / 12;
+    const n = term * 12;
+
+    // Monthly payment with balloon discount
+    const annuityFactor = r / (1 - Math.pow(1 + r, -n));
+    const balloonAdjustment = B * r / (Math.pow(1 + r, n) - 1);
+    const monthlyPayment = P * annuityFactor - balloonAdjustment;
+
+    let balance = P;
+    const schedule = [];
+    let totalInterest = 0;
+
+    for (let month = 1; month <= n; month++) {
+        const interest = balance * r;
+        const principalPaid = monthlyPayment - interest;
+        balance -= principalPaid;
+        schedule.push({ month, payment: monthlyPayment, principal: principalPaid, interest, balance: balance });
+        totalInterest += interest;
+    }
+
+    if (B > 0) {
+        schedule.push({ month: n + 1, payment: B, principal: B, interest: 0, balance: 0 });
+    }
+
+    const totalPayment = monthlyPayment * n + B;
+
+    return { monthlyPayment, totalPayment, totalInterest, amortizationSchedule: schedule };
+}
+
+
 export interface LoanPayoffParams {
     currentBalance: number
     interestRate: number
@@ -505,6 +463,162 @@ export function calculateLoanPayoff(params: LoanPayoffParams): LoanPayoffResult 
         interestSaved: originalInterest - newInterest,
         timeSaved: originalMonths - newMonths,
     }
+}
+
+export interface MortgageParams {
+    principal: number
+    rate: number // annual rate in %
+    term: number // in years
+    interestInterval: "monthly" | "yearly"
+}
+
+export interface MortgageSubResult {
+    monthlyPayment: number
+    yearlyPayment: number
+    totalPayment: number
+    totalInterest: number
+}
+
+export interface MortgageResult {
+    capitalAndRepayment: MortgageSubResult
+    interestOnly: MortgageSubResult
+}
+
+export function calculateMortgage(params: MortgageParams): MortgageResult {
+    const { principal, rate, term, interestInterval } = params
+
+    const n = interestInterval === "monthly" ? 12 : 1
+    const totalPeriods = term * n
+    const periodicRate = rate / 100 / n
+
+    const monthlyPaymentRepayment = (principal * periodicRate * Math.pow(1 + periodicRate, totalPeriods)) / (Math.pow(1 + periodicRate, totalPeriods) - 1)
+    const totalPaymentRepayment = monthlyPaymentRepayment * totalPeriods
+    const totalInterestRepayment = totalPaymentRepayment - principal
+
+    const monthlyPaymentInterestOnly = principal * periodicRate
+    const totalPaymentInterestOnly = monthlyPaymentInterestOnly * totalPeriods
+    const totalInterestInterestOnly = totalPaymentInterestOnly
+
+    return {
+        capitalAndRepayment: {
+            monthlyPayment: parseFloat(monthlyPaymentRepayment.toFixed(2)),
+            yearlyPayment: parseFloat((monthlyPaymentRepayment * 12).toFixed(2)),
+            totalPayment: parseFloat(totalPaymentRepayment.toFixed(2)),
+            totalInterest: parseFloat(totalInterestRepayment.toFixed(2)),
+        },
+        interestOnly: {
+            monthlyPayment: parseFloat(monthlyPaymentInterestOnly.toFixed(2)),
+            yearlyPayment: parseFloat((monthlyPaymentInterestOnly * 12).toFixed(2)),
+            totalPayment: parseFloat(totalPaymentInterestOnly.toFixed(2)),
+            totalInterest: parseFloat(totalInterestInterestOnly.toFixed(2)),
+        },
+    }
+}
+
+export interface MortgageRefinanceParams {
+    currentBalance: number
+    currentMonthlyPayment: number
+    currentRate: number
+    refinanceRate: number
+    refinanceTerm: number
+    closingCosts?: number
+    financeClosingCosts?: boolean
+}
+
+export interface MortgageRefinanceResult {
+    newMonthlyPayment: number
+    monthlyPaymentReduction: number
+    currentTotalInterest: number
+    refinanceTotalInterest: number
+    interestSaved: number
+    netSavings: number
+}
+
+export function calculateMortgageRefinance(params: MortgageRefinanceParams): MortgageRefinanceResult {
+    const { currentBalance, currentMonthlyPayment, currentRate, refinanceRate, refinanceTerm, closingCosts = 0, financeClosingCosts = false } = params
+
+    const monthlyRateCurrent = currentRate / 100 / 12
+    const monthlyRateRefinance = refinanceRate / 100 / 12
+
+    const currentRemainingTerm = Math.log(currentMonthlyPayment / (currentMonthlyPayment - monthlyRateCurrent * currentBalance)) / Math.log(1 + monthlyRateCurrent)
+
+    const currentTotalPaid = currentMonthlyPayment * currentRemainingTerm
+    const currentTotalInterest = currentTotalPaid - currentBalance
+
+    const refinancePrincipal = financeClosingCosts ? currentBalance + closingCosts : currentBalance
+    const refinanceMonths = refinanceTerm * 12
+
+    const newMonthlyPayment = (refinancePrincipal * monthlyRateRefinance * Math.pow(1 + monthlyRateRefinance, refinanceMonths)) / (Math.pow(1 + monthlyRateRefinance, refinanceMonths) - 1)
+    const refinanceTotalPaid = newMonthlyPayment * refinanceMonths
+    const refinanceTotalInterest = refinanceTotalPaid - refinancePrincipal
+
+    const interestSaved = currentTotalInterest - refinanceTotalInterest
+    const monthlyPaymentReduction = currentMonthlyPayment - newMonthlyPayment
+    const netSavings = financeClosingCosts ? interestSaved : interestSaved - closingCosts
+
+    return {
+        newMonthlyPayment: parseFloat(newMonthlyPayment.toFixed(2)),
+        monthlyPaymentReduction: parseFloat(
+            monthlyPaymentReduction.toFixed(2)
+        ),
+        currentTotalInterest: parseFloat(currentTotalInterest.toFixed(2)),
+        refinanceTotalInterest: parseFloat(refinanceTotalInterest.toFixed(2)),
+        interestSaved: parseFloat(interestSaved.toFixed(2)),
+        netSavings: parseFloat(netSavings.toFixed(2))
+    }
+}
+
+export interface GeneralIRRParams {
+    initialInvestment: number
+    finalReturn: number
+    years: number
+}
+
+export interface CashFlowIRRParams {
+    cashFlows: number[]
+}
+
+export interface MultipleIRRParams {
+    cashFlows: number[]
+}
+
+export function calculateGeneralIRR(params: GeneralIRRParams): number {
+    const { initialInvestment, finalReturn, years } = params
+    if (initialInvestment <= 0 || finalReturn <= 0 || years <= 0) return 0
+    const irr = Math.pow(finalReturn / initialInvestment, 1 / years) - 1
+    return irr * 100
+}
+
+export function calculateCashFlowIRR(params: CashFlowIRRParams): number {
+    const { cashFlows } = params
+    let rate = 0.1
+    const tolerance = 1e-6
+    const maxIterations = 100
+
+    for (let i = 0; i < maxIterations; i++) {
+        let npv = 0
+        let dnpv = 0
+
+        for (let j = 0; j < cashFlows.length; j++) {
+            npv += cashFlows[j] / Math.pow(1 + rate, j)
+            dnpv -= (j * cashFlows[j]) / Math.pow(1 + rate, j + 1)
+        }
+
+        const newRate = rate - npv / dnpv
+        if (Math.abs(newRate - rate) < tolerance) {
+            return newRate * 100
+        }
+
+        rate = newRate
+    }
+
+    return rate * 100
+}
+
+export function calculateReturnMultipleIRR(returnMultiple: number, years: number, months: number): number {
+    const n = years + months / 12
+    if (n <= 0) return 0
+    return (Math.pow(returnMultiple, 1 / n) - 1) * 100
 }
 
 export interface MarginParams {
@@ -579,6 +693,61 @@ export function calculateForexCompounding(initialDeposit: number, monthlyReturn:
     }
 }
 
+export interface InterestRateParams {
+    principal: number;
+    secondFigure: number;
+    typeOfSecondFigure: "end-balance" | "interest" | "interest-rate";
+    years: number;
+    months: number;
+}
+
+export interface InterestRateResult {
+    nominalRate: number;
+    apyRate: number;
+    totalInterest: number;
+}
+
+export function calculateInterestRate(params: InterestRateParams): InterestRateResult {
+    const { principal, secondFigure, typeOfSecondFigure, years, months } = params;
+
+    const totalMonths = years * 12 + months;
+    if (principal <= 0 || totalMonths <= 0) {
+        return { nominalRate: 0, apyRate: 0, totalInterest: 0 };
+    }
+
+    let endBalance: number;
+
+    switch (typeOfSecondFigure) {
+        case "end-balance":
+            endBalance = secondFigure;
+            break;
+        case "interest":
+            endBalance = principal + secondFigure;
+            break;
+        case "interest-rate":
+            const monthlyRateFromRate = (secondFigure / 100) / 12;
+            endBalance = principal * Math.pow(1 + monthlyRateFromRate, totalMonths);
+            break;
+        default:
+            throw new Error("Invalid typeOfSecondFigure");
+    }
+
+    if (endBalance <= principal) {
+        return { nominalRate: 0, apyRate: 0, totalInterest: 0 };
+    }
+
+    const monthlyRate = Math.pow(endBalance / principal, 1 / totalMonths) - 1;
+    const nominalRate = monthlyRate * 12 * 100;
+    const apyRate = (Math.pow(1 + monthlyRate, 12) - 1) * 100;
+    const totalInterest = endBalance - principal;
+
+    return {
+        nominalRate: parseFloat(nominalRate.toFixed(10)),
+        apyRate: parseFloat(apyRate.toFixed(10)),
+        totalInterest: parseFloat(totalInterest.toFixed(2))
+    };
+}
+
 export function convertLargeNumbers(value: number, fromUnit: string, toUnit: string): number {
     const units = {
         ones: 1,
@@ -599,6 +768,7 @@ export function convertLargeNumbers(value: number, fromUnit: string, toUnit: str
 export interface MoneyCountResult {
     total: number
     breakdown: { [key: string]: { count: number; value: number; total: number } }
+    counter: number
 }
 
 export function calculateMoneyCount(denominations: { [key: string]: number }): MoneyCountResult {
@@ -616,11 +786,13 @@ export function calculateMoneyCount(denominations: { [key: string]: number }): M
 
     let total = 0
     const breakdown: MoneyCountResult["breakdown"] = {}
+    let counter = 0
 
     Object.entries(denominations).forEach(([denom, count]) => {
         const value = denominationValues[denom as keyof typeof denominationValues] || 0
         const subtotal = count * value
         total += subtotal
+        counter += count
 
         breakdown[denom] = {
             count,
@@ -629,7 +801,11 @@ export function calculateMoneyCount(denominations: { [key: string]: number }): M
         }
     })
 
-    return { total, breakdown }
+    return {
+        total,
+        breakdown,
+        counter
+    }
 }
 
 export function calculatePricePerSquareFoot(totalPrice: number, squareFeet: number): number {
@@ -647,31 +823,23 @@ export function calculateTotalPriceFromSqFt(squareFeet: number, pricePerSqFt: nu
 export interface CashBackParams {
     purchaseAmount: number
     cashBackRate: number
-    annualSpending: number
-    timeframe: number
+    cashBackLimit?: number
 }
 
 export interface CashBackResult {
     cashBackEarned: number
-    totalSpending: number
-    effectiveDiscount: number
-    annualCashBack: number
+    effectiveDiscount: number // actual cashback as % of purchase
 }
 
-export function calculateCashBack(params: CashBackParams): CashBackResult {
-    const { purchaseAmount, cashBackRate, annualSpending, timeframe } = params
-
-    const cashBackEarned = (purchaseAmount * cashBackRate) / 100
-    const totalSpending = annualSpending * timeframe
-    const totalCashBack = (totalSpending * cashBackRate) / 100
-    const effectiveDiscount = (totalCashBack / totalSpending) * 100
-    const annualCashBack = (annualSpending * cashBackRate) / 100
+export function calculateCashBack({ purchaseAmount, cashBackRate, cashBackLimit = 0 }: CashBackParams): CashBackResult {
+    let cashBackEarned = purchaseAmount * (cashBackRate / 100)
+    if (cashBackLimit !== 0 && cashBackLimit < cashBackEarned)
+        cashBackEarned = cashBackLimit
+    const effectiveDiscount = (cashBackEarned / purchaseAmount) * 100
 
     return {
         cashBackEarned,
-        totalSpending,
-        effectiveDiscount,
-        annualCashBack: annualCashBack,
+        effectiveDiscount
     }
 }
 

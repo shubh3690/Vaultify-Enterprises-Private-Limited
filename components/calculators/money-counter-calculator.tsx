@@ -71,6 +71,7 @@ export function MoneyCounterCalculator() {
                 <ResultsDisplay
                     title="Money Count Results"
                     results={[
+                        { label: "Number of Bills", value: `${results.counter}` },
                         { label: "Total Value", value: formatCurrency(results.total) }
                     ]}
                 />

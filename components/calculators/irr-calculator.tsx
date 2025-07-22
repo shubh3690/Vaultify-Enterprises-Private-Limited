@@ -1,36 +1,64 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle
+} from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Button } from "../ui/button"
-import { calculateIRR } from "@/lib/financial-calculations"
-import { formatPercentage } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger
+} from "@/components/ui/tabs"
+import {
+    calculateCashFlowIRR,
+    calculateGeneralIRR,
+    calculateReturnMultipleIRR,
+} from "@/lib/financial-calculations"
 import { ResultsDisplay } from "@/components/ui/results-display"
+import { formatPercentage } from "@/lib/utils"
 import { Plus, Minus } from "lucide-react"
 
 export function IRRCalculator() {
-    const [cashFlows, setCashFlows] = useState([-10000, 3000, 4000, 5000, 2000])
-    const [irr, setIRR] = useState(calculateIRR(cashFlows))
+    const [tab, setTab] = useState<"general" | "cashflow" | "multiple">("cashflow")
 
-    const updateCashFlow = (index: number, value: number) => {
-        const newCashFlows = [...cashFlows]
-        newCashFlows[index] = value
-        setCashFlows(newCashFlows)
-        setIRR(calculateIRR(newCashFlows))
+    // General IRR
+    const [initialInvestment, setInitialInvestment] = useState(10000)
+    const [finalReturn, setFinalReturn] = useState(20000)
+    const [years, setYears] = useState(5)
+    const generalIRR = calculateGeneralIRR({ initialInvestment, finalReturn, years })
+
+    // Cash Flow IRR
+    const [cashFlows, setCashFlows] = useState([-10000, 3000, 4000, 5000])
+    const cashFlowIRR = calculateCashFlowIRR({ cashFlows })
+
+    // Return Multiple IRR
+    const [returnMultiple, setReturnMultiple] = useState(2)
+    const [multipleYears, setMultipleYears] = useState(2)
+    const [multipleMonths, setMultipleMonths] = useState(0)
+    const irrForMultiple = calculateReturnMultipleIRR(returnMultiple, multipleYears, multipleMonths)
+
+    const updateCashFlow = (setFn: Function, flows: number[], index: number, value: number) => {
+        const newFlows = [...flows]
+        newFlows[index] = value
+        setFn(newFlows)
     }
 
-    const addCashFlow = () => {
-        const newCashFlows = [...cashFlows, 0]
-        setCashFlows(newCashFlows)
+    const addCashFlow = (setFn: Function, flows: number[]) => {
+        setFn([...flows, 0])
     }
 
-    const removeCashFlow = (index: number) => {
-        if (cashFlows.length > 2) {
-            const newCashFlows = cashFlows.filter((_, i) => i !== index)
-            setCashFlows(newCashFlows)
-            setIRR(calculateIRR(newCashFlows))
+    const removeCashFlow = (setFn: Function, flows: number[], index: number) => {
+        if (flows.length > 2) {
+            const newFlows = flows.filter((_, i) => i !== index)
+            setFn(newFlows)
         }
     }
 
@@ -39,93 +67,120 @@ export function IRRCalculator() {
             <Card>
                 <CardHeader>
                     <CardTitle>IRR Calculator</CardTitle>
-                    <CardDescription>Calculate Internal Rate of Return for your investment cash flows</CardDescription>
+                    <CardDescription>Select a calculation type to compute IRR</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                        <Label>Cash Flows (₹) (Negative for outflows, Positive for inflows)</Label>
-                        {cashFlows.map((flow, index) => (
-                            <div key={index} className="flex gap-2 items-center">
-                                <div className="flex-1">
-                                    <Input
-                                        type="number"
-                                        value={flow}
-                                        onChange={(e) => updateCashFlow(index, Number(e.target.value))}
-                                        placeholder={index === 0 ? "Initial Investment (negative)" : `Year ${index} Cash Flow`}
-                                    />
+                    <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="space-y-4">
+                        <TabsList className="grid grid-cols-3">
+                            <TabsTrigger value="general">General</TabsTrigger>
+                            <TabsTrigger value="cashflow">Cash Flows</TabsTrigger>
+                            <TabsTrigger value="multiple">Multiple</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="general">
+                            <div className="grid gap-4">
+                                <div>
+                                    <Label>Initial Investment (₹)</Label>
+                                    <Input type="number" value={initialInvestment} onChange={(e) => setInitialInvestment(Number(e.target.value))} />
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => removeCashFlow(index)}
-                                    disabled={cashFlows.length <= 2}
-                                >
-                                    <Minus className="h-4 w-4" />
+                                <div>
+                                    <Label>Final Return (₹)</Label>
+                                    <Input type="number" value={finalReturn} onChange={(e) => setFinalReturn(Number(e.target.value))} />
+                                </div>
+                                <div>
+                                    <Label>Years</Label>
+                                    <Input type="number" value={years} onChange={(e) => setYears(Number(e.target.value))} />
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="cashflow">
+                            <div className="space-y-3">
+                                <Label>Cash Flows (₹)</Label>
+                                {cashFlows.map((flow, index) => (
+                                    <div key={index} className="flex gap-2 items-center">
+                                        <Input
+                                            type="number"
+                                            value={flow}
+                                            onChange={(e) => updateCashFlow(setCashFlows, cashFlows, index, Number(e.target.value))}
+                                            placeholder={index === 0 ? "Initial Investment (negative)" : `Year ${index}`}
+                                        />
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => removeCashFlow(setCashFlows, cashFlows, index)}
+                                            disabled={cashFlows.length <= 2}
+                                        >
+                                            <Minus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                                <Button variant="outline" onClick={() => addCashFlow(setCashFlows, cashFlows)}>
+                                    <Plus className="h-4 w-4 mr-1" /> Add Cash Flow
                                 </Button>
                             </div>
-                        ))}
-                        <Button variant="outline" onClick={addCashFlow} className="w-full bg-transparent">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Cash Flow
-                        </Button>
-                    </div>
+                        </TabsContent>
+
+                        <TabsContent value="multiple">
+                            <div className="space-y-4">
+                                <div>
+                                    <Label>Return Multiple</Label>
+                                    <Input type="number" value={returnMultiple} onChange={(e) => setReturnMultiple(Number(e.target.value))} min={0.1} step={0.1}></Input>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="flex-1">
+                                        <Label>Years</Label>
+                                        <Input type="number" value={multipleYears} onChange={(e) => setMultipleYears(Number(e.target.value))} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <Label>Months</Label>
+                                        <Input type="number" value={multipleMonths} onChange={(e) => setMultipleMonths(Number(e.target.value))} />
+                                    </div>
+                                </div>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
                 </CardContent>
             </Card>
 
             <div className="space-y-6">
-                <ResultsDisplay
-                    title="IRR Results"
-                    results={[
-                        { label: "Internal Rate of Return (IRR)", value: formatPercentage(irr) },
-                        { label: "Initial Investment", value: `₹${Math.abs(cashFlows[0]).toLocaleString()}` },
-                        {
-                            label: "Total Inflows",
-                            value: `₹${cashFlows
-                                .slice(1)
-                                .filter((flow) => flow > 0)
-                                .reduce((sum, flow) => sum + flow, 0)
-                                .toLocaleString()}`,
-                        },
-                        { label: "Number of Periods", value: `${cashFlows.length - 1}` },
-                    ]}
-                />
+                {tab === "general" && (
+                    <ResultsDisplay
+                        title="General IRR Result"
+                        results={[
+                            { label: "Internal Rate of Return (IRR)", value: formatPercentage(generalIRR) },
+                            { label: "Initial Investment", value: `₹${initialInvestment.toLocaleString()}` },
+                            { label: "Final Return", value: `₹${finalReturn.toLocaleString()}` },
+                            { label: "Years", value: years.toString() },
+                        ]}
+                    />
+                )}
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Cash Flow Summary</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-2">
-                            {cashFlows.map((flow, index) => (
-                                <div key={index} className="flex justify-between text-sm">
-                                    <span>{index === 0 ? "Initial Investment" : `Year ${index}`}:</span>
-                                    <span className={flow < 0 ? "text-red-600" : "text-green-600"}>₹{flow.toLocaleString()}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                {tab === "cashflow" && (
+                    <ResultsDisplay
+                        title="Cash Flow IRR Result"
+                        results={[
+                            { label: "Internal Rate of Return (IRR)", value: formatPercentage(cashFlowIRR) },
+                            { label: "Initial Investment", value: `₹${Math.abs(cashFlows[0]).toLocaleString()}` },
+                            {
+                                label: "Total Inflows",
+                                value: `₹${cashFlows.slice(1).filter(f => f > 0).reduce((a, b) => a + b, 0).toLocaleString()}`
+                            },
+                            { label: "Periods", value: `${cashFlows.length - 1}` },
+                        ]}
+                    />
+                )}
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Understanding IRR</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3 text-sm">
-                            <p>
-                                <strong>IRR (Internal Rate of Return)</strong> is the discount rate that makes the net present value
-                                (NPV) of all cash flows equal to zero.
-                            </p>
-                            <p>
-                                An IRR of {formatPercentage(irr)} means this investment would be equivalent to earning{" "}
-                                {formatPercentage(irr)} annually on your money.
-                            </p>
-                            <p>
-                                <strong>Decision Rule:</strong> If IRR &gt; required rate of return, the investment is attractive.
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
+                {tab === "multiple" && (
+                    <ResultsDisplay
+                        title="Return Multiple IRR Result"
+                        results={[
+                            { label: "Return Multiple", value: `${returnMultiple}x` },
+                            { label: "Period", value: `${multipleYears} years ${multipleMonths} months` },
+                            { label: "Required IRR", value: formatPercentage(irrForMultiple) },
+                        ]}
+                    />
+                )}
             </div>
         </div>
     )

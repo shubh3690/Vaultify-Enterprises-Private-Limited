@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { calculateMortgageRefinance, type MortgageRefinanceParams } from "@/lib/financial-calculations"
 import { formatCurrency } from "@/lib/utils"
 import { ResultsDisplay } from "@/components/ui/results-display"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function MortgageRefinanceCalculator() {
     const [params, setParams] = useState<MortgageRefinanceParams>({
@@ -16,11 +17,11 @@ export function MortgageRefinanceCalculator() {
         refinanceRate: 4.5,
         refinanceTerm: 30,
         closingCosts: 3000,
+        financeClosingCosts: false
     })
-
     const [results, setResults] = useState(calculateMortgageRefinance(params))
 
-    const updateParam = (key: keyof MortgageRefinanceParams, value: number) => {
+    const updateParam = (key: keyof MortgageRefinanceParams, value: number | boolean) => {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
         setResults(calculateMortgageRefinance(newParams))
@@ -31,7 +32,9 @@ export function MortgageRefinanceCalculator() {
             <Card>
                 <CardHeader>
                     <CardTitle>Mortgage Refinance Calculator</CardTitle>
-                    <CardDescription>Compare your current mortgage with refinancing options</CardDescription>
+                    <CardDescription>
+                        Compare your current mortgage with refinancing options
+                    </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-4">
@@ -49,7 +52,9 @@ export function MortgageRefinanceCalculator() {
                             />
                         </div>
                         <div className="space-y-1">
-                            <Label htmlFor="currentBalance">Monthly Payment (₹)</Label>
+                            <Label htmlFor="currentMonthlyPayment">
+                                Monthly Payment (₹)
+                            </Label>
                             <Input
                                 id="currentMonthlyPayment"
                                 value={params.currentMonthlyPayment}
@@ -93,15 +98,37 @@ export function MortgageRefinanceCalculator() {
                                 type="number"
                             />
                         </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="closingCosts">Closing Costs (₹)</Label>
-                            <Input
-                                id="closingCosts"
-                                value={params.closingCosts}
-                                onChange={(e) => updateParam("closingCosts", Number(e.target.value))}
-                                placeholder="3000"
-                                type="number"
-                            />
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label htmlFor="closingCosts">Closing Costs (₹)</Label>
+                                <Input
+                                    id="closingCosts"
+                                    value={params.closingCosts}
+                                    onChange={(e) =>
+                                        updateParam("closingCosts", Number(e.target.value))
+                                    }
+                                    placeholder="3000"
+                                    type="number"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label>Finance the closing costs?</Label>
+                                <Select
+                                    value={params.financeClosingCosts ? "yes" : "no"}
+                                    onValueChange={(value) =>
+                                        updateParam("financeClosingCosts", value === "yes")
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="yes">Yes</SelectItem>
+                                        <SelectItem value="no">No</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
                 </CardContent>
@@ -116,7 +143,7 @@ export function MortgageRefinanceCalculator() {
                         { label: "Interest on Current Mortgage", value: formatCurrency(results.currentTotalInterest) },
                         { label: "Interest if You Refinance", value: formatCurrency(results.refinanceTotalInterest) },
                         { label: "Interest Saved", value: formatCurrency(results.interestSaved) },
-                        { label: "Net Refinancing Savings", value: formatCurrency(results.netSavings) },
+                        { label: "Net Refinancing Savings", value: formatCurrency(results.netSavings) }
                     ]}
                 />
 
@@ -128,7 +155,9 @@ export function MortgageRefinanceCalculator() {
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <h4 className="font-medium text-sm text-muted-foreground">Current Mortgage</h4>
+                                    <h4 className="font-medium text-sm text-muted-foreground">
+                                        Current Mortgage
+                                    </h4>
                                     <div className="space-y-2 text-sm">
                                         <div className="flex justify-between">
                                             <span>Balance:</span>
@@ -140,13 +169,17 @@ export function MortgageRefinanceCalculator() {
                                         </div>
                                         <div className="flex justify-between">
                                             <span>Payment:</span>
-                                            <span>{formatCurrency(params.currentMonthlyPayment)}</span>
+                                            <span>
+                                                {formatCurrency(params.currentMonthlyPayment)}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <h4 className="font-medium text-sm text-muted-foreground">New Mortgage</h4>
+                                    <h4 className="font-medium text-sm text-muted-foreground">
+                                        New Mortgage
+                                    </h4>
                                     <div className="space-y-2 text-sm">
                                         <div className="flex justify-between">
                                             <span>Balance:</span>
@@ -164,32 +197,20 @@ export function MortgageRefinanceCalculator() {
                                 </div>
                             </div>
 
-                            <div className="border-t pt-4">
-                                <div className="flex justify-between">
-                                    <span>Break-even Point:</span>
-                                    <span className="font-medium">
-                                        {results.breakEvenMonths > 0 ? `${Math.ceil(results.breakEvenMonths)} months` : "Immediate"}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Estimated Remaining Term:</span>
-                                    <span className="font-medium">{results.currentRemainingTerm.toFixed(1)} years</span>
-                                </div>
-                            </div>
-
                             {results.netSavings > 0 ? (
                                 <div className="p-3 bg-green-50 border border-green-200 rounded">
                                     <p className="text-sm text-green-800">
-                                        <strong>Refinancing Benefits:</strong> You could save {formatCurrency(results.netSavings)} over
-                                        the life of the loan and reduce your monthly payment by{" "}
+                                        <strong>Refinancing Benefits:</strong> You could save{" "}
+                                        {formatCurrency(results.netSavings)} over the life of the loan and
+                                        reduce your monthly payment by{" "}
                                         {formatCurrency(results.monthlyPaymentReduction)}.
                                     </p>
                                 </div>
                             ) : (
                                 <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
                                     <p className="text-sm text-yellow-800">
-                                        <strong>Consider Carefully:</strong> Based on these numbers, refinancing may not provide
-                                        significant savings after closing costs.
+                                        <strong>Consider Carefully:</strong> Based on these numbers,
+                                        refinancing may not provide significant savings after closing costs.
                                     </p>
                                 </div>
                             )}

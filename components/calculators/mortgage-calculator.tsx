@@ -4,22 +4,26 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { calculateLoan, type LoanParams } from "@/lib/financial-calculations"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { calculateMortgage, type MortgageParams, type MortgageResult } from "@/lib/financial-calculations"
 import { formatCurrency } from "@/lib/utils"
 import { ResultsDisplay } from "@/components/ui/results-display"
 
 export function MortgageCalculator() {
-    const [params, setParams] = useState<LoanParams & { downPayment: number; homePrice: number }>({
+    const [params, setParams] = useState<MortgageParams & { downPayment: number; homePrice: number }>({
         homePrice: 400000,
         downPayment: 80000,
         principal: 320000,
         rate: 6.5,
         term: 30,
+        interestInterval: "monthly",
     })
 
-    const [results, setResults] = useState(calculateLoan(params))
+    const [results, setResults] = useState<MortgageResult>(
+        calculateMortgage(params)
+    )
 
-    const updateParam = (key: string, value: number) => {
+    const updateParam = (key: string, value: number | string) => {
         const newParams = { ...params, [key]: value }
 
         if (key === "homePrice" || key === "downPayment") {
@@ -27,7 +31,7 @@ export function MortgageCalculator() {
         }
 
         setParams(newParams)
-        setResults(calculateLoan(newParams))
+        setResults(calculateMortgage(newParams))
     }
 
     return (
@@ -35,7 +39,9 @@ export function MortgageCalculator() {
             <Card>
                 <CardHeader>
                     <CardTitle>Mortgage Details</CardTitle>
-                    <CardDescription>Enter your home purchase information to calculate mortgage payments</CardDescription>
+                    <CardDescription>
+                        Enter your home purchase information to calculate mortgage payments
+                    </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
@@ -62,19 +68,41 @@ export function MortgageCalculator() {
 
                     <div className="grid gap-2">
                         <Label>Loan Amount</Label>
-                        <div className="p-2 bg-muted rounded text-sm">{formatCurrency(params.homePrice - params.downPayment)}</div>
+                        <div className="p-2 bg-muted rounded text-sm">
+                            {formatCurrency(params.homePrice - params.downPayment)}
+                        </div>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="rate">Interest Rate (%)</Label>
-                        <Input
-                            id="rate"
-                            type="number"
-                            step="0.1"
-                            value={params.rate}
-                            onChange={(e) => updateParam("rate", Number(e.target.value))}
-                            placeholder="6.5"
-                        />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label htmlFor="rate">Interest Rate (%)</Label>
+                            <Input
+                                id="rate"
+                                type="number"
+                                step="0.1"
+                                value={params.rate}
+                                onChange={(e) => updateParam("rate", Number(e.target.value))}
+                                placeholder="6.5"
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="interestInterval">Interest Interval</Label>
+                            <Select
+                                value={params.interestInterval}
+                                onValueChange={(value) =>
+                                    updateParam("interestInterval", value as "monthly" | "yearly")
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select interval" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="yearly">Yearly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div className="grid gap-2">
@@ -92,46 +120,24 @@ export function MortgageCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Mortgage Payment Results"
+                    title="Capital & Repayment Mortgage"
                     results={[
-                        { label: "Monthly Payment", value: formatCurrency(results.monthlyPayment) },
-                        { label: "Total Payment", value: formatCurrency(results.totalPayment) },
-                        { label: "Total Interest", value: formatCurrency(results.totalInterest) },
-                        { label: "Down Payment", value: formatCurrency(params.downPayment) },
+                        { label: "Monthly Payment", value: params.interestInterval === "monthly" ? formatCurrency(results.capitalAndRepayment.monthlyPayment) : formatCurrency(results.capitalAndRepayment.monthlyPayment / 12) },
+                        { label: "Yearly Payment", value: params.interestInterval === "monthly" ? formatCurrency(results.capitalAndRepayment.yearlyPayment) : formatCurrency(results.capitalAndRepayment.monthlyPayment) },
+                        { label: "Total Payment", value: formatCurrency(results.capitalAndRepayment.totalPayment) },
+                        { label: "Total Interest", value: formatCurrency(results.capitalAndRepayment.totalInterest) },
                     ]}
                 />
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Mortgage Summary</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            <div className="flex justify-between">
-                                <span>Home Price:</span>
-                                <span className="font-medium">{formatCurrency(params.homePrice)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Down Payment:</span>
-                                <span className="font-medium">
-                                    {formatCurrency(params.downPayment)} ({((params.downPayment / params.homePrice) * 100).toFixed(1)}%)
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Loan Amount:</span>
-                                <span className="font-medium">{formatCurrency(params.principal)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Interest Rate:</span>
-                                <span className="font-medium">{params.rate}%</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Loan Term:</span>
-                                <span className="font-medium">{params.term} years</span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <ResultsDisplay
+                    title="Interest-Only Mortgage"
+                    results={[
+                        { label: "Monthly Payment", value: params.interestInterval === "monthly" ? formatCurrency(results.interestOnly.monthlyPayment) : formatCurrency(results.interestOnly.monthlyPayment / 12) },
+                        { label: "Yearly Payment", value: params.interestInterval === "monthly" ? formatCurrency(results.interestOnly.yearlyPayment) : formatCurrency(results.interestOnly.monthlyPayment) },
+                        { label: "Total Payment", value: formatCurrency(results.interestOnly.totalPayment) },
+                        { label: "Total Interest", value: formatCurrency(results.interestOnly.totalInterest) },
+                    ]}
+                />
             </div>
         </div>
     )

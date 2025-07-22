@@ -10,7 +10,7 @@ import { formatNumber } from "@/lib/utils"
 import { ResultsDisplay } from "@/components/ui/results-display"
 
 export function MillionToBillionConverter() {
-    const [value, setValue] = useState(1)
+    const [value, setValue] = useState(1000)
     const [fromUnit, setFromUnit] = useState("millions")
     const [toUnit, setToUnit] = useState("billions")
     const [result, setResult] = useState(convertLargeNumbers(value, fromUnit, toUnit))

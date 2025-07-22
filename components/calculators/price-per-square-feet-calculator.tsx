@@ -94,30 +94,18 @@ export function PricePerSquareFeetCalculator() {
                         <CardTitle>Property Details</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            <div className="flex justify-between">
-                                <span>Total Price:</span>
-                                <span className="font-medium">{formatCurrency(totalPrice)}</span>
+                        <div className="border-t pt-4 space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span>Area in sq ft:</span>
+                                <span>{formatNumber(areaInSqFt)} sq ft</span>
                             </div>
-                            <div className="flex justify-between">
-                                <span>Area:</span>
-                                <span className="font-medium">
-                                    {formatNumber(area)} {areaUnit}
-                                </span>
+                            <div className="flex justify-between text-sm">
+                                <span>Area in sq m:</span>
+                                <span>{formatNumber(areaInSqM)} sq m</span>
                             </div>
-                            <div className="border-t pt-4 space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span>Area in sq ft:</span>
-                                    <span>{formatNumber(areaInSqFt)} sq ft</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span>Area in sq m:</span>
-                                    <span>{formatNumber(areaInSqM)} sq m</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span>Area in sq yd:</span>
-                                    <span>{formatNumber(areaInSqYd)} sq yd</span>
-                                </div>
+                            <div className="flex justify-between text-sm">
+                                <span>Area in sq yd:</span>
+                                <span>{formatNumber(areaInSqYd)} sq yd</span>
                             </div>
                         </div>
                     </CardContent>

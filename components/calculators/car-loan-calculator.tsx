@@ -1,34 +1,43 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle
+} from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { calculateLoan, type LoanParams } from "@/lib/financial-calculations"
+import { calculateCarLoan, type CarLoanParams } from "@/lib/financial-calculations"
 import { formatCurrency } from "@/lib/utils"
 import { ResultsDisplay } from "@/components/ui/results-display"
 
 export function CarLoanCalculator() {
-    const [params, setParams] = useState<LoanParams & { carPrice: number; downPayment: number; tradeInValue: number }>({
+    const [params, setParams] = useState<CarLoanParams & {
+        carPrice: number
+        downPayment: number
+    }>({
         carPrice: 25000,
         downPayment: 5000,
-        tradeInValue: 0,
         principal: 20000,
         rate: 5.5,
         term: 5,
+        ballonPayment: 0
     })
 
-    const [results, setResults] = useState(calculateLoan(params))
+    const [results, setResults] = useState(calculateCarLoan(params))
 
     const updateParam = (key: string, value: number) => {
         const newParams = { ...params, [key]: value }
 
-        if (key === "carPrice" || key === "downPayment" || key === "tradeInValue") {
-            newParams.principal = newParams.carPrice - newParams.downPayment - newParams.tradeInValue
+        if (["carPrice", "downPayment"].includes(key)) {
+            newParams.principal = Math.max(0, newParams.carPrice - newParams.downPayment)
         }
 
         setParams(newParams)
-        setResults(calculateLoan(newParams))
+        setResults(calculateCarLoan(newParams))
     }
 
     return (
@@ -51,7 +60,7 @@ export function CarLoanCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="downPayment">Down Payment (₹)</Label>
+                        <Label className="optional" htmlFor="downPayment">Down Payment (₹) (optional)</Label>
                         <Input
                             id="downPayment"
                             type="number"
@@ -62,20 +71,9 @@ export function CarLoanCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="tradeInValue">Trade-in Value (₹)</Label>
-                        <Input
-                            id="tradeInValue"
-                            type="number"
-                            value={params.tradeInValue}
-                            onChange={(e) => updateParam("tradeInValue", Number(e.target.value))}
-                            placeholder="0"
-                        />
-                    </div>
-
-                    <div className="grid gap-2">
                         <Label>Loan Amount</Label>
                         <div className="p-2 bg-muted rounded text-sm">
-                            {formatCurrency(params.carPrice - params.downPayment - params.tradeInValue)}
+                            {formatCurrency(params.principal)}
                         </div>
                     </div>
 
@@ -101,6 +99,17 @@ export function CarLoanCalculator() {
                             placeholder="5"
                         />
                     </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="ballonPayment">Balloon Payment at End (₹)</Label>
+                        <Input
+                            id="ballonPayment"
+                            type="number"
+                            value={params.ballonPayment}
+                            onChange={(e) => updateParam("ballonPayment", Number(e.target.value))}
+                            placeholder="0"
+                        />
+                    </div>
                 </CardContent>
             </Card>
 
@@ -111,7 +120,6 @@ export function CarLoanCalculator() {
                         { label: "Monthly Payment", value: formatCurrency(results.monthlyPayment) },
                         { label: "Total Payment", value: formatCurrency(results.totalPayment) },
                         { label: "Total Interest", value: formatCurrency(results.totalInterest) },
-                        { label: "Total Cost of Car", value: formatCurrency(results.totalPayment + params.downPayment) },
                     ]}
                 />
 
@@ -130,10 +138,6 @@ export function CarLoanCalculator() {
                                 <span className="font-medium">{formatCurrency(params.downPayment)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Trade-in Value:</span>
-                                <span className="font-medium">{formatCurrency(params.tradeInValue)}</span>
-                            </div>
-                            <div className="flex justify-between">
                                 <span>Loan Amount:</span>
                                 <span className="font-medium">{formatCurrency(params.principal)}</span>
                             </div>
@@ -144,6 +148,10 @@ export function CarLoanCalculator() {
                             <div className="flex justify-between">
                                 <span>Loan Term:</span>
                                 <span className="font-medium">{params.term} years</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Balloon Payment:</span>
+                                <span className="font-medium">{formatCurrency(params.ballonPayment)}</span>
                             </div>
                         </div>
                     </CardContent>

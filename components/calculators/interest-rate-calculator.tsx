@@ -1,42 +1,61 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { calculateInterestRate, type InterestRateParams, type InterestRateResult } from "@/lib/financial-calculations"
+import { formatCurrency, formatPercentage } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { calculateRequiredInterestRate } from "@/lib/financial-calculations"
-import { formatCurrency, formatPercentage } from "@/lib/utils"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ResultsDisplay } from "@/components/ui/results-display"
 
 export function InterestRateCalculator() {
     const [presentValue, setPresentValue] = useState(10000)
-    const [futureValue, setFutureValue] = useState(15000)
-    const [periods, setPeriods] = useState(5)
-    const [requiredRate, setRequiredRate] = useState(calculateRequiredInterestRate(presentValue, futureValue, periods))
+    const [secondFigure, setSecondFigure] = useState(15000)
+    const [secondFigureType, setSecondFigureType] = useState<"end-balance" | "interest" | "interest-rate">("end-balance")
+    const [years, setYears] = useState(5)
+    const [months, setMonths] = useState(0)
+    const [result, setResult] = useState<InterestRateResult>(() =>
+        calculateInterestRate({
+            principal: 10000,
+            secondFigure: 15000,
+            typeOfSecondFigure: "end-balance",
+            years: 5,
+            months: 0
+        })
+    )
 
-    const updatePresentValue = (value: number) => {
-        setPresentValue(value)
-        setRequiredRate(calculateRequiredInterestRate(value, futureValue, periods))
+    const recalculate = (
+        newPrincipal = presentValue,
+        newSecondFigure = secondFigure,
+        newSecondFigureType = secondFigureType,
+        newYears = years,
+        newMonths = months
+    ) => {
+        const params: InterestRateParams = {
+            principal: newPrincipal,
+            secondFigure: newSecondFigure,
+            typeOfSecondFigure: newSecondFigureType,
+            years: newYears,
+            months: newMonths
+        }
+        setResult(calculateInterestRate(params))
     }
 
-    const updateFutureValue = (value: number) => {
-        setFutureValue(value)
-        setRequiredRate(calculateRequiredInterestRate(presentValue, value, periods))
-    }
+    useEffect(() => {
+        recalculate()
+    }, [presentValue, secondFigure, secondFigureType, years, months])
 
-    const updatePeriods = (value: number) => {
-        setPeriods(value)
-        setRequiredRate(calculateRequiredInterestRate(presentValue, futureValue, value))
-    }
-
-    const totalReturn = ((futureValue - presentValue) / presentValue) * 100
+    const totalReturn = ((result.totalInterest ?? 0) / presentValue) * 100
 
     return (
         <div className="grid gap-6 lg:grid-cols-2">
             <Card>
                 <CardHeader>
                     <CardTitle>Interest Rate Calculator</CardTitle>
-                    <CardDescription>Calculate the required interest rate to reach your financial goal</CardDescription>
+                    <CardDescription>
+                        Calculate the required interest rate to reach your financial goal
+                    </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
@@ -45,32 +64,75 @@ export function InterestRateCalculator() {
                             id="presentValue"
                             type="number"
                             value={presentValue}
-                            onChange={(e) => updatePresentValue(Number(e.target.value))}
+                            onChange={(e) => setPresentValue(Number(e.target.value))}
                             placeholder="10000"
                         />
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="futureValue">Future Value Goal (₹)</Label>
-                        <Input
-                            id="futureValue"
-                            type="number"
-                            value={futureValue}
-                            onChange={(e) => updateFutureValue(Number(e.target.value))}
-                            placeholder="15000"
-                        />
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="secondFigure">
+                                {secondFigureType === "end-balance"
+                                    ? "Future Value (₹)"
+                                    : secondFigureType === "interest"
+                                        ? "Interest Earned (₹)"
+                                        : "Interest Rate (%)"}
+                            </Label>
+                            <Input
+                                id="secondFigure"
+                                type="number"
+                                value={secondFigure}
+                                onChange={(e) => setSecondFigure(Number(e.target.value))}
+                                placeholder={
+                                    secondFigureType === "interest-rate"
+                                        ? "5"
+                                        : secondFigureType === "interest"
+                                            ? "5000"
+                                            : "15000"
+                                }
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="figureType">Secondary Figure Type</Label>
+                            <Select
+                                value={secondFigureType}
+                                onValueChange={(val) =>
+                                    setSecondFigureType(val as "end-balance" | "interest" | "interest-rate")
+                                }
+                            >
+                                <SelectTrigger id="figureType">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="end-balance">End Balance</SelectItem>
+                                    <SelectItem value="interest">Interest Earned</SelectItem>
+                                    <SelectItem value="interest-rate">Interest Rate %</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="periods">Time Period (Years)</Label>
-                        <Input
-                            id="periods"
-                            type="number"
-                            step="0.1"
-                            value={periods}
-                            onChange={(e) => updatePeriods(Number(e.target.value))}
-                            placeholder="5"
-                        />
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="years">Time Period (Years)</Label>
+                            <Input
+                                id="years"
+                                type="number"
+                                value={years}
+                                onChange={(e) => setYears(Number(e.target.value))}
+                                placeholder="5"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="months">Time Period (Months)</Label>
+                            <Input
+                                id="months"
+                                type="number"
+                                value={months}
+                                onChange={(e) => setMonths(Number(e.target.value))}
+                                placeholder="0"
+                            />
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -79,16 +141,16 @@ export function InterestRateCalculator() {
                 <ResultsDisplay
                     title="Required Interest Rate"
                     results={[
-                        { label: "Required Annual Rate", value: formatPercentage(requiredRate) },
+                        { label: "Nominal Annual Rate", value: formatPercentage(result.nominalRate) },
+                        { label: "Effective Annual Rate (APY)", value: formatPercentage(result.apyRate) },
+                        { label: "Total Interest Earned", value: formatCurrency(result.totalInterest) },
                         { label: "Total Return", value: formatPercentage(totalReturn) },
-                        { label: "Present Value", value: formatCurrency(presentValue) },
-                        { label: "Future Value", value: formatCurrency(futureValue) },
                     ]}
                 />
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Investment Analysis</CardTitle>
+                        <CardTitle>Investment Summary</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
@@ -97,21 +159,27 @@ export function InterestRateCalculator() {
                                 <span className="font-medium">{formatCurrency(presentValue)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Target Amount:</span>
-                                <span className="font-medium">{formatCurrency(futureValue)}</span>
-                            </div>
-                            <div className="flex justify-between">
                                 <span>Time Frame:</span>
-                                <span className="font-medium">{periods} years</span>
+                                <span className="font-medium">
+                                    {years} year{years !== 1 ? "s" : ""}{" "}
+                                    {months > 0 && `${months} month${months !== 1 ? "s" : ""}`}
+                                </span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Growth Needed:</span>
-                                <span className="font-medium">{formatCurrency(futureValue - presentValue)}</span>
+                                <span>Target Figure:</span>
+                                <span className="font-medium">
+                                    {secondFigureType === "interest-rate"
+                                        ? `${secondFigure}%`
+                                        : formatCurrency(secondFigure)}
+                                </span>
                             </div>
                             <div className="p-3 bg-blue-50 border border-blue-200 rounded">
                                 <p className="text-sm text-blue-800">
-                                    To grow {formatCurrency(presentValue)} to {formatCurrency(futureValue)} in {periods} years, you need
-                                    an annual return of {formatPercentage(requiredRate)}.
+                                    Based on your selected input type, to reach your goal in{" "}
+                                    {years} year{years !== 1 ? "s" : ""}{" "}
+                                    {months > 0 && `${months} month${months !== 1 ? "s" : ""}`}, your investment will need to grow
+                                    at a nominal annual rate of {formatPercentage(result.nominalRate)} and an
+                                    effective APY of {formatPercentage(result.apyRate)}.
                                 </p>
                             </div>
                         </div>

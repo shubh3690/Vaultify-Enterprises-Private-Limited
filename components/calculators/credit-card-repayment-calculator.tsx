@@ -43,7 +43,7 @@ export function CreditCardRepaymentCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
+                        <Label htmlFor="interestRate">Annual Interest Rate (%) (APY)</Label>
                         <Input
                             id="interestRate"
                             type="number"
