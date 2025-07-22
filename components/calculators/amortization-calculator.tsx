@@ -124,7 +124,7 @@ export function AmortizationCalculator() {
                     <TabsContent value="monthly">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Monthly Amortization Schedule (First Year)</CardTitle>
+                                <CardTitle>Monthly Amortization Schedule</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2 max-h-80 overflow-y-auto">
@@ -135,7 +135,7 @@ export function AmortizationCalculator() {
                                         <span>Interest</span>
                                         <span>Balance</span>
                                     </div>
-                                    {results.amortizationSchedule.slice(0, 12).map((payment) => (
+                                    {results.amortizationSchedule.map((payment) => (
                                         <div key={payment.month} className="grid grid-cols-5 gap-2 text-sm">
                                             <span>{payment.month}</span>
                                             <span>{formatCurrency(payment.payment)}</span>

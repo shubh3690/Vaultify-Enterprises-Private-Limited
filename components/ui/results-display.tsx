@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 interface ResultItem {
     label: string
     value: string
+    classes?: string
 }
 
 interface ResultsDisplayProps {
@@ -19,7 +20,7 @@ export function ResultsDisplay({ title, results }: ResultsDisplayProps) {
             <CardContent>
                 <div className="space-y-3">
                     {results.map((result, index) => (
-                        <div key={index} className="flex justify-between items-center">
+                        <div key={index} className={`flex justify-between items-center ${result.classes}`}>
                             <span className="text-sm text-muted-foreground">{result.label}:</span>
                             <span className="font-semibold">{result.value}</span>
                         </div>

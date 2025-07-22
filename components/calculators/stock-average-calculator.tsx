@@ -15,6 +15,7 @@ interface StockPurchase {
 }
 
 export function StockAverageCalculator() {
+    const [sellingPrice, setSellingPrice] = useState<number>(0)
     const [purchases, setPurchases] = useState<StockPurchase[]>([
         { shares: 100, price: 50 },
         { shares: 50, price: 45 },
@@ -39,6 +40,7 @@ export function StockAverageCalculator() {
     const totalShares = purchases.reduce((sum, purchase) => sum + purchase.shares, 0)
     const totalCost = purchases.reduce((sum, purchase) => sum + purchase.shares * purchase.price, 0)
     const averagePrice = totalShares > 0 ? totalCost / totalShares : 0
+    const profit = totalShares * sellingPrice - totalCost
 
     return (
         <div className="grid gap-6 lg:grid-cols-2">
@@ -80,6 +82,17 @@ export function StockAverageCalculator() {
                             Add Purchase
                         </Button>
                     </div>
+
+                    <div className="grid gap-2">
+                        <Label className="optional" htmlFor="sellingPrice">Selling Price (₹) (optional)</Label>
+                        <Input
+                            id="sellingPrice"
+                            type="number"
+                            value={sellingPrice}
+                            onChange={(e) => setSellingPrice(Number(e.target.value))}
+                            placeholder="5000"
+                        />
+                    </div>
                 </CardContent>
             </Card>
 
@@ -91,6 +104,7 @@ export function StockAverageCalculator() {
                         { label: "Total Shares", value: formatNumber(totalShares) },
                         { label: "Total Investment", value: formatCurrency(totalCost) },
                         { label: "Number of Purchases", value: `${purchases.length}` },
+                        { label: "Net", value: formatCurrency(profit), classes: `${profit > 0 ? "text-green-600" : (profit === 0 ? "text-yellow-600" : "text-red-600")}` },
                     ]}
                 />
 

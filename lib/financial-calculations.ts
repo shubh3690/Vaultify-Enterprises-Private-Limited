@@ -467,8 +467,8 @@ export function calculateLoanPayoff(params: LoanPayoffParams): LoanPayoffResult 
 
 export interface MortgageParams {
     principal: number
-    rate: number // annual rate in %
-    term: number // in years
+    rate: number
+    term: number
     interestInterval: "monthly" | "yearly"
 }
 
@@ -828,7 +828,7 @@ export interface CashBackParams {
 
 export interface CashBackResult {
     cashBackEarned: number
-    effectiveDiscount: number // actual cashback as % of purchase
+    effectiveDiscount: number
 }
 
 export function calculateCashBack({ purchaseAmount, cashBackRate, cashBackLimit = 0 }: CashBackParams): CashBackResult {
