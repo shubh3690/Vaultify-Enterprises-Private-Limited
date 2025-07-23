@@ -339,21 +339,166 @@ export function calculateFutureValue(presentValue: number, rate: number, periods
     return futureValueLumpSum + futureValueAnnuity
 }
 
-export function calculateHowLongMoneyLasts(currentAmount: number, monthlyWithdrawal: number, interestRate: number): number {
-    const monthlyRate = interestRate / 100 / 12
-    let balance = currentAmount
-    let months = 0
+export interface SavingsParams {
+    currentBalance: number;
+    annualInterestRate: number;
+    isNominalRate: boolean;
+    withdrawalType: 'fixed' | 'percentOfBalance' | 'percentOfInterest';
+    withdrawalAmount: number;
+    withdrawalFrequency: 'monthly' | 'quarterly' | 'half-yearly' | 'annually';
+    withdrawalYears: number;
+    withdrawalMonths: number;
+    yearlyWithdrawalIncrease: number;
+    compoundingFrequency: 'daily' | 'semi-weekly' | 'weekly' | 'biweekly' | 'semi-monthly' | 'monthly' | 'bimonthly' | 'quarterly' | 'half-yearly' | 'yearly';
+}
 
-    while (balance > 0 && months < 1200) {
-        const interestEarned = balance * monthlyRate
-        balance = balance + interestEarned - monthlyWithdrawal
-        months++
+export interface SavingsResult {
+    yearsUntilZero: number;
+    monthsUntilZero: number;
+    futureBalance: number;
+    monthlyWithdrawalToLastTerm: number;
+}
 
-        if (balance <= 0)
-            break
+export function calculateSavingsWithdrawal(params: SavingsParams): SavingsResult {
+    const freqToNum = (freq: string): number => {
+        const frequencyMap: Record<string, number> = {
+            'daily': 365,
+            'semi-weekly': 104,
+            'weekly': 52,
+            'biweekly': 26,
+            'semi-monthly': 24,
+            'monthly': 12,
+            'bimonthly': 6,
+            'quarterly': 4,
+            'half-yearly': 2,
+            'yearly': 1,
+            'annually': 1
+        };
+        return frequencyMap[freq] || 12;
+    };
+
+    const wFreq = freqToNum(params.withdrawalFrequency);
+    const cFreq = freqToNum(params.compoundingFrequency);
+
+    // convert APY→nominal if needed
+    let r = params.annualInterestRate / 100;
+    if (!params.isNominalRate) {
+        r = cFreq * (Math.pow(1 + r, 1 / cFreq) - 1);
+    }
+    const rPerComp = r / cFreq;
+
+    // total withdrawal‐periods requested
+    const targetPeriods = params.withdrawalYears * wFreq + Math.floor(params.withdrawalMonths * (wFreq / 12));
+    const compPerWithdraw = cFreq / wFreq;
+    const yearlyGrowth = 1 + params.yearlyWithdrawalIncrease / 100;
+
+    function withdrawalThisPeriod(balanceBeforeWithdrawal: number, interestEarned: number, base: number): number {
+        switch (params.withdrawalType) {
+            case 'fixed':
+                return base;
+            case 'percentOfBalance':
+                return (balanceBeforeWithdrawal * base) / 100;
+            case 'percentOfInterest':
+                return Math.max(0, (interestEarned * base) / 100);
+        }
     }
 
-    return months
+    // how many withdrawal‐periods until zero
+    function durationPeriods(baseAmount: number): number {
+        let bal = params.currentBalance;
+        let base = baseAmount;
+        let periods = 0;
+
+        while (bal > 0.01 && periods < 10000) {
+            const startBalance = bal;
+
+            // Apply compound interest for this withdrawal period
+            for (let i = 0; i < compPerWithdraw; i++) {
+                bal *= (1 + rPerComp);
+            }
+
+            const interestEarned = bal - startBalance;
+            let withdrawal = withdrawalThisPeriod(bal, interestEarned, base);
+            withdrawal = Math.min(withdrawal, bal);
+            bal -= withdrawal;
+            periods++;
+
+            // Increase base withdrawal yearly (only for fixed amounts)
+            if (periods % wFreq === 0 && params.withdrawalType === 'fixed') {
+                base *= yearlyGrowth;
+            }
+            if (bal <= 0.01)
+                break;
+        }
+        return periods;
+    }
+
+    // future balance after exactly targetPeriods
+    function futureBalanceAfter(baseAmount: number, periods: number): number {
+        let bal = params.currentBalance;
+        let base = baseAmount;
+
+        for (let p = 0; p < periods; p++) {
+            const startBalance = bal;
+            for (let i = 0; i < compPerWithdraw; i++) {
+                bal *= (1 + rPerComp);
+            }
+
+            const interestEarned = bal - startBalance;
+            let withdrawal = withdrawalThisPeriod(bal, interestEarned, base);
+            withdrawal = Math.min(withdrawal, bal);
+            bal -= withdrawal;
+
+            if ((p + 1) % wFreq === 0 && params.withdrawalType === 'fixed') {
+                base *= yearlyGrowth;
+            }
+
+            if (bal <= 0.01) {
+                bal = 0;
+                break;
+            }
+        }
+        return Math.max(0, bal);
+    }
+
+    // find base withdrawal to last exactly targetPeriods
+    function findBaseForDuration(periods: number): number {
+        if (periods === 0) return 0;
+
+        let lo = 0;
+        let hi = params.withdrawalType === 'fixed' ? params.currentBalance * 2 : 100;
+
+        if (params.withdrawalType === 'percentOfBalance') {
+            hi = Math.min(100, (params.currentBalance * wFreq * 12) / (periods * 12));
+        }
+
+        for (let i = 0; i < 100 && Math.abs(hi - lo) > 0.001; i++) {
+            const mid = (lo + hi) / 2;
+            const duration = durationPeriods(mid);
+
+            if (duration > periods) {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        return (lo + hi) / 2;
+    }
+
+    const dur = durationPeriods(params.withdrawalAmount);
+    const yearsUntilZero = Math.floor(dur / wFreq);
+    const monthsUntilZero = Math.round((dur % wFreq) * (12 / wFreq));
+
+    const futureBal = futureBalanceAfter(params.withdrawalAmount, targetPeriods);
+    const baseToLast = findBaseForDuration(targetPeriods);
+    const monthlyToLast = params.withdrawalType === 'fixed' ? (baseToLast * wFreq) / 12 : baseToLast;
+
+    return {
+        yearsUntilZero,
+        monthsUntilZero,
+        futureBalance: Math.round(futureBal * 100) / 100,
+        monthlyWithdrawalToLastTerm: Math.round(monthlyToLast * 100) / 100,
+    };
 }
 
 export function calculateRequiredInterestRate(presentValue: number, futureValue: number, periods: number): number {

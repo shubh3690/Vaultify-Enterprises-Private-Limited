@@ -1,77 +1,264 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { calculateHowLongMoneyLasts } from "@/lib/financial-calculations"
-import { formatCurrency } from "@/lib/utils"
-import { ResultsDisplay } from "@/components/ui/results-display"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { calculateSavingsWithdrawal, SavingsParams, SavingsResult } from "@/lib/financial-calculations";
+import { formatCurrency } from "@/lib/utils";
+import { ResultsDisplay } from "@/components/ui/results-display";
 
 export function HowLongMoneyLastsCalculator() {
-    const [currentAmount, setCurrentAmount] = useState(100000)
-    const [monthlyWithdrawal, setMonthlyWithdrawal] = useState(2000)
-    const [interestRate, setInterestRate] = useState(4)
-    const [months, setMonths] = useState(calculateHowLongMoneyLasts(currentAmount, monthlyWithdrawal, interestRate))
+    const [params, setParams] = useState<SavingsParams>({
+        currentBalance: 100000,
+        annualInterestRate: 4,
+        isNominalRate: true,
+        withdrawalType: "fixed",
+        withdrawalAmount: 2000,
+        withdrawalFrequency: "monthly",
+        withdrawalYears: 15,
+        withdrawalMonths: 0,
+        yearlyWithdrawalIncrease: 0,
+        compoundingFrequency: "monthly",
+    });
 
-    const updateCurrentAmount = (value: number) => {
-        setCurrentAmount(value)
-        setMonths(calculateHowLongMoneyLasts(value, monthlyWithdrawal, interestRate))
-    }
+    const [results, setResults] = useState<SavingsResult>({
+        yearsUntilZero: 0,
+        monthsUntilZero: 0,
+        futureBalance: 0,
+        monthlyWithdrawalToLastTerm: 0,
+    });
 
-    const updateMonthlyWithdrawal = (value: number) => {
-        setMonthlyWithdrawal(value)
-        setMonths(calculateHowLongMoneyLasts(currentAmount, value, interestRate))
-    }
+    const handleParamChange = (field: keyof SavingsParams, value: any) =>
+        setParams((p) => ({ ...p, [field]: value }));
 
-    const updateInterestRate = (value: number) => {
-        setInterestRate(value)
-        setMonths(calculateHowLongMoneyLasts(currentAmount, monthlyWithdrawal, value))
-    }
+    useEffect(() => {
+        if (params.currentBalance > 0 && params.withdrawalAmount > 0) {
+            setResults(calculateSavingsWithdrawal(params));
+        }
+    }, [params]);
 
-    const years = months / 12
-    const totalWithdrawals = monthlyWithdrawal * months
+    const getFrequencyLabel = (freq: string) => {
+        const labels: Record<string, string> = {
+            'daily': 'Daily',
+            'semi-weekly': 'Semi-Weekly',
+            'weekly': 'Weekly',
+            'biweekly': 'Biweekly',
+            'semi-monthly': 'Semi-Monthly',
+            'monthly': 'Monthly',
+            'bimonthly': 'Bimonthly',
+            'quarterly': 'Quarterly',
+            'half-yearly': 'Half-Yearly',
+            'yearly': 'Yearly',
+            'annually': 'Annually'
+        };
+        return labels[freq] || 'Monthly';
+    };
+
+    const typeLabel = (t: SavingsParams["withdrawalType"]) => t === "fixed" ? "Fixed Amount" : (t === "percentOfBalance" ? "% of Balance" : "% of Interest");
+    const suffix = params.withdrawalType === "fixed" ? "₹" : "%";
 
     return (
         <div className="grid gap-6 lg:grid-cols-2">
             <Card>
                 <CardHeader>
                     <CardTitle>How Long Will Money Last</CardTitle>
-                    <CardDescription>Calculate how long your money will last with regular withdrawals</CardDescription>
+                    <CardDescription>
+                        Calculate how long your money will last with withdrawals
+                    </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="currentAmount">Current Amount (₹)</Label>
+                        <Label htmlFor="currentBalance">Current Balance (₹)</Label>
                         <Input
-                            id="currentAmount"
+                            id="currentBalance"
                             type="number"
-                            value={currentAmount}
-                            onChange={(e) => updateCurrentAmount(Number(e.target.value))}
-                            placeholder="100000"
+                            value={params.currentBalance}
+                            onChange={(e) =>
+                                handleParamChange("currentBalance", Number(e.target.value) || 0)
+                            }
                         />
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="monthlyWithdrawal">Monthly Withdrawal (₹)</Label>
-                        <Input
-                            id="monthlyWithdrawal"
-                            type="number"
-                            value={monthlyWithdrawal}
-                            onChange={(e) => updateMonthlyWithdrawal(Number(e.target.value))}
-                            placeholder="2000"
-                        />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                        <div>
+                            <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    id="interestRate"
+                                    type="number"
+                                    step="0.01"
+                                    value={params.annualInterestRate}
+                                    onChange={(e) =>
+                                        handleParamChange(
+                                            "annualInterestRate",
+                                            Number(e.target.value) || 0
+                                        )
+                                    }
+                                    className="flex-1"
+                                />
+                                <div className="flex items-center space-x-2">
+                                    <Switch
+                                        checked={!params.isNominalRate}
+                                        onCheckedChange={(c) =>
+                                            handleParamChange("isNominalRate", !c)
+                                        }
+                                    />
+                                    <Label className="text-sm">
+                                        {params.isNominalRate ? "Nominal" : "APY"}
+                                    </Label>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="grid gap-2">
+                                <Label>Interest Compounded</Label>
+                                <Select
+                                    value={params.compoundingFrequency}
+                                    onValueChange={(v) =>
+                                        handleParamChange("compoundingFrequency", v as any)
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="daily">Daily (365/yr)</SelectItem>
+                                        <SelectItem value="semi-weekly">Semi-Weekly (104/yr)</SelectItem>
+                                        <SelectItem value="weekly">Weekly (52/yr)</SelectItem>
+                                        <SelectItem value="biweekly">Biweekly (26/yr)</SelectItem>
+                                        <SelectItem value="semi-monthly">Semi-Monthly (24/yr)</SelectItem>
+                                        <SelectItem value="monthly">Monthly (12/yr)</SelectItem>
+                                        <SelectItem value="bimonthly">Bimonthly (6/yr)</SelectItem>
+                                        <SelectItem value="quarterly">Quarterly (4/yr)</SelectItem>
+                                        <SelectItem value="half-yearly">Half-Yearly (2/yr)</SelectItem>
+                                        <SelectItem value="yearly">Yearly (1/yr)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-2 sm:grid-cols-2">
+                        <div>
+                            <Label>
+                                Regular Withdrawal ({suffix})
+                            </Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    type="number"
+                                    step={params.withdrawalType === "fixed" ? "1" : "0.1"}
+                                    value={params.withdrawalAmount}
+                                    onChange={(e) =>
+                                        handleParamChange(
+                                            "withdrawalAmount",
+                                            Number(e.target.value) || 0
+                                        )
+                                    }
+                                    className="flex-1"
+                                />
+                                <Select
+                                    value={params.withdrawalFrequency}
+                                    onValueChange={(v) =>
+                                        handleParamChange("withdrawalFrequency", v as any)
+                                    }
+                                >
+                                    <SelectTrigger className="w-40">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="monthly">Monthly (12/yr)</SelectItem>
+                                        <SelectItem value="quarterly">Quarterly (4/yr)</SelectItem>
+                                        <SelectItem value="half-yearly">Half-Yearly (2/yr)</SelectItem>
+                                        <SelectItem value="annually">Annually (1/yr)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {params.withdrawalType === "percentOfBalance" && (
+                                <p className="text-xs text-gray-500">
+                                    % of current balance at each withdrawal
+                                </p>
+                            )}
+                            {params.withdrawalType === "percentOfInterest" && (
+                                <p className="text-xs text-gray-500">
+                                    % of interest earned during each withdrawal period
+                                </p>
+                            )}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Withdrawal Type</Label>
+                            <Select
+                                value={params.withdrawalType}
+                                onValueChange={(v) =>
+                                    handleParamChange("withdrawalType", v as any)
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="fixed">Fixed Amount</SelectItem>
+                                    <SelectItem value="percentOfBalance">
+                                        Percentage of Balance
+                                    </SelectItem>
+                                    <SelectItem value="percentOfInterest">
+                                        Percentage of Interest
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
-                        <Input
-                            id="interestRate"
-                            type="number"
-                            step="0.1"
-                            value={interestRate}
-                            onChange={(e) => updateInterestRate(Number(e.target.value))}
-                            placeholder="4"
-                        />
+                        <Label>Desired Duration</Label>
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <Input
+                                    type="number"
+                                    value={params.withdrawalYears}
+                                    onChange={(e) =>
+                                        handleParamChange("withdrawalYears", Number(e.target.value) || 0)
+                                    }
+                                    placeholder="Years"
+                                />
+                                <Label className="text-xs text-gray-500">Years</Label>
+                            </div>
+                            <div className="flex-1">
+                                <Input
+                                    type="number"
+                                    value={params.withdrawalMonths}
+                                    onChange={(e) =>
+                                        handleParamChange("withdrawalMonths", Number(e.target.value) || 0)
+                                    }
+                                    placeholder="Months"
+                                />
+                                <Label className="text-xs text-gray-500">Months</Label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-4">
+                        {params.withdrawalType === "fixed" && (
+                            <div className="grid gap-2">
+                                <Label className="optional" htmlFor="yearlyIncrease">
+                                    Increase withdrawals yearly by (%) (optional)
+                                </Label>
+                                <Input
+                                    id="yearlyIncrease"
+                                    type="number"
+                                    step="0.1"
+                                    value={params.yearlyWithdrawalIncrease}
+                                    onChange={(e) =>
+                                        handleParamChange(
+                                            "yearlyWithdrawalIncrease",
+                                            Number(e.target.value) || 0
+                                        )
+                                    }
+                                />
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -80,10 +267,9 @@ export function HowLongMoneyLastsCalculator() {
                 <ResultsDisplay
                     title="Money Duration Results"
                     results={[
-                        { label: "Money Will Last", value: `${years.toFixed(1)} years (${months} months)` },
-                        { label: "Total Withdrawals", value: formatCurrency(totalWithdrawals) },
-                        { label: "Starting Amount", value: formatCurrency(currentAmount) },
-                        { label: "Monthly Withdrawal", value: formatCurrency(monthlyWithdrawal) },
+                        { label: "Money Will Last", value: results.yearsUntilZero > 0 || results.monthsUntilZero > 0 ? `${results.yearsUntilZero} years, ${results.monthsUntilZero} months` : "Not sustainable", classes: `${(results.yearsUntilZero > params.withdrawalYears) ? "text-green-600" : ((results.yearsUntilZero < params.withdrawalYears) ? "text-red-600" : (results.yearsUntilZero === params.withdrawalYears && results.monthsUntilZero < params.withdrawalMonths) ? "text-red-600" : "text-green-600")}` },
+                        { label: "Future Savings Balance", value: formatCurrency(results.futureBalance) },
+                        { label: "Monthly Withdrawal to Last Term", value: formatCurrency(results.monthlyWithdrawalToLastTerm) },
                     ]}
                 />
 
@@ -95,32 +281,43 @@ export function HowLongMoneyLastsCalculator() {
                         <div className="space-y-4">
                             <div className="flex justify-between">
                                 <span>Starting Balance:</span>
-                                <span className="font-medium">{formatCurrency(currentAmount)}</span>
+                                <span className="font-medium">{formatCurrency(params.currentBalance)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Monthly Withdrawal:</span>
-                                <span className="font-medium">{formatCurrency(monthlyWithdrawal)}</span>
+                                <span>Withdrawal Type:</span>
+                                <span className="font-medium">{typeLabel(params.withdrawalType)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>{getFrequencyLabel(params.withdrawalFrequency)} Withdrawal:</span>
+                                <span className="font-medium">
+                                    {params.withdrawalType === 'fixed'
+                                        ? formatCurrency(params.withdrawalAmount)
+                                        : `${params.withdrawalAmount}%`
+                                    }
+                                </span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Interest Rate:</span>
-                                <span className="font-medium">{interestRate}%</span>
+                                <span className="font-medium">{params.annualInterestRate}% ({params.isNominalRate ? 'Nominal' : 'APY'})</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Duration:</span>
-                                <span className="font-medium">{years.toFixed(1)} years</span>
+                                <span>Compounding:</span>
+                                <span className="font-medium">{getFrequencyLabel(params.compoundingFrequency)}</span>
                             </div>
-                            {months >= 1200 && (
-                                <div className="p-3 bg-green-50 border border-green-200 rounded">
-                                    <p className="text-sm text-green-800">
-                                        <strong>Great news!</strong> At this withdrawal rate, your money should last indefinitely with the
-                                        interest earned.
-                                    </p>
+                            {params.yearlyWithdrawalIncrease > 0 && params.withdrawalType === 'fixed' && (
+                                <div className="flex justify-between">
+                                    <span>Yearly Increase:</span>
+                                    <span className="font-medium">{params.yearlyWithdrawalIncrease}%</span>
                                 </div>
                             )}
+                            <div className="flex justify-between font-semibold border-t pt-2">
+                                <span>Duration:</span>
+                                <span>{results.yearsUntilZero} years, {results.monthsUntilZero} months</span>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
         </div>
-    )
+    );
 }
