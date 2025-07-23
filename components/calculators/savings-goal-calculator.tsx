@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { calculateSavingsGoal, type SavingsGoalParams } from "@/lib/financial-calculations"
 import { formatCurrency } from "@/lib/utils"
 import { ResultsDisplay } from "@/components/ui/results-display"
@@ -12,17 +13,38 @@ export function SavingsGoalCalculator() {
     const [params, setParams] = useState<SavingsGoalParams>({
         targetAmount: 50000,
         currentSavings: 5000,
-        monthlyContribution: 500,
+        depositAmount: 500,
+        depositFrequency: 'monthly',
         interestRate: 4,
         compoundingFrequency: 12,
     })
 
     const [results, setResults] = useState(calculateSavingsGoal(params))
 
-    const updateParam = (key: keyof SavingsGoalParams, value: number) => {
+    const updateParam = (key: keyof SavingsGoalParams, value: number | string) => {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
         setResults(calculateSavingsGoal(newParams))
+    }
+
+    const getFrequencyLabel = (freq: string) => {
+        const labels: Record<string, string> = {
+            'daily': 'Daily',
+            'weekly': 'Weekly',
+            'fortnightly': 'Fortnightly',
+            'monthly': 'Monthly'
+        }
+        return labels[freq] || 'Monthly'
+    }
+
+    const getAnnualContribution = (amount: number, freq: string) => {
+        switch (freq) {
+            case 'daily': return amount * 365
+            case 'weekly': return amount * 52
+            case 'fortnightly': return amount * 26
+            case 'monthly': return amount * 12
+            default: return amount * 12
+        }
     }
 
     return (
@@ -56,14 +78,32 @@ export function SavingsGoalCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="monthlyContribution">Monthly Contribution (₹)</Label>
+                        <Label htmlFor="depositAmount">Deposit Amount (₹)</Label>
                         <Input
-                            id="monthlyContribution"
+                            id="depositAmount"
                             type="number"
-                            value={params.monthlyContribution}
-                            onChange={(e) => updateParam("monthlyContribution", Number(e.target.value))}
+                            value={params.depositAmount}
+                            onChange={(e) => updateParam("depositAmount", Number(e.target.value))}
                             placeholder="500"
                         />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label>Deposit Frequency</Label>
+                        <Select
+                            value={params.depositFrequency}
+                            onValueChange={(value) => updateParam("depositFrequency", value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="daily">Daily (365/yr)</SelectItem>
+                                <SelectItem value="weekly">Weekly (52/yr)</SelectItem>
+                                <SelectItem value="fortnightly">Fortnightly (26/yr)</SelectItem>
+                                <SelectItem value="monthly">Monthly (12/yr)</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="grid gap-2">
@@ -84,10 +124,7 @@ export function SavingsGoalCalculator() {
                 <ResultsDisplay
                     title="Savings Goal Results"
                     results={[
-                        {
-                            label: "Time to Goal",
-                            value: `${results.yearsToGoal.toFixed(1)} years (${results.monthsToGoal} months)`,
-                        },
+                        { label: "Time to Goal", value: `${results.yearsToGoal.toFixed(1)} years (${results.monthsToGoal} months)` },
                         { label: "Total Contributions", value: formatCurrency(results.totalContributions) },
                         { label: "Interest Earned", value: formatCurrency(results.interestEarned) },
                         { label: "Final Amount", value: formatCurrency(params.targetAmount) },
@@ -105,12 +142,16 @@ export function SavingsGoalCalculator() {
                                 <span className="font-medium">{formatCurrency(params.currentSavings)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Monthly Savings:</span>
-                                <span className="font-medium">{formatCurrency(params.monthlyContribution)}</span>
+                                <span>{getFrequencyLabel(params.depositFrequency)} Deposit:</span>
+                                <span className="font-medium">{formatCurrency(params.depositAmount)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Annual Contribution:</span>
+                                <span className="font-medium">{formatCurrency(getAnnualContribution(params.depositAmount, params.depositFrequency))}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Interest Rate:</span>
-                                <span className="font-medium">{params.interestRate}%</span>
+                                <span className="font-medium">{params.interestRate}% per annum</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Amount Needed:</span>
@@ -118,11 +159,13 @@ export function SavingsGoalCalculator() {
                             </div>
                             <div className="flex justify-between">
                                 <span>Time to Goal:</span>
-                                <span className={`font-medium ${Number(results.yearsToGoal.toFixed(1)) < 30 ? "text-green-600" : (Number(results.yearsToGoal.toFixed(1)) < 50 ? "text-yellow-600" : "text-red-600")}`}>{results.yearsToGoal.toFixed(1)} years</span>
+                                <span className={`font-medium ${Number(results.yearsToGoal.toFixed(1)) < 30 ? "text-green-600" : (Number(results.yearsToGoal.toFixed(1)) < 50 ? "text-yellow-600" : "text-red-600")}`}>
+                                    {results.yearsToGoal.toFixed(1)} years
+                                </span>
                             </div>
                             <div className="p-3 bg-blue-50 border border-blue-200 rounded">
                                 <p className="text-sm text-blue-800">
-                                    <strong>Success Plan:</strong> Save {formatCurrency(params.monthlyContribution)} monthly for{" "}
+                                    <strong>Success Plan:</strong> Save {formatCurrency(params.depositAmount)} {params.depositFrequency} for{" "}
                                     {results.yearsToGoal.toFixed(1)} years to reach your {formatCurrency(params.targetAmount)} goal.
                                 </p>
                             </div>

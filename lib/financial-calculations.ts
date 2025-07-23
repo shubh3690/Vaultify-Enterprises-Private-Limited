@@ -293,7 +293,8 @@ export function calculateRetirement(params: RetirementParams): RetirementResult 
 export interface SavingsGoalParams {
     targetAmount: number
     currentSavings: number
-    monthlyContribution: number
+    depositAmount: number
+    depositFrequency: 'daily' | 'weekly' | 'fortnightly' | 'monthly'
     interestRate: number
     compoundingFrequency: number
 }
@@ -306,16 +307,28 @@ export interface SavingsGoalResult {
 }
 
 export function calculateSavingsGoal(params: SavingsGoalParams): SavingsGoalResult {
-    const { targetAmount, currentSavings, monthlyContribution, interestRate } = params
+    const { targetAmount, currentSavings, depositAmount, depositFrequency, interestRate, compoundingFrequency } = params
 
+    const getMonthlyDepositAmount = (amount: number, frequency: string): number => {
+        switch (frequency) {
+            case 'daily': return amount * 365 / 12
+            case 'weekly': return amount * 52 / 12
+            case 'fortnightly': return amount * 26 / 12
+            case 'monthly': return amount
+            default: return amount
+        }
+    }
+
+    const monthlyDeposit = getMonthlyDepositAmount(depositAmount, depositFrequency)
     const monthlyRate = interestRate / 100 / 12
+
     let balance = currentSavings
     let months = 0
     let totalContributions = 0
 
     while (balance < targetAmount && months < 1200) {
-        balance += monthlyContribution
-        totalContributions += monthlyContribution
+        balance += monthlyDeposit
+        totalContributions += monthlyDeposit
 
         const monthlyInterest = balance * monthlyRate
         balance += monthlyInterest
@@ -329,7 +342,7 @@ export function calculateSavingsGoal(params: SavingsGoalParams): SavingsGoalResu
         monthsToGoal: months,
         yearsToGoal: months / 12,
         totalContributions,
-        interestEarned
+        interestEarned: Math.max(0, interestEarned)
     }
 }
 
