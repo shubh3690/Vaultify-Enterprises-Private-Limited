@@ -115,7 +115,7 @@ export function InvestmentCalculator() {
                     <div className="space-y-4">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="regularDeposit">Deposit Amount (₹)</Label>
+                                <Label className="optional" htmlFor="regularDeposit">Deposit Amount (₹) (opt.)</Label>
                                 <Input
                                     id="regularDeposit"
                                     type="number"
@@ -126,7 +126,7 @@ export function InvestmentCalculator() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="depositInterval">Deposit Frequency</Label>
+                                <Label className="optional" htmlFor="depositInterval">Deposit Frequency (opt.)</Label>
                                 <Select
                                     value={params.depositInterval}
                                     onValueChange={(value) => updateParam('depositInterval', value as any)}
@@ -148,7 +148,7 @@ export function InvestmentCalculator() {
                     <div className="space-y-4">
                         <div className="grid gap-4 sm:grid-cols-3">
                             <div className="grid gap-2">
-                                <Label htmlFor="regularWithdrawal">Withdrawal Amount</Label>
+                                <Label className="optional" htmlFor="regularWithdrawal">Withdrawal Amount ({params.withdrawalType === "fixed-amount" ? "₹" : "%"}) (opt.)</Label>
                                 <Input
                                     id="regularWithdrawal"
                                     type="number"
@@ -159,7 +159,7 @@ export function InvestmentCalculator() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="withdrawalType">Withdrawal Type</Label>
+                                <Label className="optional" htmlFor="withdrawalType">Withdrawal Type (opt.)</Label>
                                 <Select
                                     value={params.withdrawalType}
                                     onValueChange={(value) => updateParam('withdrawalType', value as any)}
@@ -176,7 +176,7 @@ export function InvestmentCalculator() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="withdrawalInterval">Withdrawal Frequency</Label>
+                                <Label className="optional" htmlFor="withdrawalInterval">Withdrawal Frequency (opt.)</Label>
                                 <Select
                                     value={params.withdrawalInterval}
                                     onValueChange={(value) => updateParam('withdrawalInterval', value as any)}
@@ -196,7 +196,7 @@ export function InvestmentCalculator() {
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="annualDepositIncrease">Annual Deposit Increase (%)</Label>
+                                <Label className="optional" htmlFor="annualDepositIncrease">Annual Deposit Increase (%) (opt.)</Label>
                                 <Input
                                     id="annualDepositIncrease"
                                     type="number"
@@ -209,7 +209,7 @@ export function InvestmentCalculator() {
 
                             {params.withdrawalType === "fixed-amount" && (
                                 <div className="grid gap-2">
-                                    <Label htmlFor="annualWithdrawalIncrease">Annual Withdrawal Increase (%)</Label>
+                                    <Label className="optional" htmlFor="annualWithdrawalIncrease">Annual Withdrawal Increase (%) (opt.)</Label>
                                     <Input
                                         id="annualWithdrawalIncrease"
                                         type="number"
