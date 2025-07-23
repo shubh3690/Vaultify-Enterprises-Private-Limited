@@ -95,6 +95,12 @@ export const calculatorCategories: CalculatorCategory[] = [
                 description: "Plan for your retirement savings needs",
                 category: "savings-investments",
             },
+            {
+                slug: "investment-calculator",
+                title: "Investment Calculator",
+                description: "Calculate investment returns",
+                category: "savings-investments",
+            },
         ],
     },
     {

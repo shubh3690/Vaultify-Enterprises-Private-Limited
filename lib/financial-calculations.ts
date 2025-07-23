@@ -104,6 +104,235 @@ export function calculateDailyCompoundInterest(principal: number, rate: number, 
     }
 }
 
+export interface InvestmentParams {
+    principal: number
+    annualRate: number
+    compoundingFrequency: number
+    years: number
+    months: number
+    regularDeposit?: number
+    depositInterval: "monthly" | "quarterly" | "half-yearly" | "yearly"
+    regularWithdrawal?: number
+    withdrawalType: "fixed-amount" | "percent-of-balance" | "percent-of-interest"
+    withdrawalInterval: "monthly" | "quarterly" | "half-yearly" | "yearly"
+    annualDepositIncrease?: number
+    annualWithdrawalIncrease?: number
+}
+
+export interface InvestmentResult {
+    finalBalance: number
+    totalInterest: number
+    initialBalance: number
+    additionalDeposits: number
+    totalWithdrawals: number
+}
+
+export function calculateInvestment(params: InvestmentParams): InvestmentResult {
+    const {
+        principal,
+        annualRate,
+        compoundingFrequency,
+        years,
+        months,
+        regularDeposit = 0,
+        depositInterval,
+        regularWithdrawal = 0,
+        withdrawalType,
+        withdrawalInterval,
+        annualDepositIncrease = 0,
+        annualWithdrawalIncrease = 0
+    } = params;
+
+    const totalMonths = years * 12 + months;
+    const periodsPerYear = compoundingFrequency;
+    
+    // Calculate full compounding periods and remaining months
+    const fullPeriods = Math.floor((totalMonths / 12) * periodsPerYear);
+    const remainingMonths = totalMonths - Math.floor(totalMonths / 12) * 12;
+    const remainingPeriodsFromMonths = (remainingMonths / 12) * periodsPerYear;
+    const additionalFullPeriods = Math.floor(remainingPeriodsFromMonths);
+    const partialPeriodFraction = remainingPeriodsFromMonths - additionalFullPeriods;
+    
+    const totalFullPeriods = fullPeriods + additionalFullPeriods;
+    
+    const periodicRate = annualRate / (100 * periodsPerYear);
+    
+    const getDepositFrequency = (interval: string): number => {
+        switch (interval) {
+            case "weekly": return 52;
+            case "monthly": return 12;
+            case "quarterly": return 4;
+            case "half-yearly": return 2;
+            case "yearly": return 1;
+            default: return 12;
+        }
+    };
+
+    const getWithdrawalFrequency = (interval: string): number => {
+        switch (interval) {
+            case "monthly": return 12;
+            case "quarterly": return 4;
+            case "half-yearly": return 2;
+            case "yearly": return 1;
+            default: return 12;
+        }
+    };
+
+    const depositFrequency = getDepositFrequency(depositInterval);
+    const withdrawalFrequency = getWithdrawalFrequency(withdrawalInterval);
+    
+    const depositPeriodInterval = periodsPerYear / depositFrequency;
+    const withdrawalPeriodInterval = periodsPerYear / withdrawalFrequency;
+
+    let balance = principal;
+    let totalDeposits = 0;
+    let totalWithdrawals = 0;
+    let currentDepositAmount = regularDeposit;
+    let currentWithdrawalAmount = regularWithdrawal;
+    let totalInterestEarned = 0;
+    
+    let accumulatedInterest = 0;
+    let lastYearProcessed = 0;
+
+    // Process full compounding periods
+    for (let period = 1; period <= totalFullPeriods; period++) {
+        const currentYear = Math.floor((period - 1) / periodsPerYear) + 1;
+        
+        if (currentYear > lastYearProcessed && currentYear > 1) {
+            currentDepositAmount *= (1 + annualDepositIncrease / 100);
+            currentWithdrawalAmount *= (1 + annualWithdrawalIncrease / 100);
+            lastYearProcessed = currentYear;
+        }
+
+        // Step 1: Calculate and add interest
+        const interestEarned = balance * periodicRate;
+        balance += interestEarned;
+        totalInterestEarned += interestEarned;
+        accumulatedInterest += interestEarned;
+
+        // Step 2: Add deposits
+        if (depositPeriodInterval <= 1 || period % Math.round(depositPeriodInterval) === 0) {
+            balance += currentDepositAmount;
+            totalDeposits += currentDepositAmount;
+        }
+
+        // Step 3: Process withdrawals
+        let withdrawalAmount = 0;
+        
+        if (withdrawalPeriodInterval <= 1 || period % Math.round(withdrawalPeriodInterval) === 0) {
+            if (withdrawalType === "percent-of-interest") {
+                const interestForWithdrawal = withdrawalPeriodInterval <= 1 ? interestEarned : accumulatedInterest;
+                withdrawalAmount = calculateWithdrawalAmount(
+                    balance,
+                    interestForWithdrawal,
+                    currentWithdrawalAmount,
+                    withdrawalType
+                );
+                accumulatedInterest = 0;
+            } else {
+                withdrawalAmount = calculateWithdrawalAmount(
+                    balance,
+                    interestEarned,
+                    currentWithdrawalAmount,
+                    withdrawalType
+                );
+            }
+        }
+
+        if (withdrawalAmount > 0) {
+            balance -= withdrawalAmount;
+            totalWithdrawals += withdrawalAmount;
+        }
+
+        if (balance < 0) balance = 0;
+    }
+
+    // Handle partial period if it exists
+    if (partialPeriodFraction > 0) {
+        // Calculate partial interest for the remaining fraction of a period
+        const partialInterest = balance * periodicRate * partialPeriodFraction;
+        balance += partialInterest;
+        totalInterestEarned += partialInterest;
+        
+        // Check if we need to add deposits/withdrawals in the partial period
+        // This depends on the timing - typically deposits/withdrawals would be prorated
+        const timeIntoPartialPeriod = partialPeriodFraction;
+        
+        // Add prorated deposits if applicable
+        if (depositPeriodInterval <= 1) {
+            // If deposits are more frequent than compounding, add prorated amount
+            const proratedDeposit = currentDepositAmount * partialPeriodFraction;
+            balance += proratedDeposit;
+            totalDeposits += proratedDeposit;
+        }
+        
+        // Handle withdrawals in partial period (typically would be prorated too)
+        if (withdrawalPeriodInterval <= 1 && regularWithdrawal > 0) {
+            let withdrawalAmount = 0;
+            if (withdrawalType === "percent-of-interest") {
+                withdrawalAmount = calculateWithdrawalAmount(
+                    balance,
+                    partialInterest,
+                    currentWithdrawalAmount * partialPeriodFraction,
+                    "fixed-amount" // Treat as fixed amount since it's prorated
+                );
+            } else if (withdrawalType === "percent-of-balance") {
+                withdrawalAmount = calculateWithdrawalAmount(
+                    balance,
+                    0,
+                    currentWithdrawalAmount,
+                    withdrawalType
+                );
+            } else {
+                withdrawalAmount = calculateWithdrawalAmount(
+                    balance,
+                    0,
+                    currentWithdrawalAmount * partialPeriodFraction,
+                    "fixed-amount"
+                );
+            }
+            
+            if (withdrawalAmount > 0) {
+                balance -= withdrawalAmount;
+                totalWithdrawals += withdrawalAmount;
+            }
+        }
+    }
+
+    return {
+        finalBalance: Math.round(balance * 100) / 100,
+        totalInterest: Math.round(totalInterestEarned * 100) / 100,
+        initialBalance: principal,
+        additionalDeposits: Math.round(totalDeposits * 100) / 100,
+        totalWithdrawals: Math.round(totalWithdrawals * 100) / 100
+    };
+}
+
+function calculateWithdrawalAmount(
+    balance: number, 
+    interestForCalculation: number, 
+    withdrawalAmount: number, 
+    withdrawalType: string
+): number {
+    let calculatedWithdrawal = 0;
+    
+    switch (withdrawalType) {
+        case "fixed-amount":
+            calculatedWithdrawal = withdrawalAmount;
+            break;
+        case "percent-of-balance":
+            calculatedWithdrawal = balance * (withdrawalAmount / 100);
+            break;
+        case "percent-of-interest":
+            calculatedWithdrawal = interestForCalculation * (withdrawalAmount / 100);
+            break;
+        default:
+            calculatedWithdrawal = withdrawalAmount;
+    }
+    
+    return Math.min(calculatedWithdrawal, balance);
+}
+
 export interface LoanParams {
     principal: number
     rate: number
