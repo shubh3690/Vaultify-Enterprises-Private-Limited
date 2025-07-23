@@ -158,8 +158,78 @@ export function calculateLoan(params: LoanParams): LoanResult {
     }
 }
 
-export function calculateAPY(nominalRate: number, compoundingFrequency: number): number {
-    return (Math.pow(1 + nominalRate / 100 / compoundingFrequency, compoundingFrequency) - 1) * 100
+export interface APYParams {
+    principal: number;
+    nominalRate: number;
+    years: number;
+    months: number;
+    compoundingFrequency: number;
+    regularDeposit?: number;
+    depositRate?: "weekly" | "monthly" | "quarterly" | "half-yearly" | "yearly";
+}
+
+export interface APYResult {
+    finalBalance: number;
+    totalInterest: number;
+    additionalDeposits: number;
+    APYRate: number;
+    initialBalance: number;
+}
+
+export function calculateAPY(params: APYParams): APYResult {
+    const {
+        principal, nominalRate, years, months,
+        compoundingFrequency, regularDeposit = 0, depositRate
+    } = params;
+
+    const annualRate = nominalRate / 100;
+    const totalYears = years + months / 12;
+
+    const freqMap = {
+        weekly: 52, monthly: 12, quarterly: 4,
+        "half-yearly": 2, yearly: 1
+    } as const;
+    const depFreq = depositRate ? freqMap[depositRate] : 0;
+
+    type Event = { time: number; type: "compound" | "deposit" };
+    const events: Event[] = [];
+
+    for (let i = 1; i <= compoundingFrequency * totalYears; i++) {
+        events.push({ time: i / compoundingFrequency, type: "compound" });
+    }
+    if (regularDeposit && depFreq) {
+        for (let j = 1; j <= depFreq * totalYears; j++) {
+            events.push({ time: j / depFreq, type: "deposit" });
+        }
+    }
+
+    events.sort((a, b) => a.time - b.time);
+    let balance = principal;
+    let lastTime = 0;
+    let totalDeposits = 0;
+
+    for (const e of events) {
+        const delta = e.time - lastTime;
+        balance *= Math.pow(1 + annualRate / compoundingFrequency, compoundingFrequency * delta);
+
+        if (e.type === "deposit") {
+            balance += regularDeposit;
+            totalDeposits += regularDeposit;
+        }
+        lastTime = e.time;
+    }
+
+    const finalBalance = Math.round(balance * 100) / 100;
+    const totalInterest = Math.round((finalBalance - principal - totalDeposits) * 100) / 100;
+    const apyRate = Math.pow(1 + annualRate / compoundingFrequency, compoundingFrequency) - 1;
+
+    return {
+        initialBalance: Math.round(principal * 100) / 100,
+        finalBalance,
+        additionalDeposits: Math.round(totalDeposits * 100) / 100,
+        totalInterest,
+        APYRate: Math.round(apyRate * 10000) / 100
+    };
 }
 
 export function calculateCAGR(beginningValue: number, endingValue: number, years: number): number {
