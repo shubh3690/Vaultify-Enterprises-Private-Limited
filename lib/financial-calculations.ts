@@ -581,31 +581,71 @@ export function calculateSimpleInterest(principal: number, rate: number, time: n
 }
 
 export interface SIPParams {
-    monthlyInvestment: number
+    regularInvestment: number
+    investmentFrequency: "monthly" | "quarterly" | "half-yearly" | "yearly"
     expectedReturn: number
-    timePeriod: number
+    years: number
+    months: number
+    initialBalance: number
+    investmentIncreaseRate: number
 }
 
 export interface SIPResult {
     maturityAmount: number
     totalInvestment: number
     totalReturns: number
+    additionalDeposits: number
 }
 
 export function calculateSIP(params: SIPParams): SIPResult {
-    const { monthlyInvestment, expectedReturn, timePeriod } = params
-    const monthlyRate = expectedReturn / 100 / 12
-    const totalMonths = timePeriod * 12
+    const {
+        regularInvestment,
+        investmentFrequency,
+        expectedReturn,
+        years,
+        months,
+        initialBalance,
+        investmentIncreaseRate
+    } = params;
 
-    const maturityAmount = monthlyInvestment * (((Math.pow(monthlyRate + 1, totalMonths) - 1) / monthlyRate) * (monthlyRate + 1))
-    const totalInvestment = monthlyInvestment * totalMonths
-    const totalReturns = maturityAmount - totalInvestment
+    const interval: number = {
+        monthly: 1,
+        quarterly: 3,
+        "half-yearly": 6,
+        yearly: 12
+    }[investmentFrequency];
+
+    const totalMonths = years * 12 + months;
+    const monthlyRate = expectedReturn / 12 / 100;
+
+    let balance = initialBalance;
+    let totalInvestment = 0;
+    let baseInvestment = 0;
+
+    for (let m = 1; m <= totalMonths; m++) {
+        balance *= 1 + monthlyRate;
+        const isDepositMonth = m % interval === 0;
+
+        if (isDepositMonth) {
+            const yearsElapsed = Math.floor((m - 1) / 12);
+            const deposit = regularInvestment * Math.pow(1 + investmentIncreaseRate / 100, yearsElapsed);
+
+            balance += deposit;
+            totalInvestment += deposit;
+            baseInvestment += regularInvestment;
+        }
+    }
+
+    const maturityAmount = Math.round(balance * 100) / 100;
+    const additionalDeposits = Math.round((totalInvestment - baseInvestment) * 100) / 100;
+    const totalReturns = Math.round((maturityAmount - initialBalance - totalInvestment) * 100) / 100;
 
     return {
         maturityAmount,
-        totalInvestment,
-        totalReturns
-    }
+        totalInvestment: Math.round(totalInvestment * 100) / 100,
+        totalReturns,
+        additionalDeposits
+    };
 }
 
 export interface CreditCardParams {
