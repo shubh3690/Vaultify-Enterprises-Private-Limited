@@ -979,57 +979,215 @@ export function calculateCarLoan(params: CarLoanParams): CarLoanResult {
     return { monthlyPayment, totalPayment, totalInterest, amortizationSchedule: schedule };
 }
 
-
 export interface LoanPayoffParams {
     currentBalance: number
     interestRate: number
-    currentPayment: number
-    extraPayment: number
+    paymentType: "amount" | "time"
+
+    monthlyPayment?: number
+    nextPaymentDate?: string
+    paymentIncrease?: number
+
+    targetYears?: number
+    targetMonths?: number
 }
 
 export interface LoanPayoffResult {
     monthsToPayoff: number
     totalInterest: number
-    interestSaved: number
-    timeSaved: number
+    totalBalance: number
+    loanPayoffDate: string
+    calculatedMonthlyPayment?: number
+    amortizationSchedule?: AmortizationEntry[]
 }
 
 export function calculateLoanPayoff(params: LoanPayoffParams): LoanPayoffResult {
-    const { currentBalance, interestRate, currentPayment, extraPayment } = params
+    const { currentBalance, interestRate, paymentType, monthlyPayment, nextPaymentDate, paymentIncrease = 0, targetYears = 0, targetMonths = 0 } = params
+
     const monthlyRate = interestRate / 100 / 12
 
-    // Calculate original payoff
-    let originalBalance = currentBalance
-    let originalMonths = 0
-    let originalInterest = 0
+    if (paymentType === "amount") {
+        return calculatePayoffByAmount({
+            currentBalance,
+            monthlyRate,
+            monthlyPayment: monthlyPayment!,
+            paymentIncrease,
+            nextPaymentDate: nextPaymentDate || new Date().toISOString().split('T')[0]
+        })
+    } else {
+        return calculatePayoffByTime({
+            currentBalance,
+            monthlyRate,
+            targetYears,
+            targetMonths
+        })
+    }
+}
 
-    while (originalBalance > 0.01 && originalMonths < 600) {
-        const interestCharge = originalBalance * monthlyRate
-        const principalPayment = currentPayment - interestCharge
-        originalBalance -= principalPayment
-        originalInterest += interestCharge
-        originalMonths++
+function calculatePayoffByAmount(params: { currentBalance: number, monthlyRate: number, monthlyPayment: number, paymentIncrease: number, nextPaymentDate: string }): LoanPayoffResult {
+    const { currentBalance, monthlyRate, monthlyPayment, paymentIncrease, nextPaymentDate } = params
+
+    const formatDateString = (date: Date): string => {
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        })
     }
 
-    // Calculate with extra payment
-    let newBalance = currentBalance
-    let newMonths = 0
-    let newInterest = 0
-    const totalPayment = currentPayment + extraPayment
+    let balance = currentBalance
+    let totalInterest = 0
+    let paymentNumber = 1
+    let currentDate = new Date(nextPaymentDate)
+    let currentMonthlyPayment = monthlyPayment
 
-    while (newBalance > 0.01 && newMonths < 600) {
-        const interestCharge = newBalance * monthlyRate
-        const principalPayment = totalPayment - interestCharge
-        newBalance -= principalPayment
-        newInterest += interestCharge
-        newMonths++
+    const amortizationSchedule: AmortizationEntry[] = []
+
+    while (balance > 0.01) {
+        const interestPayment = balance * monthlyRate
+        let principalPayment = currentMonthlyPayment - interestPayment
+
+        if (principalPayment >= balance) {
+            principalPayment = balance
+            const finalTotalPayment = principalPayment + interestPayment
+
+            amortizationSchedule.push({
+                paymentNumber,
+                paymentDate: formatDateString(currentDate),
+                beginningBalance: balance,
+                monthlyPayment: finalTotalPayment,
+                principalPayment,
+                interestPayment,
+                extraPayment: 0,
+                endingBalance: 0,
+                cumulativeInterest: totalInterest + interestPayment
+            })
+
+            totalInterest += interestPayment
+            balance = 0
+            break
+        }
+
+        balance -= principalPayment
+        totalInterest += interestPayment
+
+        amortizationSchedule.push({
+            paymentNumber,
+            paymentDate: formatDateString(currentDate),
+            beginningBalance: balance + principalPayment,
+            monthlyPayment: currentMonthlyPayment,
+            principalPayment,
+            interestPayment,
+            extraPayment: 0,
+            endingBalance: balance,
+            cumulativeInterest: totalInterest
+        })
+
+        if (paymentNumber % 12 === 0 && paymentIncrease > 0) {
+            currentMonthlyPayment = currentMonthlyPayment * (1 + paymentIncrease / 100)
+        }
+
+        currentDate.setMonth(currentDate.getMonth() + 1)
+        paymentNumber++
     }
+
+    const monthsToPayoff = paymentNumber - 1
+    const totalBalance = currentBalance + totalInterest
+    const loanPayoffDate = formatDateString(currentDate)
 
     return {
-        monthsToPayoff: newMonths,
-        totalInterest: newInterest,
-        interestSaved: originalInterest - newInterest,
-        timeSaved: originalMonths - newMonths,
+        monthsToPayoff,
+        totalInterest: parseFloat(totalInterest.toFixed(2)),
+        totalBalance: parseFloat(totalBalance.toFixed(2)),
+        loanPayoffDate,
+        amortizationSchedule
+    }
+}
+
+function calculatePayoffByTime(params: { currentBalance: number, monthlyRate: number, targetYears: number, targetMonths: number }): LoanPayoffResult {
+    const { currentBalance, monthlyRate, targetYears, targetMonths } = params
+
+    const totalTargetMonths = Math.round((targetYears * 12) + targetMonths)
+
+    if (totalTargetMonths <= 0) {
+        throw new Error("Target time must be greater than 0")
+    }
+
+    let requiredPayment: number
+
+    if (monthlyRate === 0) {
+        requiredPayment = currentBalance / totalTargetMonths
+    } else {
+        requiredPayment = currentBalance *
+            (monthlyRate * Math.pow(1 + monthlyRate, totalTargetMonths)) /
+            (Math.pow(1 + monthlyRate, totalTargetMonths) - 1)
+    }
+
+    const formatDateString = (date: Date): string => {
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        })
+    }
+
+    let balance = currentBalance
+    let totalInterest = 0
+    let currentDate = new Date()
+    const amortizationSchedule: AmortizationEntry[] = []
+
+    for (let paymentNumber = 1; paymentNumber <= totalTargetMonths; paymentNumber++) {
+        const interestPayment = balance * monthlyRate
+        let principalPayment = requiredPayment - interestPayment
+
+        if (paymentNumber === totalTargetMonths) {
+            principalPayment = balance
+            const finalTotalPayment = principalPayment + interestPayment
+
+            amortizationSchedule.push({
+                paymentNumber,
+                paymentDate: formatDateString(currentDate),
+                beginningBalance: balance,
+                monthlyPayment: finalTotalPayment,
+                principalPayment,
+                interestPayment,
+                extraPayment: 0,
+                endingBalance: 0,
+                cumulativeInterest: totalInterest + interestPayment
+            })
+
+            totalInterest += interestPayment
+            balance = 0
+        } else {
+            balance -= principalPayment
+            totalInterest += interestPayment
+
+            amortizationSchedule.push({
+                paymentNumber,
+                paymentDate: formatDateString(currentDate),
+                beginningBalance: balance + principalPayment,
+                monthlyPayment: requiredPayment,
+                principalPayment,
+                interestPayment,
+                extraPayment: 0,
+                endingBalance: balance,
+                cumulativeInterest: totalInterest
+            })
+        }
+
+        currentDate.setMonth(currentDate.getMonth() + 1)
+    }
+
+    const totalBalance = currentBalance + totalInterest
+    const loanPayoffDate = formatDateString(currentDate)
+
+    return {
+        monthsToPayoff: totalTargetMonths,
+        totalInterest: parseFloat(totalInterest.toFixed(2)),
+        totalBalance: parseFloat(totalBalance.toFixed(2)),
+        loanPayoffDate,
+        calculatedMonthlyPayment: parseFloat(requiredPayment.toFixed(2)),
+        amortizationSchedule
     }
 }
 
