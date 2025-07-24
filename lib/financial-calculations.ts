@@ -1458,37 +1458,61 @@ export function calculateReturnMultipleIRR(returnMultiple: number, years: number
 }
 
 export interface MarginParams {
-    stockPrice: number
-    shares: number
-    marginRate: number
-    maintenanceMargin: number
+    value1: number;
+    value2: number;
+    input1Type: "cost" | "selling-price" | "margin" | "markup";
+    input2Type: "cost" | "selling-price" | "margin" | "markup";
 }
 
 export interface MarginResult {
-    totalValue: number
-    marginRequired: number
-    buyingPower: number
-    maintenanceRequired: number
-    marginCallPrice: number
+    cost: number;
+    sellingPrice: number;
+    profit: number;
+    marginPercentage: number;
+    markupPercentage: number;
 }
 
 export function calculateMargin(params: MarginParams): MarginResult {
-    const { stockPrice, shares, marginRate, maintenanceMargin } = params
-    const totalValue = stockPrice * shares
-    const marginRequired = totalValue * (marginRate / 100)
-    const buyingPower = totalValue / (marginRate / 100)
-    const maintenanceRequired = totalValue * (maintenanceMargin / 100)
+    let cost = 0;
+    let sellingPrice = 0;
+    let marginPercentage = 0;
+    let markupPercentage = 0;
 
-    const loanAmount = totalValue - marginRequired
-    const marginCallPrice = loanAmount / (shares * (1 - maintenanceMargin / 100))
+    if (params.input1Type === "cost") cost = params.value1;
+    else if (params.input1Type === "selling-price") sellingPrice = params.value1;
+    else if (params.input1Type === "margin") marginPercentage = params.value1;
+    else if (params.input1Type === "markup") markupPercentage = params.value1;
+
+    if (params.input2Type === "cost") cost = params.value2;
+    else if (params.input2Type === "selling-price") sellingPrice = params.value2;
+    else if (params.input2Type === "margin") marginPercentage = params.value2;
+    else if (params.input2Type === "markup") markupPercentage = params.value2;
+
+    if (cost > 0 && sellingPrice > 0) {
+        const profit = sellingPrice - cost;
+        marginPercentage = (profit / sellingPrice) * 100;
+        markupPercentage = (profit / cost) * 100;
+    } else if (cost > 0 && marginPercentage > 0) {
+        sellingPrice = cost / (1 - marginPercentage / 100);
+    } else if (sellingPrice > 0 && marginPercentage > 0) {
+        cost = sellingPrice * (1 - marginPercentage / 100);
+    } else if (cost > 0 && markupPercentage > 0) {
+        sellingPrice = cost * (1 + markupPercentage / 100);
+    } else if (sellingPrice > 0 && markupPercentage > 0) {
+        cost = sellingPrice / (1 + markupPercentage / 100);
+    }
+
+    const profit = sellingPrice - cost;
+    const finalMarginPercentage = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
+    const finalMarkupPercentage = cost > 0 ? (profit / cost) * 100 : 0;
 
     return {
-        totalValue,
-        marginRequired,
-        buyingPower,
-        maintenanceRequired,
-        marginCallPrice
-    }
+        cost: Math.round(cost * 100) / 100,
+        sellingPrice: Math.round(sellingPrice * 100) / 100,
+        profit: Math.round(profit * 100) / 100,
+        marginPercentage: Math.round(finalMarginPercentage * 100) / 100,
+        markupPercentage: Math.round(finalMarkupPercentage * 100) / 100,
+    };
 }
 
 export function calculateForexCompounding(initialDeposit: number, monthlyReturn: number, months: number, monthlyDeposit = 0): CompoundInterestResult {

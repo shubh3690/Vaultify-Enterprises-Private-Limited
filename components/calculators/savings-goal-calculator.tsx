@@ -61,7 +61,11 @@ export function SavingsGoalCalculator() {
                             id="targetAmount"
                             type="number"
                             value={params.targetAmount}
-                            onChange={(e) => updateParam("targetAmount", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("targetAmount", Number(e.target.value))
+                            }}
                             placeholder="50000"
                         />
                     </div>
@@ -72,38 +76,48 @@ export function SavingsGoalCalculator() {
                             id="currentSavings"
                             type="number"
                             value={params.currentSavings}
-                            onChange={(e) => updateParam("currentSavings", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("currentSavings", Number(e.target.value))
+                            }}
                             placeholder="5000"
                         />
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="depositAmount">Deposit Amount (₹)</Label>
-                        <Input
-                            id="depositAmount"
-                            type="number"
-                            value={params.depositAmount}
-                            onChange={(e) => updateParam("depositAmount", Number(e.target.value))}
-                            placeholder="500"
-                        />
-                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="depositAmount">Deposit Amount (₹)</Label>
+                            <Input
+                                id="depositAmount"
+                                type="number"
+                                value={params.depositAmount}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("depositAmount", Number(e.target.value))
+                                }}
+                                placeholder="500"
+                            />
+                        </div>
 
-                    <div className="grid gap-2">
-                        <Label>Deposit Frequency</Label>
-                        <Select
-                            value={params.depositFrequency}
-                            onValueChange={(value) => updateParam("depositFrequency", value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="daily">Daily (365/yr)</SelectItem>
-                                <SelectItem value="weekly">Weekly (52/yr)</SelectItem>
-                                <SelectItem value="fortnightly">Fortnightly (26/yr)</SelectItem>
-                                <SelectItem value="monthly">Monthly (12/yr)</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="grid gap-2">
+                            <Label>Deposit Frequency</Label>
+                            <Select
+                                value={params.depositFrequency}
+                                onValueChange={(value) => updateParam("depositFrequency", value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="daily">Daily (365/yr)</SelectItem>
+                                    <SelectItem value="weekly">Weekly (52/yr)</SelectItem>
+                                    <SelectItem value="fortnightly">Fortnightly (26/yr)</SelectItem>
+                                    <SelectItem value="monthly">Monthly (12/yr)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div className="grid gap-2">
@@ -113,7 +127,11 @@ export function SavingsGoalCalculator() {
                             type="number"
                             step="0.1"
                             value={params.interestRate}
-                            onChange={(e) => updateParam("interestRate", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("interestRate", Number(e.target.value))
+                            }}
                             placeholder="4"
                         />
                     </div>
