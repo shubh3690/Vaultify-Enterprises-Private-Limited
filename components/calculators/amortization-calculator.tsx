@@ -5,23 +5,40 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { calculateLoan, type LoanParams } from "@/lib/financial-calculations"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { calculateLoan, type LoanCalculatorParams } from "@/lib/financial-calculations"
 import { formatCurrency } from "@/lib/utils"
 import { ResultsDisplay } from "@/components/ui/results-display"
 
 export function AmortizationCalculator() {
-    const [params, setParams] = useState<LoanParams>({
-        principal: 200000,
-        rate: 4.5,
-        term: 30,
+    const [params, setParams] = useState<LoanCalculatorParams>({
+        loanAmount: 200000,
+        interestRate: 4.5,
+        loanTermYears: 30,
+        loanTermMonths: 0,
+        startDate: new Date().toISOString().split('T')[0],
+        extraPayments: 0,
+        additionalPaymentFrequency: 'monthly',
+        extraFees: 0,
+        addExtraFeesToLoan: false,
+        oneTimePayment: {
+            amount: 0,
+            type: 'balloon',
+            date: new Date().toISOString().split('T')[0]
+        }
     })
 
     const [results, setResults] = useState(calculateLoan(params))
 
-    const updateParam = (key: keyof LoanParams, value: number) => {
+    const updateParam = (key: keyof LoanCalculatorParams, value: any) => {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
         setResults(calculateLoan(newParams))
+    }
+
+    const updateOneTimePayment = (key: string, value: any) => {
+        const newOneTimePayment = { ...params.oneTimePayment!, [key]: value }
+        updateParam('oneTimePayment', newOneTimePayment)
     }
 
     return (
@@ -33,115 +50,293 @@ export function AmortizationCalculator() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="principal">Loan Amount (₹)</Label>
+                        <Label htmlFor="loanAmount">Loan Amount (₹)</Label>
                         <Input
-                            id="principal"
+                            id="loanAmount"
                             type="number"
-                            value={params.principal}
-                            onChange={(e) => updateParam("principal", Number(e.target.value))}
+                            value={params.loanAmount}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("loanAmount", Number(e.target.value))
+                            }}
                             placeholder="200000"
                         />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="rate">Annual Interest Rate (%)</Label>
+                        <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
                         <Input
-                            id="rate"
+                            id="interestRate"
                             type="number"
                             step="0.1"
-                            value={params.rate}
-                            onChange={(e) => updateParam("rate", Number(e.target.value))}
+                            value={params.interestRate}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("interestRate", Number(e.target.value))
+                            }}
                             placeholder="4.5"
                         />
                     </div>
 
+                    <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="grid gap-2">
+                                <Label htmlFor="loanTermYears">Years</Label>
+                                <Input
+                                    id="loanTermYears"
+                                    type="number"
+                                    value={params.loanTermYears}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updateParam("loanTermYears", Number(e.target.value))
+                                    }}
+                                    placeholder="30"
+                                    min="0"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="loanTermMonths">Months</Label>
+                                <Input
+                                    id="loanTermMonths"
+                                    type="number"
+                                    value={params.loanTermMonths}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0) {
+                                            updateParam("loanTermMonths", 0)
+                                            return
+                                        }
+                                        if (Number(e.target.value) > 11) {
+                                            updateParam("loanTermMonths", 11)
+                                            return
+                                        }
+                                        updateParam("loanTermMonths", Number(e.target.value))
+                                    }}
+                                    placeholder="0"
+                                    min="0"
+                                    max="11"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="grid gap-2">
-                        <Label htmlFor="term">Loan Term (Years)</Label>
+                        <Label htmlFor="startDate">Start Date</Label>
                         <Input
-                            id="term"
-                            type="number"
-                            value={params.term}
-                            onChange={(e) => updateParam("term", Number(e.target.value))}
-                            placeholder="30"
+                            id="startDate"
+                            type="date"
+                            value={params.startDate}
+                            onChange={(e) => updateParam("startDate", e.target.value)}
                         />
                     </div>
+
+                    <Card className="grid sm:grid-cols-2 gap-4 p-4 optional">
+                        <div className="grid gap-2">
+                            <Label htmlFor="extraPayments">Additional Payment Amount (₹)</Label>
+                            <Input
+                                id="extraPayments"
+                                type="number"
+                                value={params.extraPayments || 0}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("extraPayments", Number(e.target.value))
+                                }}
+                                placeholder="0"
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="additionalPaymentFrequency">Additional Payment Frequency</Label>
+                            <Select
+                                value={params.additionalPaymentFrequency}
+                                onValueChange={(value) => updateParam("additionalPaymentFrequency", value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select frequency" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                                    <SelectItem value="half-yearly">Half-yearly</SelectItem>
+                                    <SelectItem value="yearly">Yearly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </Card>
+
+                    <Card className="space-y-3 p-4 optional">
+                        <Label>One-time Payment</Label>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="oneTimeAmount">Amount (₹)</Label>
+                                <Input
+                                    id="oneTimeAmount"
+                                    type="number"
+                                    value={params.oneTimePayment?.amount || 0}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updateOneTimePayment("amount", Number(e.target.value))
+                                    }}
+                                    placeholder="0"
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="oneTimeType">Payment Type</Label>
+                                <Select
+                                    value={params.oneTimePayment?.type}
+                                    onValueChange={(value) => updateOneTimePayment("type", value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="balloon">Balloon Payment (at end)</SelectItem>
+                                        <SelectItem value="at_date">Payment at Specific Date</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {params.oneTimePayment?.type === 'at_date' && (
+                            <div className="grid gap-2">
+                                <Label htmlFor="oneTimeDate">Payment Date</Label>
+                                <Input
+                                    id="oneTimeDate"
+                                    type="date"
+                                    value={params.oneTimePayment?.date || ''}
+                                    onChange={(e) => updateOneTimePayment("date", e.target.value)}
+                                />
+                            </div>
+                        )}
+                    </Card>
                 </CardContent>
             </Card>
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Loan Summary"
+                    title="Loan Payment Results"
                     results={[
+                        { label: "Effective Loan Amount", value: formatCurrency(results.effectiveLoanAmount) },
                         { label: "Monthly Payment", value: formatCurrency(results.monthlyPayment) },
-                        { label: "Total Payment", value: formatCurrency(results.totalPayment) },
+                        { label: "Total Amount", value: formatCurrency(results.totalAmount) },
                         { label: "Total Interest", value: formatCurrency(results.totalInterest) },
-                        { label: "Number of Payments", value: `${params.term * 12}` },
+                        { label: "Payoff Date", value: results.payoffDate },
                     ]}
                 />
 
-                <Tabs defaultValue="yearly" className="w-full">
+                <Tabs defaultValue="summary" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="yearly">Yearly Summary</TabsTrigger>
-                        <TabsTrigger value="monthly">Monthly Schedule</TabsTrigger>
+                        <TabsTrigger value="summary">Payment Summary</TabsTrigger>
+                        <TabsTrigger value="schedule">Amortization Schedule</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="yearly">
+                    <TabsContent value="summary">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Yearly Amortization Summary</CardTitle>
+                                <CardTitle>Payment Breakdown</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="space-y-2 max-h-80 overflow-y-auto">
-                                    <div className="grid grid-cols-4 gap-2 text-sm font-medium border-b pb-2">
-                                        <span>Year</span>
-                                        <span>Principal</span>
-                                        <span>Interest</span>
-                                        <span>Balance</span>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between">
+                                        <span>Base Loan Amount:</span>
+                                        <span className="font-medium">{formatCurrency(params.loanAmount)}</span>
                                     </div>
-                                    {Array.from({ length: params.term }, (_, yearIndex) => {
-                                        const yearStart = yearIndex * 12
-                                        const yearEnd = Math.min((yearIndex + 1) * 12, results.amortizationSchedule.length)
-                                        const yearPayments = results.amortizationSchedule.slice(yearStart, yearEnd)
-
-                                        const yearPrincipal = yearPayments.reduce((sum, payment) => sum + payment.principal, 0)
-                                        const yearInterest = yearPayments.reduce((sum, payment) => sum + payment.interest, 0)
-                                        const endBalance = yearPayments[yearPayments.length - 1]?.balance || 0
-
-                                        return (
-                                            <div key={yearIndex} className="grid grid-cols-4 gap-2 text-sm">
-                                                <span>{yearIndex + 1}</span>
-                                                <span>{formatCurrency(yearPrincipal)}</span>
-                                                <span>{formatCurrency(yearInterest)}</span>
-                                                <span>{formatCurrency(endBalance)}</span>
+                                    {(params.extraFees || 0) > 0 && (
+                                        <div className="flex justify-between">
+                                            <span>Extra Fees:</span>
+                                            <span className="font-medium">{formatCurrency(params.extraFees || 0)}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between">
+                                        <span>Effective Loan Amount:</span>
+                                        <span className="font-medium">{formatCurrency(results.effectiveLoanAmount)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Interest Rate:</span>
+                                        <span className="font-medium">{params.interestRate}%</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Loan Term:</span>
+                                        <span className="font-medium">
+                                            {params.loanTermYears}y {params.loanTermMonths}m
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Total Payments:</span>
+                                        <span className="font-medium">{results.summary.numberOfPayments}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Monthly Payment:</span>
+                                        <span className="font-medium">{formatCurrency(results.monthlyPayment)}</span>
+                                    </div>
+                                    {(params.extraPayments || 0) > 0 && (
+                                        <>
+                                            <div className="flex justify-between">
+                                                <span>Additional Payment:</span>
+                                                <span className="font-medium">{formatCurrency(params.extraPayments || 0)}</span>
                                             </div>
-                                        )
-                                    })}
+                                            <div className="flex justify-between">
+                                                <span>Payment Frequency:</span>
+                                                <span className="font-medium capitalize">{params.additionalPaymentFrequency}</span>
+                                            </div>
+                                        </>
+                                    )}
+                                    {(params.oneTimePayment?.amount || 0) > 0 && (
+                                        <>
+                                            <div className="flex justify-between">
+                                                <span>One-time Payment:</span>
+                                                <span className="font-medium">{formatCurrency(params.oneTimePayment?.amount || 0)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span>Payment Type:</span>
+                                                <span className="font-medium">
+                                                    {params.oneTimePayment?.type === 'balloon' ? 'Balloon Payment' : 'Specific Date'}
+                                                </span>
+                                            </div>
+                                            {params.oneTimePayment?.type === 'at_date' && (
+                                                <div className="flex justify-between">
+                                                    <span>Payment Date:</span>
+                                                    <span className="font-medium">{params.oneTimePayment?.date}</span>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="monthly">
+                    <TabsContent value="schedule">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Monthly Amortization Schedule</CardTitle>
+                                <CardTitle>Amortization Schedule</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="space-y-2 max-h-80 overflow-y-auto">
-                                    <div className="grid grid-cols-5 gap-2 text-sm font-medium border-b pb-2">
-                                        <span>Month</span>
+                                <div className="space-y-2 max-h-60 overflow-y-auto">
+                                    <div className="grid grid-cols-7 gap-2 text-sm font-medium border-b pb-2">
+                                        <span>Payment #</span>
+                                        <span>Date</span>
                                         <span>Payment</span>
                                         <span>Principal</span>
                                         <span>Interest</span>
+                                        <span>Extra</span>
                                         <span>Balance</span>
                                     </div>
                                     {results.amortizationSchedule.map((payment) => (
-                                        <div key={payment.month} className="grid grid-cols-5 gap-2 text-sm">
-                                            <span>{payment.month}</span>
-                                            <span>{formatCurrency(payment.payment)}</span>
-                                            <span>{formatCurrency(payment.principal)}</span>
-                                            <span>{formatCurrency(payment.interest)}</span>
-                                            <span>{formatCurrency(payment.balance)}</span>
+                                        <div key={payment.paymentNumber} className="grid grid-cols-7 gap-2 text-sm">
+                                            <span>{payment.paymentNumber}</span>
+                                            <span>{payment.paymentDate}</span>
+                                            <span>{formatCurrency(payment.monthlyPayment)}</span>
+                                            <span>{formatCurrency(payment.principalPayment)}</span>
+                                            <span>{formatCurrency(payment.interestPayment)}</span>
+                                            <span>{formatCurrency(payment.extraPayment)}</span>
+                                            <span>{formatCurrency(payment.endingBalance)}</span>
                                         </div>
                                     ))}
                                 </div>

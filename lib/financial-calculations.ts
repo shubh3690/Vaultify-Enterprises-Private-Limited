@@ -308,7 +308,7 @@ export interface LoanCalculatorParams {
     interestRate: number
     loanTermYears: number
     loanTermMonths: number
-    startDate?: string // ISO date string
+    startDate?: string
     extraPayments?: number
     additionalPaymentFrequency?: 'weekly' | 'monthly' | 'quarterly' | 'half-yearly' | 'yearly'
     extraFees?: number
@@ -316,7 +316,7 @@ export interface LoanCalculatorParams {
     oneTimePayment?: {
         amount: number
         type: 'balloon' | 'at_date'
-        date?: string // ISO date string
+        date?: string
     }
 }
 
