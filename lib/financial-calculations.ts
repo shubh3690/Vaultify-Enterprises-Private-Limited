@@ -796,12 +796,6 @@ export function calculateSavingsGoal(params: SavingsGoalParams): SavingsGoalResu
     }
 }
 
-export function calculateFutureValue(presentValue: number, rate: number, periods: number, paymentPerPeriod = 0): number {
-    const futureValueLumpSum = presentValue * Math.pow(1 + rate / 100, periods)
-    const futureValueAnnuity = paymentPerPeriod * ((Math.pow(1 + rate / 100, periods) - 1) / (rate / 100))
-    return futureValueLumpSum + futureValueAnnuity
-}
-
 export interface SavingsParams {
     currentBalance: number;
     annualInterestRate: number;

@@ -48,12 +48,6 @@ export const calculatorCategories: CalculatorCategory[] = [
                 category: "savings-investments",
             },
             {
-                slug: "future-value-calculator",
-                title: "Future Value Calculator",
-                description: "Calculate future value of investments",
-                category: "savings-investments",
-            },
-            {
                 slug: "savings-goal",
                 title: "Savings Goal Calculator",
                 description: "Calculate time needed to reach your savings goal",

@@ -20,7 +20,6 @@ import { RetirementPlanningCalculator } from "@/components/calculators/retiremen
 import { CarLoanCalculator } from "@/components/calculators/car-loan-calculator"
 import { AmortizationCalculator } from "@/components/calculators/amortization-calculator"
 import { StockAverageCalculator } from "@/components/calculators/stock-average-calculator"
-import { FutureValueCalculator } from "@/components/calculators/future-value-calculator"
 import { HowLongMoneyLastsCalculator } from "@/components/calculators/how-long-money-lasts-calculator"
 import { InterestRateCalculator } from "@/components/calculators/interest-rate-calculator"
 import { LoanPayoffCalculator } from "@/components/calculators/loan-payoff-calculator"
@@ -52,7 +51,6 @@ const calculatorComponents = {
     "car-loan-calculator": CarLoanCalculator,
     "amortization-calculator": AmortizationCalculator,
     "stock-average-calculator": StockAverageCalculator,
-    "future-value-calculator": FutureValueCalculator,
     "how-long-will-money-last": HowLongMoneyLastsCalculator,
     "interest-rate-calculator": InterestRateCalculator,
     "loan-payoff-calculator": LoanPayoffCalculator,
