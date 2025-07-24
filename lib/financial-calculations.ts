@@ -303,57 +303,198 @@ function calculateWithdrawalAmount(
     return Math.min(calculatedWithdrawal, balance);
 }
 
-export interface LoanParams {
-    principal: number
-    rate: number
-    term: number
+export interface LoanCalculatorParams {
+    loanAmount: number
+    interestRate: number
+    loanTermYears: number
+    loanTermMonths: number
+    startDate?: string // ISO date string
+    extraPayments?: number
+    additionalPaymentFrequency?: 'weekly' | 'monthly' | 'quarterly' | 'half-yearly' | 'yearly'
+    extraFees?: number
+    addExtraFeesToLoan?: boolean
+    oneTimePayment?: {
+        amount: number
+        type: 'balloon' | 'at_date'
+        date?: string // ISO date string
+    }
 }
 
-export interface LoanResult {
+export interface AmortizationEntry {
+    paymentNumber: number
+    paymentDate: string
+    beginningBalance: number
     monthlyPayment: number
-    totalPayment: number
-    totalInterest: number
-    amortizationSchedule: Array<{
-        month: number
-        payment: number
-        principal: number
-        interest: number
-        balance: number
-    }>
+    principalPayment: number
+    interestPayment: number
+    extraPayment: number
+    endingBalance: number
+    cumulativeInterest: number
 }
 
-export function calculateLoan(params: LoanParams): LoanResult {
-    const { principal, rate, term } = params
-    const monthlyRate = rate / 100 / 12
-    const totalMonths = term * 12
+export interface LoanSummary {
+    numberOfPayments: number
+    totalOfPayments: number
+    totalInterest: number
+    totalPrincipal: number
+    totalExtraPayments: number
+}
 
-    const monthlyPayment = (principal * (monthlyRate * Math.pow(monthlyRate + 1, totalMonths))) / (Math.pow(monthlyRate + 1, totalMonths) - 1)
+export interface LoanCalculatorResult {
+    monthlyPayment: number
+    totalInterest: number
+    totalAmount: number
+    payoffDate: string
+    interestSavedWithExtra?: number
+    timeSavedWithExtra?: number
+    amortizationSchedule: AmortizationEntry[]
+    summary: LoanSummary
+    effectiveLoanAmount: number
+}
 
-    let balance = principal
-    const amortizationSchedule: LoanResult["amortizationSchedule"] = []
+export function calculateLoan(params: LoanCalculatorParams): LoanCalculatorResult {
+    const { loanAmount, loanTermYears, loanTermMonths, interestRate, startDate = new Date().toISOString().split('T')[0], extraPayments = 0, additionalPaymentFrequency = 'monthly', extraFees = 0, addExtraFeesToLoan = false, oneTimePayment } = params
 
-    for (let month = 1; month <= totalMonths; month++) {
-        const interestPayment = balance * monthlyRate
-        const principalPayment = monthlyPayment - interestPayment
-        balance -= principalPayment
+    const effectiveLoanAmount = addExtraFeesToLoan ? loanAmount + extraFees : loanAmount
+    const totalLoanMonths = (loanTermYears * 12) + loanTermMonths
+    const monthlyRate = interestRate / 100 / 12
+    const numberOfPayments = totalLoanMonths
+    let monthlyPayment: number
 
-        amortizationSchedule.push({
-            month,
-            payment: monthlyPayment,
-            principal: principalPayment,
-            interest: interestPayment,
-            balance: Math.max(0, balance)
+    if (oneTimePayment?.type === 'balloon' && oneTimePayment.amount > 0) {
+        const balloonPresentValue = oneTimePayment.amount / Math.pow(1 + monthlyRate, numberOfPayments)
+        const adjustedLoanAmount = effectiveLoanAmount - balloonPresentValue
+
+        if (adjustedLoanAmount > 0) {
+            monthlyPayment = adjustedLoanAmount *
+                (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+                (Math.pow(1 + monthlyRate, numberOfPayments) - 1)
+        } else {
+            monthlyPayment = effectiveLoanAmount * monthlyRate
+        }
+    } else {
+        monthlyPayment = effectiveLoanAmount *
+            (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+            (Math.pow(1 + monthlyRate, numberOfPayments) - 1)
+    }
+
+    const getExtraPaymentForMonth = (paymentNumber: number): number => {
+        if (!extraPayments) return 0
+
+        switch (additionalPaymentFrequency) {
+            case 'weekly':
+                return extraPayments * 4.33
+            case 'monthly':
+                return extraPayments
+            case 'quarterly':
+                return (paymentNumber % 3 === 0) ? extraPayments : 0
+            case 'half-yearly':
+                return (paymentNumber % 6 === 0) ? extraPayments : 0
+            case 'yearly':
+                return (paymentNumber % 12 === 0) ? extraPayments : 0
+            default:
+                return 0
+        }
+    }
+
+    const formatDateString = (date: Date): string => {
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
         })
     }
 
-    const totalPayment = monthlyPayment * totalMonths
-    const totalInterest = totalPayment - principal
+    const amortizationSchedule: AmortizationEntry[] = []
+    let currentBalance = effectiveLoanAmount
+    let cumulativeInterest = 0
+    let paymentNumber = 1
+    let currentDate = new Date(startDate)
+    let balloonApplied = false
+
+    const oneTimePaymentMonth = oneTimePayment?.type === 'at_date' && oneTimePayment.date ? Math.round((new Date(oneTimePayment.date).getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)) : null
+
+    while (currentBalance > 0.01 && paymentNumber <= numberOfPayments + 12) {
+        const interestPayment = currentBalance * monthlyRate
+        let principalPayment = Math.max(0, monthlyPayment - interestPayment)
+        let actualExtraPayment = getExtraPaymentForMonth(paymentNumber)
+
+        if (oneTimePaymentMonth === paymentNumber && oneTimePayment?.amount) {
+            actualExtraPayment += oneTimePayment.amount
+        }
+
+        if (oneTimePayment?.type === 'balloon' && oneTimePayment.amount > 0 && !balloonApplied) {
+            const balanceAfterRegularPayment = currentBalance - principalPayment - actualExtraPayment
+
+            if (balanceAfterRegularPayment <= oneTimePayment.amount && balanceAfterRegularPayment > 0) {
+                actualExtraPayment += balanceAfterRegularPayment
+                balloonApplied = true
+            }
+            else if (paymentNumber === numberOfPayments && !balloonApplied) {
+                actualExtraPayment += Math.min(oneTimePayment.amount, currentBalance - principalPayment)
+                balloonApplied = true
+            }
+        }
+
+        const totalPrincipal = Math.min(principalPayment + actualExtraPayment, currentBalance)
+        if (totalPrincipal >= currentBalance) {
+            principalPayment = currentBalance
+            actualExtraPayment = Math.max(0, currentBalance - (monthlyPayment - interestPayment))
+        }
+
+        cumulativeInterest += interestPayment
+        currentBalance -= totalPrincipal
+
+        amortizationSchedule.push({
+            paymentNumber,
+            paymentDate: formatDateString(currentDate),
+            beginningBalance: currentBalance + totalPrincipal,
+            monthlyPayment: monthlyPayment,
+            principalPayment: totalPrincipal,
+            interestPayment,
+            extraPayment: actualExtraPayment,
+            endingBalance: Math.max(0, currentBalance),
+            cumulativeInterest
+        })
+
+        currentDate.setMonth(currentDate.getMonth() + 1)
+        paymentNumber++
+
+        if (currentBalance <= 0.01) break
+    }
+
+    const standardMonthlyPayment = effectiveLoanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1)
+    const standardTotalInterest = (standardMonthlyPayment * numberOfPayments) - effectiveLoanAmount
+
+    const actualTotalInterest = cumulativeInterest
+    const interestSavedWithExtra = Math.max(0, standardTotalInterest - actualTotalInterest)
+
+    const standardPayoffMonths = numberOfPayments
+    const actualPayoffMonths = amortizationSchedule.length
+    const timeSavedWithExtra = Math.max(0, standardPayoffMonths - actualPayoffMonths)
+
+    const totalOfAllPayments = amortizationSchedule.reduce((sum, entry) => sum + entry.monthlyPayment + entry.extraPayment, 0)
+
+    const summary: LoanSummary = {
+        numberOfPayments: amortizationSchedule.length,
+        totalOfPayments: totalOfAllPayments,
+        totalInterest: actualTotalInterest,
+        totalPrincipal: effectiveLoanAmount,
+        totalExtraPayments: amortizationSchedule.reduce((sum, entry) => sum + entry.extraPayment, 0)
+    }
+
+    const payoffDate = amortizationSchedule[amortizationSchedule.length - 1]?.paymentDate || formatDateString(currentDate)
 
     return {
-        monthlyPayment,
-        totalPayment,
-        totalInterest,
-        amortizationSchedule
+        monthlyPayment: parseFloat(monthlyPayment.toFixed(2)),
+        totalInterest: parseFloat(actualTotalInterest.toFixed(2)),
+        totalAmount: parseFloat(totalOfAllPayments.toFixed(2)),
+        payoffDate,
+        interestSavedWithExtra: parseFloat(interestSavedWithExtra.toFixed(2)),
+        timeSavedWithExtra,
+        amortizationSchedule,
+        summary,
+        effectiveLoanAmount: parseFloat(effectiveLoanAmount.toFixed(2))
     }
 }
 
