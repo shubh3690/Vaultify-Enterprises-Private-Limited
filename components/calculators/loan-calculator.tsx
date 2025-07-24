@@ -133,7 +133,7 @@ export function LoanCalculator() {
                         />
                     </div>
 
-                    <Card className="grid sm:grid-cols-2 gap-4 p-4 optional bg-gray-50">
+                    <Card className="grid sm:grid-cols-2 gap-4 p-4 optional">
                         <div className="grid gap-2">
                             <Label htmlFor="extraFees">Extra Fees (₹)</Label>
                             <Input
@@ -150,16 +150,25 @@ export function LoanCalculator() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="addExtraFeesToLoan">Add extra fees to loan amount</Label>
-                            <Checkbox
-                                id="addExtraFeesToLoan"
-                                checked={params.addExtraFeesToLoan}
-                                onCheckedChange={(checked: boolean) => updateParam("addExtraFeesToLoan", checked)}
-                            />
+                            <Label>Finance the closing costs?</Label>
+                            <Select
+                                value={params.addExtraFeesToLoan ? "yes" : "no"}
+                                onValueChange={(value) =>
+                                    updateParam("addExtraFeesToLoan", value === "yes")
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="yes">Yes</SelectItem>
+                                    <SelectItem value="no">No</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </Card>
 
-                    <Card className="grid sm:grid-cols-2 gap-4 p-4 optional bg-gray-50">
+                    <Card className="grid sm:grid-cols-2 gap-4 p-4 optional">
                         <div className="grid gap-2">
                             <Label htmlFor="extraPayments">Additional Payment Amount (₹)</Label>
                             <Input
@@ -195,7 +204,7 @@ export function LoanCalculator() {
                         </div>
                     </Card>
 
-                    <Card className="space-y-3 p-4 optional bg-gray-50">
+                    <Card className="space-y-3 p-4 optional">
                         <Label>One-time Payment</Label>
                         <div className="grid sm:grid-cols-2 gap-4">
                             <div className="grid gap-2">

@@ -58,14 +58,22 @@ export function StockAverageCalculator() {
                                     type="number"
                                     placeholder="Shares"
                                     value={purchase.shares}
-                                    onChange={(e) => updatePurchase(index, "shares", Number(e.target.value))}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updatePurchase(index, "shares", Number(e.target.value))
+                                    }}
                                 />
                                 <Input
                                     type="number"
                                     step="0.01"
                                     placeholder="Price per share"
                                     value={purchase.price}
-                                    onChange={(e) => updatePurchase(index, "price", Number(e.target.value))}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updatePurchase(index, "price", Number(e.target.value))
+                                    }}
                                 />
                                 <Button
                                     variant="outline"
@@ -83,16 +91,20 @@ export function StockAverageCalculator() {
                         </Button>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label className="optional" htmlFor="sellingPrice">Selling Price (₹) (optional)</Label>
+                    <Card className="grid gap-2 p-4 optional">
+                        <Label htmlFor="sellingPrice">Selling Price (₹)</Label>
                         <Input
                             id="sellingPrice"
                             type="number"
                             value={sellingPrice}
-                            onChange={(e) => setSellingPrice(Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                setSellingPrice(Number(e.target.value))
+                            }}
                             placeholder="5000"
                         />
-                    </div>
+                    </Card>
                 </CardContent>
             </Card>
 

@@ -50,7 +50,11 @@ export function MortgageCalculator() {
                             id="homePrice"
                             type="number"
                             value={params.homePrice}
-                            onChange={(e) => updateParam("homePrice", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("homePrice", Number(e.target.value))
+                            }}
                             placeholder="400000"
                         />
                     </div>
@@ -61,7 +65,11 @@ export function MortgageCalculator() {
                             id="downPayment"
                             type="number"
                             value={params.downPayment}
-                            onChange={(e) => updateParam("downPayment", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("downPayment", Number(e.target.value))
+                            }}
                             placeholder="80000"
                         />
                     </div>
@@ -81,7 +89,11 @@ export function MortgageCalculator() {
                                 type="number"
                                 step="0.1"
                                 value={params.rate}
-                                onChange={(e) => updateParam("rate", Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("rate", Number(e.target.value))
+                                }}
                                 placeholder="6.5"
                             />
                         </div>
@@ -111,7 +123,11 @@ export function MortgageCalculator() {
                             id="term"
                             type="number"
                             value={params.term}
-                            onChange={(e) => updateParam("term", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("term", Number(e.target.value))
+                            }}
                             placeholder="30"
                         />
                     </div>

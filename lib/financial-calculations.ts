@@ -1140,6 +1140,9 @@ export interface GeneralIRRParams {
     initialInvestment: number
     finalReturn: number
     years: number
+    months: number
+    regularTransfer: number
+    transferFrequency: "weekly" | "monthly" | "quarterly" | "half-yearly" | "yearly"
 }
 
 export interface CashFlowIRRParams {
@@ -1151,10 +1154,100 @@ export interface MultipleIRRParams {
 }
 
 export function calculateGeneralIRR(params: GeneralIRRParams): number {
-    const { initialInvestment, finalReturn, years } = params
-    if (initialInvestment <= 0 || finalReturn <= 0 || years <= 0) return 0
-    const irr = Math.pow(finalReturn / initialInvestment, 1 / years) - 1
-    return irr * 100
+    const {
+        initialInvestment,
+        finalReturn,
+        years,
+        months,
+        regularTransfer = 0,
+    } = params
+
+    if (initialInvestment <= 0 || finalReturn <= 0 || (years === 0 && months === 0)) return 0
+
+    const totalTimeInYears = years + (months / 12)
+
+    if (!regularTransfer || regularTransfer === 0) {
+        const irr = Math.pow(finalReturn / initialInvestment, 1 / totalTimeInYears) - 1
+        return parseFloat((irr * 100).toFixed(4))
+    }
+
+    return calculateIRRWithRegularTransfers(params, totalTimeInYears)
+}
+
+function calculateIRRWithRegularTransfers(params: GeneralIRRParams, totalTimeInYears: number): number {
+    const { initialInvestment, finalReturn, regularTransfer, transferFrequency } = params
+
+    const transfersPerYear = getTransfersPerYear(transferFrequency!)
+    const totalTransfers = Math.floor(totalTimeInYears * transfersPerYear)
+    const timeInterval = 1 / transfersPerYear
+
+    let rate = 0.1
+    let tolerance = 0.000001
+    let maxIterations = 1000
+    let iteration = 0
+
+    while (iteration < maxIterations) {
+        let npv = -initialInvestment
+        let npvDerivative = 0
+
+        for (let i = 1; i <= totalTransfers; i++) {
+            const time = i * timeInterval
+            const presentValue = -regularTransfer / Math.pow(1 + rate, time)
+            const derivative = regularTransfer * time / Math.pow(1 + rate, time + 1)
+
+            npv += presentValue
+            npvDerivative += derivative
+        }
+
+        const finalPresentValue = finalReturn / Math.pow(1 + rate, totalTimeInYears)
+        const finalDerivative = -finalReturn * totalTimeInYears / Math.pow(1 + rate, totalTimeInYears + 1)
+
+        npv += finalPresentValue
+        npvDerivative += finalDerivative
+
+        if (Math.abs(npv) < tolerance) {
+            return parseFloat((rate * 100).toFixed(4))
+        }
+
+        if (Math.abs(npvDerivative) < tolerance) {
+            break
+        }
+
+        rate = rate - npv / npvDerivative
+        iteration++
+    }
+
+    return calculateApproximateIRR(params, totalTimeInYears)
+}
+
+function getTransfersPerYear(frequency: string): number {
+    switch (frequency) {
+        case "weekly":
+            return 52
+        case "monthly":
+            return 12
+        case "quarterly":
+            return 4
+        case "half-yearly":
+            return 2
+        case "yearly":
+            return 1
+        default:
+            return 12
+    }
+}
+
+function calculateApproximateIRR(params: GeneralIRRParams, totalTimeInYears: number): number {
+    const { initialInvestment, finalReturn, regularTransfer, transferFrequency } = params
+
+    const transfersPerYear = getTransfersPerYear(transferFrequency!)
+    const totalTransfers = Math.floor(totalTimeInYears * transfersPerYear)
+    const totalInvested = initialInvestment + (regularTransfer! * totalTransfers)
+
+    const effectiveTime = totalTimeInYears * 0.75
+    const approximateIRR = Math.pow(finalReturn / totalInvested, 1 / effectiveTime) - 1
+
+    return parseFloat((approximateIRR * 100).toFixed(4))
 }
 
 export function calculateCashFlowIRR(params: CashFlowIRRParams): number {
@@ -1415,6 +1508,7 @@ export interface MMAParams {
     principal: number
     rate: number
     years: number
+    months: number
     compoundFrequency: number
     depositAmount?: number
     depositFrequency?: number
@@ -1427,11 +1521,14 @@ export interface MMAResult {
 }
 
 export function calculateMMA(params: MMAParams): MMAResult {
-    const { principal, rate, years, compoundFrequency, depositAmount = 0, depositFrequency = 0 } = params
+    const { principal, rate, years, months, compoundFrequency, depositAmount = 0, depositFrequency = 0 } = params
 
-    const totalPeriods = compoundFrequency * years
+    const totalTimeInYears = years + (months / 12)
+    const totalPeriods = compoundFrequency * totalTimeInYears
+    const wholePeriods = Math.floor(totalPeriods)
+    const partialPeriod = totalPeriods - wholePeriods
+
     const periodRate = Math.pow(1 + rate / 100, 1 / compoundFrequency) - 1
-
     const depositEveryNPeriods = depositFrequency ? compoundFrequency / depositFrequency : 0
     const depositPerPeriod = depositAmount
 
@@ -1439,17 +1536,21 @@ export function calculateMMA(params: MMAParams): MMAResult {
     let totalInterest = 0
     let totalDeposits = principal
 
-    for (let period = 1; period <= totalPeriods; period++) {
-        // Interest first
+    for (let period = 1; period <= wholePeriods; period++) {
         const interest = balance * periodRate
         balance += interest
         totalInterest += interest
 
-        // Then deposit at end of period
         if (depositFrequency && period % depositEveryNPeriods === 0) {
             balance += depositPerPeriod
             totalDeposits += depositPerPeriod
         }
+    }
+
+    if (partialPeriod > 0) {
+        const partialInterest = balance * periodRate * partialPeriod
+        balance += partialInterest
+        totalInterest += partialInterest
     }
 
     return {

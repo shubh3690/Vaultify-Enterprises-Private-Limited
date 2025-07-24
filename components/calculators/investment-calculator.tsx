@@ -47,7 +47,11 @@ export function InvestmentCalculator() {
                             id="principal"
                             type="number"
                             value={params.principal}
-                            onChange={(e) => updateParam('principal', Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam('principal', Number(e.target.value))
+                            }}
                             placeholder="5000"
                         />
                     </div>
@@ -60,7 +64,11 @@ export function InvestmentCalculator() {
                                 type="number"
                                 step="0.01"
                                 value={params.annualRate}
-                                onChange={(e) => updateParam('annualRate', Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam('annualRate', Number(e.target.value))
+                                }}
                                 placeholder="5"
                             />
                         </div>
@@ -94,7 +102,11 @@ export function InvestmentCalculator() {
                                 type="number"
                                 min="0"
                                 value={params.years}
-                                onChange={(e) => updateParam('years', Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam('years', Number(e.target.value))
+                                }}
                                 placeholder="5"
                             />
                         </div>
@@ -106,27 +118,41 @@ export function InvestmentCalculator() {
                                 min="0"
                                 max="11"
                                 value={params.months}
-                                onChange={(e) => updateParam('months', Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0) {
+                                        updateParam('months', 0)
+                                        return
+                                    }
+                                    if (Number(e.target.value) > 11) {
+                                        updateParam('months', 11)
+                                        return
+                                    }
+                                    updateParam('months', Number(e.target.value))
+                                }}
                                 placeholder="0"
                             />
                         </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <Card className="space-y-4 p-4 optional">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label className="optional" htmlFor="regularDeposit">Deposit Amount (₹) (opt.)</Label>
+                                <Label htmlFor="regularDeposit">Deposit Amount (₹)</Label>
                                 <Input
                                     id="regularDeposit"
                                     type="number"
                                     value={params.regularDeposit || 0}
-                                    onChange={(e) => updateParam('regularDeposit', Number(e.target.value))}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updateParam('regularDeposit', Number(e.target.value))
+                                    }}
                                     placeholder="0"
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label className="optional" htmlFor="depositInterval">Deposit Frequency (opt.)</Label>
+                                <Label htmlFor="depositInterval">Deposit Frequency</Label>
                                 <Select
                                     value={params.depositInterval}
                                     onValueChange={(value) => updateParam('depositInterval', value as any)}
@@ -143,23 +169,27 @@ export function InvestmentCalculator() {
                                 </Select>
                             </div>
                         </div>
-                    </div>
+                    </Card>
 
-                    <div className="space-y-4">
+                    <Card className="space-y-4 optional p-4">
                         <div className="grid gap-4 sm:grid-cols-3">
                             <div className="grid gap-2">
-                                <Label className="optional" htmlFor="regularWithdrawal">Withdrawal Amount ({params.withdrawalType === "fixed-amount" ? "₹" : "%"}) (opt.)</Label>
+                                <Label htmlFor="regularWithdrawal">Withdrawal Amount ({params.withdrawalType === "fixed-amount" ? "₹" : "%"})</Label>
                                 <Input
                                     id="regularWithdrawal"
                                     type="number"
                                     value={params.regularWithdrawal || 0}
-                                    onChange={(e) => updateParam('regularWithdrawal', Number(e.target.value))}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updateParam('regularWithdrawal', Number(e.target.value))
+                                    }}
                                     placeholder="0"
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label className="optional" htmlFor="withdrawalType">Withdrawal Type (opt.)</Label>
+                                <Label htmlFor="withdrawalType">Withdrawal Type</Label>
                                 <Select
                                     value={params.withdrawalType}
                                     onValueChange={(value) => updateParam('withdrawalType', value as any)}
@@ -176,7 +206,7 @@ export function InvestmentCalculator() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label className="optional" htmlFor="withdrawalInterval">Withdrawal Frequency (opt.)</Label>
+                                <Label htmlFor="withdrawalInterval">Withdrawal Frequency</Label>
                                 <Select
                                     value={params.withdrawalInterval}
                                     onValueChange={(value) => updateParam('withdrawalInterval', value as any)}
@@ -196,32 +226,40 @@ export function InvestmentCalculator() {
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label className="optional" htmlFor="annualDepositIncrease">Annual Deposit Increase (%) (opt.)</Label>
+                                <Label htmlFor="annualDepositIncrease">Annual Deposit Increase (%)</Label>
                                 <Input
                                     id="annualDepositIncrease"
                                     type="number"
                                     step="0.01"
                                     value={params.annualDepositIncrease || 0}
-                                    onChange={(e) => updateParam('annualDepositIncrease', Number(e.target.value))}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updateParam('annualDepositIncrease', Number(e.target.value))
+                                    }}
                                     placeholder="0"
                                 />
                             </div>
 
                             {params.withdrawalType === "fixed-amount" && (
                                 <div className="grid gap-2">
-                                    <Label className="optional" htmlFor="annualWithdrawalIncrease">Annual Withdrawal Increase (%) (opt.)</Label>
+                                    <Label htmlFor="annualWithdrawalIncrease">Annual Withdrawal Increase (%)</Label>
                                     <Input
                                         id="annualWithdrawalIncrease"
                                         type="number"
                                         step="0.01"
                                         value={params.annualWithdrawalIncrease || 0}
-                                        onChange={(e) => updateParam('annualWithdrawalIncrease', Number(e.target.value))}
+                                        onChange={(e) => {
+                                            if (Number(e.target.value) < 0)
+                                                return
+                                            updateParam('annualWithdrawalIncrease', Number(e.target.value))
+                                        }}
                                         placeholder="0"
                                     />
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </Card>
                 </CardContent>
             </Card>
 

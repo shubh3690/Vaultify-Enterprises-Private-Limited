@@ -44,7 +44,11 @@ export function MortgageRefinanceCalculator() {
                             <Input
                                 id="currentBalance"
                                 value={params.currentBalance}
-                                onChange={(e) => updateParam("currentBalance", Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("currentBalance", Number(e.target.value))
+                                }}
                                 placeholder="250000"
                                 min="1"
                                 max="50000000"
@@ -58,7 +62,11 @@ export function MortgageRefinanceCalculator() {
                             <Input
                                 id="currentMonthlyPayment"
                                 value={params.currentMonthlyPayment}
-                                onChange={(e) => updateParam("currentMonthlyPayment", Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("currentMonthlyPayment", Number(e.target.value))
+                                }}
                                 placeholder="1500"
                                 type="number"
                             />
@@ -68,7 +76,11 @@ export function MortgageRefinanceCalculator() {
                             <Input
                                 id="currentRate"
                                 value={params.currentRate}
-                                onChange={(e) => updateParam("currentRate", Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("currentRate", Number(e.target.value))
+                                }}
                                 placeholder="6.5"
                                 type="number"
                                 step={0.1}
@@ -83,7 +95,11 @@ export function MortgageRefinanceCalculator() {
                             <Input
                                 id="refinanceRate"
                                 value={params.refinanceRate}
-                                onChange={(e) => updateParam("refinanceRate", Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("refinanceRate", Number(e.target.value))
+                                }}
                                 placeholder="4.5"
                                 type="number"
                             />
@@ -93,7 +109,11 @@ export function MortgageRefinanceCalculator() {
                             <Input
                                 id="refinanceTerm"
                                 value={params.refinanceTerm}
-                                onChange={(e) => updateParam("refinanceTerm", Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("refinanceTerm", Number(e.target.value))
+                                }}
                                 placeholder="30"
                                 type="number"
                             />
@@ -105,9 +125,11 @@ export function MortgageRefinanceCalculator() {
                                 <Input
                                     id="closingCosts"
                                     value={params.closingCosts}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
                                         updateParam("closingCosts", Number(e.target.value))
-                                    }
+                                    }}
                                     placeholder="3000"
                                     type="number"
                                 />

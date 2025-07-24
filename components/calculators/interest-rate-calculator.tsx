@@ -64,7 +64,11 @@ export function InterestRateCalculator() {
                             id="presentValue"
                             type="number"
                             value={presentValue}
-                            onChange={(e) => setPresentValue(Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                setPresentValue(Number(e.target.value))
+                            }}
                             placeholder="10000"
                         />
                     </div>
@@ -82,7 +86,11 @@ export function InterestRateCalculator() {
                                 id="secondFigure"
                                 type="number"
                                 value={secondFigure}
-                                onChange={(e) => setSecondFigure(Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    setSecondFigure(Number(e.target.value))
+                                }}
                                 placeholder={
                                     secondFigureType === "interest-rate"
                                         ? "5"
@@ -114,22 +122,30 @@ export function InterestRateCalculator() {
 
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="years">Time Period (Years)</Label>
+                            <Label htmlFor="years">Years</Label>
                             <Input
                                 id="years"
                                 type="number"
                                 value={years}
-                                onChange={(e) => setYears(Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    setYears(Number(e.target.value))
+                                }}
                                 placeholder="5"
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="months">Time Period (Months)</Label>
+                            <Label htmlFor="months">Months</Label>
                             <Input
                                 id="months"
                                 type="number"
                                 value={months}
-                                onChange={(e) => setMonths(Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    setMonths(Number(e.target.value))
+                                }}
                                 placeholder="0"
                             />
                         </div>

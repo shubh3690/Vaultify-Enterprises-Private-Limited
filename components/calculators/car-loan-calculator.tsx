@@ -54,7 +54,11 @@ export function CarLoanCalculator() {
                             id="carPrice"
                             type="number"
                             value={params.carPrice}
-                            onChange={(e) => updateParam("carPrice", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("carPrice", Number(e.target.value))
+                            }}
                             placeholder="25000"
                         />
                     </div>
@@ -65,7 +69,11 @@ export function CarLoanCalculator() {
                             id="downPayment"
                             type="number"
                             value={params.downPayment}
-                            onChange={(e) => updateParam("downPayment", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("downPayment", Number(e.target.value))
+                            }}
                             placeholder="5000"
                         />
                     </div>
@@ -84,7 +92,11 @@ export function CarLoanCalculator() {
                             type="number"
                             step="0.1"
                             value={params.rate}
-                            onChange={(e) => updateParam("rate", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("rate", Number(e.target.value))
+                            }}
                             placeholder="5.5"
                         />
                     </div>
@@ -95,7 +107,11 @@ export function CarLoanCalculator() {
                             id="term"
                             type="number"
                             value={params.term}
-                            onChange={(e) => updateParam("term", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("term", Number(e.target.value))
+                            }}
                             placeholder="5"
                         />
                     </div>
@@ -106,7 +122,11 @@ export function CarLoanCalculator() {
                             id="ballonPayment"
                             type="number"
                             value={params.ballonPayment}
-                            onChange={(e) => updateParam("ballonPayment", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("ballonPayment", Number(e.target.value))
+                            }}
                             placeholder="0"
                         />
                     </div>

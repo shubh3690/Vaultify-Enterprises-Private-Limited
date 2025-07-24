@@ -32,6 +32,7 @@ export function MMACalculator() {
         rate: 6.5,
         compoundFrequency: 12,
         years: 3,
+        months: 0,
         depositAmount: 0,
         depositFrequency: 0,
     })
@@ -51,81 +52,124 @@ export function MMACalculator() {
                     <CardTitle>Money Market Account Calculator</CardTitle>
                     <CardDescription>Calculate returns from your Money Market Account</CardDescription>
                 </CardHeader>
-                <CardContent className="grid sm:grid-cols-2 gap-8">
+                <CardContent className="grid gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="principal">Initial Deposit (₹)</Label>
                         <Input
                             id="principal"
                             type="number"
                             value={params.principal}
-                            onChange={(e) => updateParam("principal", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("principal", Number(e.target.value))
+                            }}
                             placeholder="25000"
                         />
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="rate">Annual Interest Rate (%) (APY)</Label>
-                        <Input
-                            id="rate"
-                            type="number"
-                            step="0.1"
-                            value={params.rate}
-                            onChange={(e) => updateParam("rate", Number(e.target.value))}
-                            placeholder="6.5"
-                        />
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="rate">Annual Interest Rate (%) (APY)</Label>
+                            <Input
+                                id="rate"
+                                type="number"
+                                step="0.1"
+                                value={params.rate}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("rate", Number(e.target.value))
+                                }}
+                                placeholder="6.5"
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Interest Frequency</Label>
+                            <Select
+                                value={params.compoundFrequency ? params.compoundFrequency.toString() : ""}
+                                onValueChange={(val) => updateParam("compoundFrequency", Number(val))}
+                            >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {COMPOUND_FREQUENCIES.map(({ label, value }) => (
+                                        <SelectItem key={value} value={value.toString()}>{label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="years">Time Period (Years)</Label>
-                        <Input
-                            id="years"
-                            type="number"
-                            value={params.years}
-                            onChange={(e) => updateParam("years", Number(e.target.value))}
-                            placeholder="3"
-                        />
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="years">Years</Label>
+                            <Input
+                                id="years"
+                                type="number"
+                                value={params.years}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("years", Number(e.target.value))
+                                }}
+                                placeholder="3"
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="months">Months</Label>
+                            <Input
+                                id="months"
+                                type="number"
+                                value={params.months}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0) {
+                                        updateParam("months", 0)
+                                        return
+                                    }
+                                    if (Number(e.target.value) > 11) {
+                                        updateParam("months", 11)
+                                        return
+                                    }
+                                    updateParam("months", Number(e.target.value))
+                                }}
+                                placeholder="3"
+                            />
+                        </div>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label>Interest Frequency</Label>
-                        <Select
-                            value={params.compoundFrequency ? params.compoundFrequency.toString() : ""}
-                            onValueChange={(val) => updateParam("compoundFrequency", Number(val))}
-                        >
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {COMPOUND_FREQUENCIES.map(({ label, value }) => (
-                                    <SelectItem key={value} value={value.toString()}>{label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <Card className="grid sm:grid-cols-2 p-4 gap-4 optional">
+                        <div className="grid gap-2">
+                            <Label htmlFor="depositAmount">Regular Deposit (₹)</Label>
+                            <Input
+                                id="depositAmount"
+                                type="number"
+                                value={params.depositAmount}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("depositAmount", Number(e.target.value))
+                                }}
+                                placeholder="500"
+                            />
+                        </div>
 
-                    <div className="grid gap-2">
-                        <Label className="optional" htmlFor="depositAmount">Regular Deposit (₹) (optional)</Label>
-                        <Input
-                            id="depositAmount"
-                            type="number"
-                            value={params.depositAmount}
-                            onChange={(e) => updateParam("depositAmount", Number(e.target.value))}
-                            placeholder="500"
-                        />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label className="optional">Deposit Frequency (optional)</Label>
-                        <Select
-                            value={params.depositFrequency ? params.depositFrequency.toString() : ""}
-                            onValueChange={(val) => updateParam("depositFrequency", Number(val))}
-                        >
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {DEPOSIT_FREQUENCIES.map(({ label, value }) => (
-                                    <SelectItem key={value} value={value.toString()}>{label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                        <div className="grid gap-2">
+                            <Label>Deposit Frequency</Label>
+                            <Select
+                                value={params.depositFrequency ? params.depositFrequency.toString() : ""}
+                                onValueChange={(val) => updateParam("depositFrequency", Number(val))}
+                            >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {DEPOSIT_FREQUENCIES.map(({ label, value }) => (
+                                        <SelectItem key={value} value={value.toString()}>{label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </Card>
                 </CardContent>
             </Card>
 

@@ -64,7 +64,11 @@ export function APYCalculator() {
                             id="principal"
                             type="number"
                             value={params.principal}
-                            onChange={(e) => updateParam('principal', Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam('principal', Number(e.target.value))
+                            }}
                             placeholder="10000"
                         />
                     </div>
@@ -77,7 +81,11 @@ export function APYCalculator() {
                                 type="number"
                                 step="0.01"
                                 value={params.nominalRate}
-                                onChange={(e) => updateParam('nominalRate', Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam('nominalRate', Number(e.target.value))
+                                }}
                                 placeholder="5"
                             />
                         </div>
@@ -111,7 +119,11 @@ export function APYCalculator() {
                                 type="number"
                                 min="0"
                                 value={params.years}
-                                onChange={(e) => updateParam('years', Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam('years', Number(e.target.value))
+                                }}
                                 placeholder="1"
                             />
                         </div>
@@ -123,20 +135,34 @@ export function APYCalculator() {
                                 min="0"
                                 max="11"
                                 value={params.months}
-                                onChange={(e) => updateParam('months', Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0) {
+                                        updateParam('months', 0)
+                                        return
+                                    }
+                                    if (Number(e.target.value) > 11) {
+                                        updateParam('months', 11)
+                                        return
+                                    }
+                                    updateParam('months', Number(e.target.value))
+                                }}
                                 placeholder="0"
                             />
                         </div>
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <Card className="grid gap-4 sm:grid-cols-2 p-4 optional">
                         <div className="grid gap-2">
-                            <Label className="optional" htmlFor="regularDeposit">Regular Deposit Amount (₹) (optional)</Label>
+                            <Label htmlFor="regularDeposit">Regular Deposit Amount (₹)</Label>
                             <Input
                                 id="regularDeposit"
                                 type="number"
                                 value={params.regularDeposit || 0}
-                                onChange={(e) => updateParam('regularDeposit', Number(e.target.value))}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam('regularDeposit', Number(e.target.value))
+                                }}
                                 placeholder="100"
                             />
                         </div>
@@ -159,7 +185,7 @@ export function APYCalculator() {
                                 </SelectContent>
                             </Select>
                         </div>
-                    </div>
+                    </Card>
                 </CardContent>
             </Card>
 

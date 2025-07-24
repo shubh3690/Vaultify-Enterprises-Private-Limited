@@ -38,7 +38,11 @@ export function CashBackCalculator() {
                             type="number"
                             step="0.01"
                             value={params.purchaseAmount}
-                            onChange={(e) => updateParam("purchaseAmount", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("purchaseAmount", Number(e.target.value))
+                            }}
                             placeholder="1000"
                         />
                     </div>
@@ -50,21 +54,29 @@ export function CashBackCalculator() {
                             type="number"
                             step="0.1"
                             value={params.cashBackRate}
-                            onChange={(e) => updateParam("cashBackRate", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("cashBackRate", Number(e.target.value))
+                            }}
                             placeholder="2"
                         />
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label className="optional" htmlFor="cashBackLimit">Cash Back Limit (₹) (optional)</Label>
+                    <Card className="grid gap-2 p-4 optional">
+                        <Label htmlFor="cashBackLimit">Cash Back Limit (₹)</Label>
                         <Input
                             id="cashBackLimit"
                             type="number"
                             value={params.cashBackLimit}
-                            onChange={(e) => updateParam("cashBackLimit", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("cashBackLimit", Number(e.target.value))
+                            }}
                             placeholder="0"
                         />
-                    </div>
+                    </Card>
                 </CardContent>
             </Card>
 

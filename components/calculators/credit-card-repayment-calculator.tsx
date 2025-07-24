@@ -37,7 +37,11 @@ export function CreditCardRepaymentCalculator() {
                             id="balance"
                             type="number"
                             value={params.balance}
-                            onChange={(e) => updateParam("balance", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("balance", Number(e.target.value))
+                            }}
                             placeholder="5000"
                         />
                     </div>
@@ -49,7 +53,11 @@ export function CreditCardRepaymentCalculator() {
                             type="number"
                             step="0.1"
                             value={params.interestRate}
-                            onChange={(e) => updateParam("interestRate", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("interestRate", Number(e.target.value))
+                            }}
                             placeholder="18"
                         />
                     </div>
@@ -60,7 +68,11 @@ export function CreditCardRepaymentCalculator() {
                             id="monthlyPayment"
                             type="number"
                             value={params.monthlyPayment}
-                            onChange={(e) => updateParam("monthlyPayment", Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("monthlyPayment", Number(e.target.value))
+                            }}
                             placeholder="200"
                         />
                     </div>

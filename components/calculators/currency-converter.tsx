@@ -82,7 +82,11 @@ export function CurrencyConverter() {
                             type="number"
                             step="0.01"
                             value={amount}
-                            onChange={(e) => setAmount(Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                setAmount(Number(e.target.value))
+                            }}
                             placeholder="100"
                         />
                     </div>
@@ -125,18 +129,9 @@ export function CurrencyConverter() {
                 <ResultsDisplay
                     title="Conversion Results"
                     results={[
-                        {
-                            label: `${amount} ${fromCurrency}`,
-                            value: `${formatNumber(convertedAmount, 2)} ${toCurrency}`,
-                        },
-                        {
-                            label: "Exchange Rate",
-                            value: `1 ${fromCurrency} = ${formatNumber(exchangeRate, 4)} ${toCurrency}`,
-                        },
-                        {
-                            label: "Inverse Rate",
-                            value: `1 ${toCurrency} = ${formatNumber(1 / exchangeRate, 4)} ${fromCurrency}`,
-                        },
+                        { label: `${amount} ${fromCurrency}`, value: `${formatNumber(convertedAmount, 2)} ${toCurrency}` },
+                        { label: "Exchange Rate", value: `1 ${fromCurrency} = ${formatNumber(exchangeRate, 4)} ${toCurrency}` },
+                        { label: "Inverse Rate", value: `1 ${toCurrency} = ${formatNumber(1 / exchangeRate, 4)} ${fromCurrency}` },
                         { label: "Last Updated", value: lastUpdated },
                     ]}
                 />

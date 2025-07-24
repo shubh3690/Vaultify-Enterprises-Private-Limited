@@ -58,7 +58,11 @@ export function MoneyCounterCalculator() {
                                     id={denom}
                                     type="number"
                                     value={denominations[denom as keyof typeof denominations]}
-                                    onChange={(e) => updateDenomination(denom, Number(e.target.value))}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updateDenomination(denom, Number(e.target.value))
+                                    }}
                                     placeholder="0"
                                 />
                             </div>

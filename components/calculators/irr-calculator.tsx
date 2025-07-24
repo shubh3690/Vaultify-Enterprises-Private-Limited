@@ -1,27 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger
-} from "@/components/ui/tabs"
-import {
-    calculateCashFlowIRR,
-    calculateGeneralIRR,
-    calculateReturnMultipleIRR,
-} from "@/lib/financial-calculations"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
+import { calculateCashFlowIRR, calculateGeneralIRR, calculateReturnMultipleIRR } from "@/lib/financial-calculations"
 import { ResultsDisplay } from "@/components/ui/results-display"
 import { formatPercentage } from "@/lib/utils"
 import { Plus, Minus } from "lucide-react"
@@ -33,7 +19,10 @@ export function IRRCalculator() {
     const [initialInvestment, setInitialInvestment] = useState(10000)
     const [finalReturn, setFinalReturn] = useState(20000)
     const [years, setYears] = useState(5)
-    const generalIRR = calculateGeneralIRR({ initialInvestment, finalReturn, years })
+    const [months, setMonths] = useState(0)
+    const [regularTransfer, setRegularTransfer] = useState(0)
+    const [transferFrequency, setTransferFrequency] = useState<"weekly" | "monthly" | "quarterly" | "half-yearly" | "yearly">("monthly")
+    const generalIRR = calculateGeneralIRR({ initialInvestment, finalReturn, years, months, regularTransfer, transferFrequency })
 
     // Cash Flow IRR
     const [cashFlows, setCashFlows] = useState([-10000, 3000, 4000, 5000])
@@ -79,18 +68,74 @@ export function IRRCalculator() {
 
                         <TabsContent value="general">
                             <div className="grid gap-4">
-                                <div>
-                                    <Label>Initial Investment (₹)</Label>
-                                    <Input type="number" value={initialInvestment} onChange={(e) => setInitialInvestment(Number(e.target.value))} />
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Initial Investment (₹)</Label>
+                                        <Input type="number" value={initialInvestment} onChange={(e) => {
+                                            if (Number(e.target.value) < 0)
+                                                return
+                                            setInitialInvestment(Number(e.target.value))
+                                        }} />
+                                    </div>
+                                    <div>
+                                        <Label>Final Return (₹)</Label>
+                                        <Input type="number" value={finalReturn} onChange={(e) => {
+                                            if (Number(e.target.value) < 0)
+                                                return
+                                            setFinalReturn(Number(e.target.value))
+                                        }} />
+                                    </div>
                                 </div>
-                                <div>
-                                    <Label>Final Return (₹)</Label>
-                                    <Input type="number" value={finalReturn} onChange={(e) => setFinalReturn(Number(e.target.value))} />
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Years</Label>
+                                        <Input type="number" value={years} onChange={(e) => {
+                                            if (Number(e.target.value) < 0)
+                                                return
+                                            setYears(Number(e.target.value))
+                                        }} />
+                                    </div>
+                                    <div>
+                                        <Label>Months</Label>
+                                        <Input type="number" value={months} onChange={(e) => {
+                                            if (Number(e.target.value) < 0) {
+                                                setMonths(0)
+                                                return
+                                            }
+                                            if (Number(e.target.value) > 11) {
+                                                setMonths(11)
+                                                return
+                                            }
+                                            setMonths(Number(e.target.value))
+                                        }} />
+                                    </div>
                                 </div>
-                                <div>
-                                    <Label>Years</Label>
-                                    <Input type="number" value={years} onChange={(e) => setYears(Number(e.target.value))} />
-                                </div>
+                                <Card className="optional grid sm:grid-cols-2 gap-4 p-4">
+                                    <div>
+                                        <Label>Regular Transfers (₹)</Label>
+                                        <Input type="number" value={regularTransfer} onChange={(e) => setRegularTransfer(Number(e.target.value))} />
+                                    </div>
+                                    <div>
+                                        <Label>Transfers Frequency</Label>
+                                        <Select
+                                            value={transferFrequency}
+                                            onValueChange={(val) => setTransferFrequency(val as typeof transferFrequency)}
+                                        >
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {Object.entries({
+                                                    "weekly": "Weekly",
+                                                    "monthly": "Monthly",
+                                                    "quarterly": "Quarterly",
+                                                    "half-yearly": "Half-Yearly",
+                                                    "yearly": "Yearly"
+                                                }).map(([value, label]) => (
+                                                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </Card>
                             </div>
                         </TabsContent>
 
@@ -125,16 +170,34 @@ export function IRRCalculator() {
                             <div className="space-y-4">
                                 <div>
                                     <Label>Return Multiple</Label>
-                                    <Input type="number" value={returnMultiple} onChange={(e) => setReturnMultiple(Number(e.target.value))} min={0.1} step={0.1}></Input>
+                                    <Input type="number" value={returnMultiple} onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        setReturnMultiple(Number(e.target.value))
+                                    }} min={0.1} step={0.1}></Input>
                                 </div>
                                 <div className="flex gap-4">
                                     <div className="flex-1">
                                         <Label>Years</Label>
-                                        <Input type="number" value={multipleYears} onChange={(e) => setMultipleYears(Number(e.target.value))} />
+                                        <Input type="number" value={multipleYears} onChange={(e) => {
+                                            if (Number(e.target.value) < 0)
+                                                return
+                                            setMultipleYears(Number(e.target.value))
+                                        }} />
                                     </div>
                                     <div className="flex-1">
                                         <Label>Months</Label>
-                                        <Input type="number" value={multipleMonths} onChange={(e) => setMultipleMonths(Number(e.target.value))} />
+                                        <Input type="number" value={multipleMonths} onChange={(e) => {
+                                            if (Number(e.target.value) < 0) {
+                                                setMultipleMonths(0)
+                                                return
+                                            }
+                                            if (Number(e.target.value) > 11) {
+                                                setMultipleMonths(11)
+                                                return
+                                            }
+                                            setMultipleMonths(Number(e.target.value))
+                                        }} />
                                     </div>
                                 </div>
                             </div>

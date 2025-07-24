@@ -95,4 +95,5 @@ body {
 
 .optional {
     color: gray;
+    @apply bg-gray-50
 }

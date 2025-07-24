@@ -45,7 +45,11 @@ export function CAGRCalculator() {
                             id="beginningValue"
                             type="number"
                             value={beginningValue}
-                            onChange={(e) => updateBeginningValue(Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateBeginningValue(Number(e.target.value))
+                            }}
                             placeholder="10000"
                         />
                     </div>
@@ -56,7 +60,11 @@ export function CAGRCalculator() {
                             id="endingValue"
                             type="number"
                             value={endingValue}
-                            onChange={(e) => updateEndingValue(Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateEndingValue(Number(e.target.value))
+                            }}
                             placeholder="15000"
                         />
                     </div>
@@ -68,7 +76,11 @@ export function CAGRCalculator() {
                             type="number"
                             step="0.1"
                             value={years}
-                            onChange={(e) => updateYears(Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateYears(Number(e.target.value))
+                            }}
                             placeholder="3"
                         />
                     </div>

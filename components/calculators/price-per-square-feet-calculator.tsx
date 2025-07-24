@@ -43,7 +43,11 @@ export function PricePerSquareFeetCalculator() {
                             id="totalPrice"
                             type="number"
                             value={totalPrice}
-                            onChange={(e) => setTotalPrice(Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                setTotalPrice(Number(e.target.value))
+                            }}
                             placeholder="300000"
                         />
                     </div>
@@ -55,7 +59,11 @@ export function PricePerSquareFeetCalculator() {
                             type="number"
                             step="0.01"
                             value={area}
-                            onChange={(e) => setArea(Number(e.target.value))}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                setArea(Number(e.target.value))
+                            }}
                             placeholder="2000"
                         />
                     </div>
