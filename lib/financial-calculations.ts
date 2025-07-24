@@ -517,10 +517,7 @@ export interface APYResult {
 }
 
 export function calculateAPY(params: APYParams): APYResult {
-    const {
-        principal, nominalRate, years, months,
-        compoundingFrequency, regularDeposit = 0, depositRate
-    } = params;
+    const { principal, nominalRate, years, months, compoundingFrequency, regularDeposit = 0, depositRate } = params;
 
     const annualRate = nominalRate / 100;
     const totalYears = years + months / 12;
@@ -598,15 +595,7 @@ export interface SIPResult {
 }
 
 export function calculateSIP(params: SIPParams): SIPResult {
-    const {
-        regularInvestment,
-        investmentFrequency,
-        expectedReturn,
-        years,
-        months,
-        initialBalance,
-        investmentIncreaseRate
-    } = params;
+    const { regularInvestment, investmentFrequency, expectedReturn, years, months, initialBalance, investmentIncreaseRate } = params;
 
     const interval: number = {
         monthly: 1,
@@ -1346,13 +1335,7 @@ export interface MultipleIRRParams {
 }
 
 export function calculateGeneralIRR(params: GeneralIRRParams): number {
-    const {
-        initialInvestment,
-        finalReturn,
-        years,
-        months,
-        regularTransfer = 0,
-    } = params
+    const { initialInvestment, finalReturn, years, months, regularTransfer = 0 } = params
 
     if (initialInvestment <= 0 || finalReturn <= 0 || (years === 0 && months === 0)) return 0
 
