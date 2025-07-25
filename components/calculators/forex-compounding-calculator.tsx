@@ -4,93 +4,185 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { calculateForexCompounding } from "@/lib/financial-calculations"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { calculateForexCompounding, ForexParams } from "@/lib/financial-calculations"
 import { formatCurrency } from "@/lib/utils"
 import { ResultsDisplay } from "@/components/ui/results-display"
 
 export function ForexCompoundingCalculator() {
-    const [initialDeposit, setInitialDeposit] = useState(10000)
-    const [monthlyReturn, setMonthlyReturn] = useState(5)
-    const [months, setMonths] = useState(12)
-    const [monthlyDeposit, setMonthlyDeposit] = useState(0)
-    const [results, setResults] = useState(
-        calculateForexCompounding(initialDeposit, monthlyReturn, months, monthlyDeposit),
-    )
+    const [principal, setPrincipal] = useState(10000)
+    const [rate, setRate] = useState(5)
+    const [rateInterval, setRateInterval] = useState<"daily" | "weekly" | "monthly" | "yearly">("monthly")
+    const [compoundingFrequency, setCompoundingFrequency] = useState(12)
+    const [years, setYears] = useState(1)
+    const [months, setMonths] = useState(0)
+    const [additionalDeposits, setAdditionalDeposits] = useState(0)
+    const [additionalDepositFrequency, setAdditionalDepositFrequency] = useState<"monthly" | "quarterly" | "half-yearly" | "yearly">("monthly")
 
-    const updateInitialDeposit = (value: number) => {
-        setInitialDeposit(value)
-        setResults(calculateForexCompounding(value, monthlyReturn, months, monthlyDeposit))
+    const calculateResults = () => {
+        const params: ForexParams = {
+            principal,
+            rate,
+            rateInterval,
+            compoundingFrequency,
+            years,
+            months,
+            additionalDeposits,
+            additionalDepositFrequency
+        }
+        return calculateForexCompounding(params)
     }
 
-    const updateMonthlyReturn = (value: number) => {
-        setMonthlyReturn(value)
-        setResults(calculateForexCompounding(initialDeposit, value, months, monthlyDeposit))
-    }
+    const results = calculateResults()
 
-    const updateMonths = (value: number) => {
-        setMonths(value)
-        setResults(calculateForexCompounding(initialDeposit, monthlyReturn, value, monthlyDeposit))
-    }
-
-    const updateMonthlyDeposit = (value: number) => {
-        setMonthlyDeposit(value)
-        setResults(calculateForexCompounding(initialDeposit, monthlyReturn, months, value))
-    }
-
-    const annualReturn = (Math.pow(1 + monthlyReturn / 100, 12) - 1) * 100
+    const totalTimeInYears = years + (months / 12)
+    const totalInvested = principal + results.additionalDeposits
+    const annualReturn = totalTimeInYears > 0 && totalInvested > 0 ? (Math.pow(results.finalBalance / totalInvested, 1 / totalTimeInYears) - 1) * 100 : 0
 
     return (
         <div className="grid gap-6 lg:grid-cols-2">
             <Card>
                 <CardHeader>
                     <CardTitle>Forex Compounding Calculator</CardTitle>
-                    <CardDescription>Calculate compound returns from forex trading</CardDescription>
+                    <CardDescription>Calculate compound returns from forex trading with flexible parameters</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="initialDeposit">Initial Deposit (₹)</Label>
+                        <Label htmlFor="principal">Initial Deposit (₹)</Label>
                         <Input
-                            id="initialDeposit"
+                            id="principal"
                             type="number"
-                            value={initialDeposit}
-                            onChange={(e) => updateInitialDeposit(Number(e.target.value))}
+                            value={principal}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                setPrincipal(Number(e.target.value))
+                            }}
                             placeholder="10000"
                         />
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="monthlyReturn">Monthly Return (%)</Label>
-                        <Input
-                            id="monthlyReturn"
-                            type="number"
-                            step="0.1"
-                            value={monthlyReturn}
-                            onChange={(e) => updateMonthlyReturn(Number(e.target.value))}
-                            placeholder="5"
-                        />
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="rate">Return Rate (%)</Label>
+                            <Input
+                                id="rate"
+                                type="number"
+                                step="0.1"
+                                value={rate}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    setRate(Number(e.target.value))
+                                }}
+                                placeholder="5"
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="rateInterval">Rate Interval</Label>
+                            <Select value={rateInterval} onValueChange={(value: "daily" | "weekly" | "monthly" | "yearly") => setRateInterval(value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select rate interval" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="daily">Daily</SelectItem>
+                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="yearly">Yearly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="months">Number of Months</Label>
-                        <Input
-                            id="months"
-                            type="number"
-                            value={months}
-                            onChange={(e) => updateMonths(Number(e.target.value))}
-                            placeholder="12"
-                        />
+                        <Label htmlFor="compoundingFrequency">Compounding Frequency</Label>
+                        <Select value={compoundingFrequency.toString()} onValueChange={(value) => setCompoundingFrequency(Number(value))}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select compounding frequency" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="365">Daily (365/yr)</SelectItem>
+                                <SelectItem value="52">Weekly (52/yr)</SelectItem>
+                                <SelectItem value="12">Monthly (12/yr)</SelectItem>
+                                <SelectItem value="4">Quarterly (4/yr)</SelectItem>
+                                <SelectItem value="2">Half-Yearly (2/yr)</SelectItem>
+                                <SelectItem value="1">Yearly (1/yr)</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="monthlyDeposit">Monthly Deposit (₹) (Optional)</Label>
-                        <Input
-                            id="monthlyDeposit"
-                            type="number"
-                            value={monthlyDeposit}
-                            onChange={(e) => updateMonthlyDeposit(Number(e.target.value))}
-                            placeholder="0"
-                        />
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="years">Years</Label>
+                            <Input
+                                id="years"
+                                type="number"
+                                value={years}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    setYears(Number(e.target.value))
+                                }}
+                                placeholder="1"
+                                min="0"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="months">Months</Label>
+                            <Input
+                                id="months"
+                                type="number"
+                                value={months}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0) {
+                                        setMonths(0)
+                                        return
+                                    }
+                                    if (Number(e.target.value) > 11) {
+                                        setMonths(11)
+                                        return
+                                    }
+                                    setMonths(Number(e.target.value))
+                                }}
+                                placeholder="0"
+                                min="0"
+                                max="11"
+                            />
+                        </div>
                     </div>
+
+                    <Card className="optional gap-4 grid p-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="additionalDeposits">Additional Deposits (₹) (Optional)</Label>
+                            <Input
+                                id="additionalDeposits"
+                                type="number"
+                                value={additionalDeposits}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    setAdditionalDeposits(Number(e.target.value))
+                                }}
+                                placeholder="0"
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="additionalDepositFrequency">Additional Deposit Frequency</Label>
+                            <Select value={additionalDepositFrequency} onValueChange={(value: "monthly" | "quarterly" | "half-yearly" | "yearly") => setAdditionalDepositFrequency(value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select deposit frequency" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                                    <SelectItem value="half-yearly">Half-yearly</SelectItem>
+                                    <SelectItem value="yearly">Yearly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </Card>
                 </CardContent>
             </Card>
 
@@ -98,9 +190,10 @@ export function ForexCompoundingCalculator() {
                 <ResultsDisplay
                     title="Forex Compounding Results"
                     results={[
-                        { label: "Final Balance", value: formatCurrency(results.finalAmount) },
-                        { label: "Total Profit", value: formatCurrency(results.totalInterest) },
-                        { label: "Total Deposits", value: formatCurrency(results.totalDeposits) },
+                        { label: "Final Balance", value: formatCurrency(results.finalBalance) },
+                        { label: "Total Profit", value: formatCurrency(results.totalEarning) },
+                        { label: "Initial Deposit", value: formatCurrency(results.initialBalance) },
+                        { label: "Total Additional Deposits", value: formatCurrency(results.additionalDeposits) },
                         { label: "Equivalent Annual Return", value: `${annualReturn.toFixed(2)}%` },
                     ]}
                 />
@@ -113,32 +206,32 @@ export function ForexCompoundingCalculator() {
                         <div className="space-y-4">
                             <div className="flex justify-between">
                                 <span>Initial Deposit:</span>
-                                <span className="font-medium">{formatCurrency(initialDeposit)}</span>
+                                <span className="font-medium">{formatCurrency(principal)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Monthly Return:</span>
-                                <span className="font-medium">{monthlyReturn}%</span>
+                                <span>Return Rate:</span>
+                                <span className="font-medium">{rate}% {rateInterval}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Compounding:</span>
+                                <span className="font-medium">{compoundingFrequency} times per year</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Trading Period:</span>
                                 <span className="font-medium">
-                                    {months} months ({(months / 12).toFixed(1)} years)
+                                    {years} years {months > 0 && `${months} months`} ({(years + months / 12).toFixed(1)} years total)
                                 </span>
                             </div>
-                            <div className="flex justify-between">
-                                <span>Return Multiple:</span>
-                                <span className="font-medium">{(results.finalAmount / initialDeposit).toFixed(2)}x</span>
-                            </div>
-                            <div className="p-3 bg-red-50 border border-red-200 rounded">
-                                <p className="text-sm text-red-800">
-                                    <strong>High Risk Warning:</strong> Forex trading involves substantial risk. Past performance doesn't
-                                    guarantee future results. Only trade with money you can afford to lose.
-                                </p>
-                            </div>
+                            {additionalDeposits > 0 && (
+                                <div className="flex justify-between">
+                                    <span>Additional Deposits:</span>
+                                    <span className="font-medium">{formatCurrency(additionalDeposits)} {additionalDepositFrequency}</span>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </div >
     )
 }

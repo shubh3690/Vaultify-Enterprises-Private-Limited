@@ -1515,42 +1515,125 @@ export function calculateMargin(params: MarginParams): MarginResult {
     };
 }
 
-export function calculateForexCompounding(initialDeposit: number, monthlyReturn: number, months: number, monthlyDeposit = 0): CompoundInterestResult {
-    let balance = initialDeposit
-    let totalInterest = 0
-    let totalDeposits = initialDeposit
-    const totalWithdrawals = 0
+export interface ForexParams {
+    principal: number
+    rate: number
+    rateInterval: "daily" | "weekly" | "monthly" | "yearly"
+    compoundingFrequency: number
+    years: number
+    months: number
+    additionalDeposits: number
+    additionalDepositFrequency: "monthly" | "quarterly" | "half-yearly" | "yearly"
+}
 
-    const yearlyBreakdown: CompoundInterestResult["yearlyBreakdown"] = []
+export interface ForexResult {
+    finalBalance: number
+    totalEarning: number
+    initialBalance: number
+    additionalDeposits: number
+}
 
-    for (let month = 1; month <= months; month++) {
-        if (monthlyDeposit > 0) {
-            balance += monthlyDeposit
-            totalDeposits += monthlyDeposit
-        }
+export function calculateForexCompounding(params: ForexParams): ForexResult {
+    const { principal, rate, rateInterval, compoundingFrequency, years, months, additionalDeposits, additionalDepositFrequency } = params;
 
-        const monthlyGain = balance * (monthlyReturn / 100)
-        balance += monthlyGain
-        totalInterest += monthlyGain
+    const totalTimeInYears = years + (months / 12);
 
-        if (month % 12 === 0) {
-            yearlyBreakdown.push({
-                year: month / 12,
-                balance,
-                interestEarned: totalInterest,
-                deposits: totalDeposits,
-                withdrawals: totalWithdrawals
-            })
+    let annualRate: number;
+    switch (rateInterval) {
+        case "daily":
+            annualRate = rate * 365;
+            break;
+        case "weekly":
+            annualRate = rate * 52;
+            break;
+        case "monthly":
+            annualRate = rate * 12;
+            break;
+        case "yearly":
+            annualRate = rate;
+            break;
+    }
+
+    annualRate = annualRate / 100;
+    const ratePerCompoundingPeriod = annualRate / compoundingFrequency;
+    const totalCompoundingPeriods = Math.floor(compoundingFrequency * totalTimeInYears);
+
+    let depositsPerYear: number;
+    switch (additionalDepositFrequency) {
+        case "monthly":
+            depositsPerYear = 12;
+            break;
+        case "quarterly":
+            depositsPerYear = 4;
+            break;
+        case "half-yearly":
+            depositsPerYear = 2;
+            break;
+        case "yearly":
+            depositsPerYear = 1;
+            break;
+    }
+
+    const totalExpectedDeposits = Math.floor(depositsPerYear * totalTimeInYears);
+    const periodsPerDeposit = compoundingFrequency / depositsPerYear;
+
+    let currentBalance = principal;
+    let totalInterestEarned = 0;
+    let totalAdditionalDeposits = 0;
+    let cumulativeInterest = 0;
+
+    const startDate = new Date();
+    const yearsPerCompoundingPeriod = 1 / compoundingFrequency;
+    const daysPerCompoundingPeriod = Math.round((365 * yearsPerCompoundingPeriod));
+
+    const depositPeriods = new Set<number>();
+    for (let i = 1; i <= totalExpectedDeposits; i++) {
+        const depositPeriod = Math.round(i * periodsPerDeposit);
+        if (depositPeriod <= totalCompoundingPeriods) {
+            depositPeriods.add(depositPeriod);
         }
     }
 
-    return {
-        finalAmount: balance,
-        totalInterest,
-        totalDeposits,
-        totalWithdrawals,
-        yearlyBreakdown
+    for (let period = 1; period <= totalCompoundingPeriods; period++) {
+        const interestPayment = currentBalance * ratePerCompoundingPeriod;
+        currentBalance += interestPayment;
+        totalInterestEarned += interestPayment;
+        cumulativeInterest += interestPayment;
+
+        let extraPayment = 0;
+        let principalPayment = 0;
+
+        if (additionalDeposits > 0 && depositPeriods.has(period)) {
+            extraPayment = additionalDeposits;
+            currentBalance += additionalDeposits;
+            totalAdditionalDeposits += additionalDeposits;
+            principalPayment = additionalDeposits;
+        }
+
+        const paymentDate = new Date(startDate);
+        paymentDate.setDate(startDate.getDate() + (period - 1) * daysPerCompoundingPeriod);
     }
+
+    // Handle fractional remaining time
+    const remainingTime = (totalTimeInYears * compoundingFrequency) - totalCompoundingPeriods;
+    if (remainingTime > 0.01) {
+        const fractionalInterest = currentBalance * ratePerCompoundingPeriod * remainingTime;
+        currentBalance += fractionalInterest;
+        totalInterestEarned += fractionalInterest;
+        cumulativeInterest += fractionalInterest;
+
+        const paymentDate = new Date(startDate);
+        paymentDate.setDate(startDate.getDate() + totalCompoundingPeriods * daysPerCompoundingPeriod);
+    }
+
+    const result: ForexResult = {
+        finalBalance: Math.round(currentBalance * 100) / 100,
+        totalEarning: Math.round(totalInterestEarned * 100) / 100,
+        initialBalance: principal,
+        additionalDeposits: Math.round(totalAdditionalDeposits * 100) / 100
+    };
+
+    return result;
 }
 
 export interface InterestRateParams {
