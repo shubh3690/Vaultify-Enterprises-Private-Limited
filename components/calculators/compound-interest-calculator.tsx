@@ -19,22 +19,25 @@ const COMPOUND_FREQUENCIES = [
     { label: "Biweekly (26/yr)", value: "26" },
     { label: "Weekly (52/yr)", value: "52" },
     { label: "Semi-weekly (104/yr)", value: "104" },
+    { label: "Daily (365/yr)", value: "365" },
 ]
 
 export function CompoundInterestCalculator() {
     const [params, setParams] = useState<CompoundInterestParams>({
         principal: 10000,
         rate: 5,
+        ratePeriod: "yearly",
+        compoundingFrequency: 12,
         years: 10,
-        compoundFrequency: 12,
+        months: 0,
         depositAmount: 0,
-        depositFrequency: 12,
-        depositTiming: "end",
-        depositAnnualIncreasePercent: 0,
+        depositFrequency: "monthly",
+        depositIncreaseRate: 0,
+        depositTime: "ending",
         withdrawalAmount: 0,
-        withdrawalType: "fixed",
-        withdrawalFrequency: 12,
-        withdrawalAnnualIncreasePercent: 0,
+        withdrawalFrequency: "monthly",
+        withdrawalType: "fixed-amount",
+        withdrawalIncreaseRate: 0,
     })
 
     const [results, setResults] = useState(() => calculateCompoundInterest(params))
@@ -46,45 +49,64 @@ export function CompoundInterestCalculator() {
     }
 
     return (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:sm:grid-cols-2">
             <Card>
                 <CardHeader>
                     <CardTitle>Compound Interest Calculator</CardTitle>
-                    <CardDescription>Calculate compound interest with regular deposits or Withdrawals</CardDescription>
+                    <CardDescription>Calculate compound interest with regular deposits or withdrawals</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="grid gap-2" key={"principal"}>
+                    <div className="grid gap-2">
                         <Label>Initial Investment (₹)</Label>
                         <Input
                             type="number"
-                            value={params["principal" as keyof CompoundInterestParams] as number}
-                            onChange={(e) => updateParam("principal" as keyof CompoundInterestParams, +e.target.value)}
+                            value={params.principal}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("principal", +e.target.value)
+                            }}
                         />
                     </div>
 
-                    <div className="grid gap-2" key={"rate"}>
-                        <Label>Annual Interest Rate (%)</Label>
-                        <Input
-                            type="number"
-                            value={params["rate" as keyof CompoundInterestParams] as number}
-                            onChange={(e) => updateParam("rate" as keyof CompoundInterestParams, +e.target.value)}
-                        />
-                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label>Interest Rate</Label>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                value={params.rate}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("rate", +e.target.value)
+                                }}
+                            />
+                        </div>
 
-                    <div className="grid gap-2" key={"years"}>
-                        <Label>Investment Term (Years)</Label>
-                        <Input
-                            type="number"
-                            value={params["years" as keyof CompoundInterestParams] as number}
-                            onChange={(e) => updateParam("years" as keyof CompoundInterestParams, +e.target.value)}
-                        />
+                        <div className="grid gap-2">
+                            <Label>Rate Period</Label>
+                            <Select
+                                value={params.ratePeriod}
+                                onValueChange={(val) => updateParam("ratePeriod", val)}
+                            >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="daily">Daily</SelectItem>
+                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                                    <SelectItem value="yearly">Yearly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div className="grid gap-2">
                         <Label>Compounding Frequency</Label>
                         <Select
-                            value={params.compoundFrequency.toString()}
-                            onValueChange={(val) => updateParam("compoundFrequency", +val)}
+                            value={params.compoundingFrequency.toString()}
+                            onValueChange={(val) => updateParam("compoundingFrequency", +val)}
                         >
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
@@ -95,100 +117,162 @@ export function CompoundInterestCalculator() {
                         </Select>
                     </div>
 
-                    <div className="grid gap-2" key={"depositAmount"}>
-                        <Label className="optional">Deposit Amount (₹)</Label>
-                        <Input
-                            type="number"
-                            value={params["depositAmount" as keyof CompoundInterestParams] as number}
-                            onChange={(e) => updateParam("depositAmount" as keyof CompoundInterestParams, +e.target.value)}
-                        />
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label>Years</Label>
+                            <Input
+                                type="number"
+                                value={params.years}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("years", +e.target.value)
+                                }}
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Months</Label>
+                            <Input
+                                type="number"
+                                min="0"
+                                max="11"
+                                value={params.months}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0) {
+                                        updateParam("months", 0)
+                                        return
+                                    }
+                                    if (Number(e.target.value) > 11) {
+                                        updateParam("months", 11)
+                                        return
+                                    }
+                                    updateParam("months", +e.target.value)
+                                }}
+                            />
+                        </div>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label className="optional">Deposit Frequency</Label>
-                        <Select
-                            value={params.depositFrequency ? params.depositFrequency.toString() : ""}
-                            onValueChange={(val) => updateParam("depositFrequency", val)}
-                        >
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {Object.entries({ "Weekly": 52, "Monthly": 12, "Quarterly": 4, "Half-Yearly": 2, "Yearly": 1 }).map(([label, value]) => (
-                                    <SelectItem key={value} value={value.toString()}>{label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <Card className="grid sm:grid-cols-2 optional p-4 gap-4">
 
-                    <div className="grid gap-2">
-                        <Label className="optional">Deposit Timing</Label>
-                        <Select
-                            value={params.depositTiming}
-                            onValueChange={(val) => updateParam("depositTiming", val)}
-                        >
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="beginning">Beginning</SelectItem>
-                                <SelectItem value="end">End</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                        <div className="grid gap-2">
+                            <Label>Deposit Amount (₹)</Label>
+                            <Input
+                                type="number"
+                                value={params.depositAmount}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("depositAmount", +e.target.value)
+                                }}
+                            />
+                        </div>
 
-                    <div className="grid gap-2" key={"withdrawalAmount"}>
-                        <Label className="optional">Withdrawal Amount</Label>
-                        <Input
-                            type="number"
-                            value={params["withdrawalAmount" as keyof CompoundInterestParams] as number}
-                            onChange={(e) => updateParam("withdrawalAmount" as keyof CompoundInterestParams, +e.target.value)}
-                        />
-                    </div>
+                        <div className="grid gap-2">
+                            <Label>Deposit Frequency</Label>
+                            <Select
+                                value={params.depositFrequency}
+                                onValueChange={(val) => updateParam("depositFrequency", val)}
+                            >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                                    <SelectItem value="half-yearly">Half-Yearly</SelectItem>
+                                    <SelectItem value="yearly">Yearly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                    <div className="grid gap-2">
-                        <Label className="optional">Withdrawal Type</Label>
-                        <Select
-                            value={params.withdrawalType}
-                            onValueChange={(val) => updateParam("withdrawalType", val)}
-                        >
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="fixed">Fixed</SelectItem>
-                                <SelectItem value="percentage-of-balance">% of Balance</SelectItem>
-                                <SelectItem value="percentage-of-earnings">% of Earnings</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                        <div className="grid gap-2">
+                            <Label>Deposit Timing</Label>
+                            <Select
+                                value={params.depositTime}
+                                onValueChange={(val) => updateParam("depositTime", val)}
+                            >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="beginning">Beginning of Period</SelectItem>
+                                    <SelectItem value="ending">End of Period</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                    <div className="grid gap-2">
-                        <Label className="optional">Withdrawal Interval</Label>
-                        <Select
-                            value={params.withdrawalFrequency ? params.withdrawalFrequency.toString() : ""}
-                            onValueChange={(val) => updateParam("withdrawalFrequency", val)}
-                        >
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {Object.entries({ "Monthly": 12, "Quarterly": 4, "Half-Yearly": 2, "Yearly": 1 }).map(([label, value]) => (
-                                    <SelectItem key={value} value={value.toString()}>{label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                        <div className="grid gap-2">
+                            <Label>Annual Deposit Increase (%)</Label>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                value={params.depositIncreaseRate}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("depositIncreaseRate", +e.target.value)
+                                }}
+                            />
+                        </div>
+                    </Card>
 
-                    <div className="grid gap-2" key={"depositAnnualIncreasePercent"}>
-                        <Label className="optional">Annual Deposit Increase (%)</Label>
-                        <Input
-                            type="number"
-                            value={params["depositAnnualIncreasePercent" as keyof CompoundInterestParams] as number}
-                            onChange={(e) => updateParam("depositAnnualIncreasePercent" as keyof CompoundInterestParams, +e.target.value)}
-                        />
-                    </div>
+                    <Card className="grid sm:grid-cols-2 optional p-4 gap-4">
+                        <div className="grid gap-2">
+                            <Label>Withdrawal Amount</Label>
+                            <Input
+                                type="number"
+                                value={params.withdrawalAmount}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("withdrawalAmount", +e.target.value)
+                                }}
+                            />
+                        </div>
 
-                    <div className="grid gap-2" key={"withdrawalAnnualIncreasePercent"}>
-                        <Label className="optional">Annual Withdrawal Increase (%)</Label>
-                        <Input
-                            type="number"
-                            value={params["withdrawalAnnualIncreasePercent" as keyof CompoundInterestParams] as number}
-                            onChange={(e) => updateParam("withdrawalAnnualIncreasePercent" as keyof CompoundInterestParams, +e.target.value)}
-                        />
-                    </div>
+                        <div className="grid gap-2">
+                            <Label>Withdrawal Frequency</Label>
+                            <Select
+                                value={params.withdrawalFrequency}
+                                onValueChange={(val) => updateParam("withdrawalFrequency", val)}
+                            >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                                    <SelectItem value="half-yearly">Half-Yearly</SelectItem>
+                                    <SelectItem value="yearly">Yearly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Withdrawal Type</Label>
+                            <Select
+                                value={params.withdrawalType}
+                                onValueChange={(val) => updateParam("withdrawalType", val)}
+                            >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="fixed-amount">Fixed Amount</SelectItem>
+                                    <SelectItem value="%-of-balance">% of Balance</SelectItem>
+                                    <SelectItem value="%-of-interest">% of Interest</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {params.withdrawalType === "fixed-amount" && (
+                            <div className="grid gap-2">
+                                <Label>Annual Withdrawal Increase (%)</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={params.withdrawalIncreaseRate}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updateParam("withdrawalIncreaseRate", +e.target.value)
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </Card>
                 </CardContent>
             </Card>
 
@@ -196,7 +280,7 @@ export function CompoundInterestCalculator() {
                 <ResultsDisplay
                     title="Results"
                     results={[
-                        { label: "Final Amount", value: formatCurrency(results.finalBalance) },
+                        { label: "Final Amount", value: formatCurrency(results.finalAmount) },
                         { label: "Total Interest", value: formatCurrency(results.totalInterest) },
                         { label: "Total Deposits", value: formatCurrency(results.totalDeposits) },
                         { label: "Total Withdrawals", value: formatCurrency(results.totalWithdrawals) },
@@ -205,22 +289,24 @@ export function CompoundInterestCalculator() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Yearly Breakdown</CardTitle>
+                        <CardTitle>Monthly Breakdown</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2 max-h-60 overflow-y-auto">
-                            <div className="grid grid-cols-4 gap-2 text-sm font-medium border-b pb-2">
-                                <span>Year</span>
+                            <div className="grid grid-cols-5 gap-2 text-sm font-medium border-b pb-2">
+                                <span>Month</span>
                                 <span>Balance</span>
                                 <span>Interest</span>
                                 <span>Deposits</span>
+                                <span>Withdrawals</span>
                             </div>
-                            {results.yearlyBreakdown.map((year) => (
-                                <div key={year.year} className="grid grid-cols-4 gap-2 text-sm">
-                                    <span>{year.year}</span>
-                                    <span>{formatCurrency(year.balance)}</span>
-                                    <span className="text-green-600">{formatCurrency(year.interestEarned)}</span>
-                                    <span className="text-blue-600">{formatCurrency(year.deposits)}</span>
+                            {results.monthlyBreakdown.map((month) => (
+                                <div key={month.month} className="grid grid-cols-5 gap-2 text-sm">
+                                    <span>{month.month}</span>
+                                    <span>{formatCurrency(month.balance)}</span>
+                                    <span className="text-green-600">{formatCurrency(month.interestEarned)}</span>
+                                    <span className="text-blue-600">{formatCurrency(month.deposits)}</span>
+                                    <span className="text-red-600">{formatCurrency(month.withdrawals)}</span>
                                 </div>
                             ))}
                         </div>
