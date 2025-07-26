@@ -1,13 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { calculateCarLoan, type CarLoanParams } from "@/lib/financial-calculations"
@@ -145,34 +139,24 @@ export function CarLoanCalculator() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Car Purchase Summary</CardTitle>
+                        <CardTitle>Monthly Breakdown</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            <div className="flex justify-between">
-                                <span>Car Price:</span>
-                                <span className="font-medium">{formatCurrency(params.carPrice)}</span>
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                            <div className="grid grid-cols-4 gap-2 text-sm font-medium border-b pb-2">
+                                <span>Month</span>
+                                <span>Balance</span>
+                                <span>Interest</span>
+                                <span>Payment</span>
                             </div>
-                            <div className="flex justify-between">
-                                <span>Down Payment:</span>
-                                <span className="font-medium">{formatCurrency(params.downPayment)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Loan Amount:</span>
-                                <span className="font-medium">{formatCurrency(params.principal)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Interest Rate:</span>
-                                <span className="font-medium">{params.rate}%</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Loan Term:</span>
-                                <span className="font-medium">{params.term} years</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Balloon Payment:</span>
-                                <span className="font-medium">{formatCurrency(params.ballonPayment)}</span>
-                            </div>
+                            {results.amortizationSchedule.map((month) => (
+                                <div key={month.month} className="grid grid-cols-4 gap-2 text-sm">
+                                    <span>{month.month}</span>
+                                    <span>{formatCurrency(month.balance)}</span>
+                                    <span>{formatCurrency(month.interest)}</span>
+                                    <span className="text-red-600">{formatCurrency(month.payment)}</span>
+                                </div>
+                            ))}
                         </div>
                     </CardContent>
                 </Card>

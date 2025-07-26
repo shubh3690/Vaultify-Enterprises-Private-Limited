@@ -258,7 +258,7 @@ export function LoanPayoffCalculator() {
                     <CardContent>
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                             <div className="grid grid-cols-6 gap-2 text-sm font-medium border-b pb-2">
-                                <span>Payment #</span>
+                                <span>Payment</span>
                                 <span>Date</span>
                                 <span>Payment</span>
                                 <span>Principal</span>
@@ -269,7 +269,7 @@ export function LoanPayoffCalculator() {
                                 <div key={payment.paymentNumber} className="grid grid-cols-6 gap-2 text-sm">
                                     <span>{payment.paymentNumber}</span>
                                     <span>{payment.paymentDate}</span>
-                                    <span>{formatCurrency(payment.monthlyPayment)}</span>
+                                    <span className="text-red-600">{formatCurrency(payment.monthlyPayment)}</span>
                                     <span>{formatCurrency(payment.principalPayment)}</span>
                                     <span>{formatCurrency(payment.interestPayment)}</span>
                                     <span>{formatCurrency(payment.endingBalance)}</span>

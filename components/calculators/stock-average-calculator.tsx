@@ -144,24 +144,6 @@ export function StockAverageCalculator() {
                         </div>
                     </CardContent>
                 </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Dollar Cost Averaging</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3 text-sm">
-                            <p>
-                                <strong>Average Cost:</strong> {formatCurrency(averagePrice)} per share
-                            </p>
-                            <p>Dollar cost averaging helps reduce the impact of volatility by spreading purchases over time.</p>
-                            <p>
-                                Your {formatNumber(totalShares)} shares have an average cost basis of {formatCurrency(averagePrice)} per
-                                share.
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
         </div>
     )
