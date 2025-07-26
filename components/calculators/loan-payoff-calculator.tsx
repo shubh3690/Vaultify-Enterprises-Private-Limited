@@ -256,8 +256,8 @@ export function LoanPayoffCalculator() {
                         <CardDescription>Monthly payment breakdown showing principal and interest</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-2 max-h-48 overflow-y-auto">
-                            <div className="grid grid-cols-6 gap-2 text-sm font-medium border-b pb-2">
+                        <div className="space-y-2 max-h-[14rem] overflow-auto">
+                            <div className="grid grid-cols-6 gap-2 text-sm font-medium border-b pb-2 min-w-[200%] sm:min-w-0">
                                 <span>Payment</span>
                                 <span>Date</span>
                                 <span>Payment</span>
@@ -266,7 +266,7 @@ export function LoanPayoffCalculator() {
                                 <span>Balance</span>
                             </div>
                             {results.amortizationSchedule?.map((payment) => (
-                                <div key={payment.paymentNumber} className="grid grid-cols-6 gap-2 text-sm">
+                                <div key={payment.paymentNumber} className="grid grid-cols-6 gap-2 text-sm min-w-[200%] sm:min-w-0">
                                     <span>{payment.paymentNumber}</span>
                                     <span>{payment.paymentDate}</span>
                                     <span className="text-red-600">{formatCurrency(payment.monthlyPayment)}</span>
