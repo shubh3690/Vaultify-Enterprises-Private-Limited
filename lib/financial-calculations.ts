@@ -1012,7 +1012,7 @@ export interface SavingsCalculatorParams {
     rate: number
     rateInterval: "monthly" | "yearly"
     rateType: "nominal" | "apy"
-    compoundingFrequency: number // number / year
+    compoundingFrequency: number
     years: number
     months: number
     depositAmount: number
@@ -1029,18 +1029,146 @@ export interface SavingsCalculatorResult {
     totalInterest: number
     additionalDeposits: number
     totalWithdrawals: number
-    amortizationSchedule: Array<{
+    monthlyBreakdown: Array<{
         month: number
-        payment: number
-        principal: number
-        interest: number
         balance: number
+        interestEarned: number
+        deposits: number
+        withdrawals: number
     }>
 }
 
-// export function calculateSavings(params: SavingsCalculatorParams): SavingsCalculatorResult {
+export function calculateSavings(params: SavingsCalculatorParams): SavingsCalculatorResult {
+    const { initialBalance, rate, rateInterval, rateType, compoundingFrequency, years, months, depositAmount, depositFrequency, depositIncreaseRate, withdrawalAmount, withdrawalFrequency, withdrawalType, withdrawalIncreaseRate } = params;
 
-// }
+    const totalMonths = years * 12 + months;
+    const depositIncreaseRateDecimal = depositIncreaseRate / 100;
+
+    let effectiveWithdrawalIncreaseRate = withdrawalIncreaseRate;
+    if (withdrawalType !== "fixed-amount") {
+        effectiveWithdrawalIncreaseRate = 0;
+    }
+    const withdrawalIncreaseRateDecimal = effectiveWithdrawalIncreaseRate / 100;
+    let monthlyRate: number;
+
+    if (rateType === "apy") {
+        if (rateInterval === "monthly") {
+            const annualAPY = Math.pow(1 + rate / 100, 12) - 1;
+            monthlyRate = Math.pow(1 + annualAPY, 1 / 12) - 1;
+        } else {
+            monthlyRate = Math.pow(1 + rate / 100, 1 / 12) - 1;
+        }
+    } else {
+        let annualNominalRate: number;
+        if (rateInterval === "monthly") {
+            annualNominalRate = rate * 12;
+        } else {
+            annualNominalRate = rate;
+        }
+
+        const periodicRate = (annualNominalRate / 100) / compoundingFrequency;
+        const effectiveAnnualRate = Math.pow(1 + periodicRate, compoundingFrequency) - 1;
+        monthlyRate = Math.pow(1 + effectiveAnnualRate, 1 / 12) - 1;
+    }
+
+    let balance = initialBalance;
+    let totalDeposits = 0;
+    let totalWithdrawals = 0;
+    let totalInterest = 0;
+    let currentDepositAmount = depositAmount;
+    let currentWithdrawalAmount = withdrawalAmount;
+    let periodicInterestAccumulator = 0;
+
+    const monthlyBreakdown: Array<{
+        month: number;
+        balance: number;
+        interestEarned: number;
+        deposits: number;
+        withdrawals: number;
+    }> = [];
+
+    const isFrequencyMonth = (month: number, frequency: string): boolean => {
+        switch (frequency) {
+            case "monthly": return true;
+            case "quarterly": return month % 3 === 0;
+            case "half-yearly": return month % 6 === 0;
+            case "yearly": return month % 12 === 0;
+            default: return true;
+        }
+    };
+
+    for (let month = 1; month <= totalMonths; month++) {
+        let monthlyInterest = 0;
+        let monthlyDeposits = 0;
+        let monthlyWithdrawals = 0;
+        const startingBalance = balance;
+
+        monthlyInterest = balance * monthlyRate;
+        balance += monthlyInterest;
+        totalInterest += monthlyInterest;
+        periodicInterestAccumulator += monthlyInterest;
+        const isDepositMonth = depositAmount > 0 && isFrequencyMonth(month, depositFrequency);
+        if (isDepositMonth) {
+            monthlyDeposits = currentDepositAmount;
+            balance += monthlyDeposits;
+            totalDeposits += monthlyDeposits;
+        }
+
+        const isWithdrawalMonth = withdrawalAmount > 0 && isFrequencyMonth(month, withdrawalFrequency);
+        if (isWithdrawalMonth) {
+            let withdrawalThisMonth = 0;
+
+            switch (withdrawalType) {
+                case "fixed-amount":
+                    withdrawalThisMonth = currentWithdrawalAmount;
+                    break;
+                case "%-of-balance":
+                    withdrawalThisMonth = startingBalance * (currentWithdrawalAmount / 100);
+                    break;
+                case "%-of-interest":
+                    withdrawalThisMonth = periodicInterestAccumulator * (currentWithdrawalAmount / 100);
+                    break;
+            }
+
+            withdrawalThisMonth = Math.min(withdrawalThisMonth, balance);
+            withdrawalThisMonth = Math.round(withdrawalThisMonth * 100) / 100;
+
+            balance -= withdrawalThisMonth;
+            monthlyWithdrawals = withdrawalThisMonth;
+            totalWithdrawals += withdrawalThisMonth;
+            if (withdrawalType === "%-of-interest") {
+                periodicInterestAccumulator = 0;
+            }
+        }
+
+        if (month % 12 === 0) {
+            if (depositIncreaseRate > 0) {
+                currentDepositAmount *= (1 + depositIncreaseRateDecimal);
+            }
+            if (withdrawalType === "fixed-amount" && effectiveWithdrawalIncreaseRate > 0) {
+                currentWithdrawalAmount *= (1 + withdrawalIncreaseRateDecimal);
+            }
+        }
+
+        monthlyBreakdown.push({
+            month,
+            balance: Math.round(balance * 100) / 100,
+            interestEarned: Math.round(monthlyInterest * 100) / 100,
+            deposits: Math.round(monthlyDeposits * 100) / 100,
+            withdrawals: Math.round(monthlyWithdrawals * 100) / 100
+        });
+
+        balance = Math.max(0, balance);
+    }
+
+    return {
+        finalBalance: Math.round(balance * 100) / 100,
+        totalInterest: Math.round(totalInterest * 100) / 100,
+        additionalDeposits: Math.round(totalDeposits * 100) / 100,
+        totalWithdrawals: Math.round(totalWithdrawals * 100) / 100,
+        monthlyBreakdown
+    };
+}
 
 export interface SavingsGoalParams {
     targetAmount: number

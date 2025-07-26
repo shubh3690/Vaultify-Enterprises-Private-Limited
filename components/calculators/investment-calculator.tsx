@@ -216,8 +216,12 @@ export function InvestmentCalculator() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="monthly">Monthly</SelectItem>
-                                        <SelectItem value="quarterly">Quarterly</SelectItem>
-                                        <SelectItem value="half-yearly">Half-yearly</SelectItem>
+                                        {params.withdrawalType === "fixed-amount" && (
+                                            <>
+                                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                <SelectItem value="half-yearly">Half-yearly</SelectItem>
+                                            </>
+                                        )}
                                         <SelectItem value="yearly">Yearly</SelectItem>
                                     </SelectContent>
                                 </Select>

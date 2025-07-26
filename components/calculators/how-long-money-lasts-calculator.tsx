@@ -245,30 +245,32 @@ export function HowLongMoneyLastsCalculator() {
                         </div>
                     </div>
 
-                    <Card className="grid gap-4 optional p-4">
-                        {params.withdrawalType === "fixed" && (
-                            <div className="grid gap-2">
-                                <Label htmlFor="yearlyIncrease">
-                                    Increase withdrawals yearly by (%)
-                                </Label>
-                                <Input
-                                    id="yearlyIncrease"
-                                    type="number"
-                                    step="0.1"
-                                    value={params.yearlyWithdrawalIncrease}
-                                    onChange={(e) => {
-                                        if (Number(e.target.value) < 0)
-                                            return
-                                        handleParamChange(
-                                            "yearlyWithdrawalIncrease",
-                                            Number(e.target.value) || 0
-                                        )
-                                    }
-                                    }
-                                />
-                            </div>
-                        )}
-                    </Card>
+                    {params.withdrawalType === "fixed" && (
+                        <Card className="grid gap-4 optional p-4">
+                            {params.withdrawalType === "fixed" && (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="yearlyIncrease">
+                                        Increase withdrawals yearly by (%)
+                                    </Label>
+                                    <Input
+                                        id="yearlyIncrease"
+                                        type="number"
+                                        step="0.1"
+                                        value={params.yearlyWithdrawalIncrease}
+                                        onChange={(e) => {
+                                            if (Number(e.target.value) < 0)
+                                                return
+                                            handleParamChange(
+                                                "yearlyWithdrawalIncrease",
+                                                Number(e.target.value) || 0
+                                            )
+                                        }
+                                        }
+                                    />
+                                </div>
+                            )}
+                        </Card>
+                    )}
                 </CardContent>
             </Card>
 

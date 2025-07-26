@@ -214,7 +214,7 @@ export function CompoundInterestCalculator() {
 
                     <Card className="grid sm:grid-cols-2 optional p-4 gap-4">
                         <div className="grid gap-2">
-                            <Label>Withdrawal Amount</Label>
+                            <Label>Withdrawal Amount ({params.withdrawalType === "fixed-amount" ? "₹" : "%"})</Label>
                             <Input
                                 type="number"
                                 value={params.withdrawalAmount}
@@ -235,8 +235,12 @@ export function CompoundInterestCalculator() {
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="monthly">Monthly</SelectItem>
-                                    <SelectItem value="quarterly">Quarterly</SelectItem>
-                                    <SelectItem value="half-yearly">Half-Yearly</SelectItem>
+                                    {params.withdrawalType === "fixed-amount" && (
+                                        <>
+                                            <SelectItem value="quarterly">Quarterly</SelectItem>
+                                            <SelectItem value="half-yearly">Half-Yearly</SelectItem>
+                                        </>
+                                    )}
                                     <SelectItem value="yearly">Yearly</SelectItem>
                                 </SelectContent>
                             </Select>

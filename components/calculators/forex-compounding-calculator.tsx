@@ -154,7 +154,7 @@ export function ForexCompoundingCalculator() {
 
                     <Card className="optional gap-4 grid p-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="additionalDeposits">Additional Deposits (₹) (Optional)</Label>
+                            <Label htmlFor="additionalDeposits">Additional Deposits (₹)</Label>
                             <Input
                                 id="additionalDeposits"
                                 type="number"

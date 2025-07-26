@@ -64,7 +64,7 @@ export function CarLoanCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label className="optional" htmlFor="downPayment">Down Payment (₹) (optional)</Label>
+                        <Label className="optional" htmlFor="downPayment">Down Payment (₹)</Label>
                         <Input
                             id="downPayment"
                             type="number"
