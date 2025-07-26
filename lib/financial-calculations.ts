@@ -1267,14 +1267,12 @@ export function calculateSavingsWithdrawal(params: SavingsParams): SavingsResult
     const wFreq = freqToNum(params.withdrawalFrequency);
     const cFreq = freqToNum(params.compoundingFrequency);
 
-    // convert APY→nominal if needed
     let r = params.annualInterestRate / 100;
     if (!params.isNominalRate) {
         r = cFreq * (Math.pow(1 + r, 1 / cFreq) - 1);
     }
     const rPerComp = r / cFreq;
 
-    // total withdrawal‐periods requested
     const targetPeriods = params.withdrawalYears * wFreq + Math.floor(params.withdrawalMonths * (wFreq / 12));
     const compPerWithdraw = cFreq / wFreq;
     const yearlyGrowth = 1 + params.yearlyWithdrawalIncrease / 100;
@@ -1290,7 +1288,6 @@ export function calculateSavingsWithdrawal(params: SavingsParams): SavingsResult
         }
     }
 
-    // how many withdrawal‐periods until zero
     function durationPeriods(baseAmount: number): number {
         let bal = params.currentBalance;
         let base = baseAmount;
@@ -1298,8 +1295,6 @@ export function calculateSavingsWithdrawal(params: SavingsParams): SavingsResult
 
         while (bal > 0.01 && periods < 10000) {
             const startBalance = bal;
-
-            // Apply compound interest for this withdrawal period
             for (let i = 0; i < compPerWithdraw; i++) {
                 bal *= (1 + rPerComp);
             }
@@ -1310,7 +1305,6 @@ export function calculateSavingsWithdrawal(params: SavingsParams): SavingsResult
             bal -= withdrawal;
             periods++;
 
-            // Increase base withdrawal yearly (only for fixed amounts)
             if (periods % wFreq === 0 && params.withdrawalType === 'fixed') {
                 base *= yearlyGrowth;
             }
@@ -1320,7 +1314,6 @@ export function calculateSavingsWithdrawal(params: SavingsParams): SavingsResult
         return periods;
     }
 
-    // future balance after exactly targetPeriods
     function futureBalanceAfter(baseAmount: number, periods: number): number {
         let bal = params.currentBalance;
         let base = baseAmount;
@@ -1348,7 +1341,6 @@ export function calculateSavingsWithdrawal(params: SavingsParams): SavingsResult
         return Math.max(0, bal);
     }
 
-    // find base withdrawal to last exactly targetPeriods
     function findBaseForDuration(periods: number): number {
         if (periods === 0) return 0;
 
@@ -1388,10 +1380,6 @@ export function calculateSavingsWithdrawal(params: SavingsParams): SavingsResult
     };
 }
 
-export function calculateRequiredInterestRate(presentValue: number, futureValue: number, periods: number): number {
-    return (Math.pow(futureValue / presentValue, 1 / periods) - 1) * 100
-}
-
 export interface CarLoanParams {
     principal: number
     rate: number
@@ -1413,16 +1401,15 @@ export interface CarLoanResult {
 }
 
 export function calculateCarLoan(params: CarLoanParams): CarLoanResult {
-    const { principal: P, rate, term, ballonPayment: B } = params;
+    const { principal, rate, term, ballonPayment } = params;
     const r = rate / 100 / 12;
     const n = term * 12;
 
-    // Monthly payment with balloon discount
     const annuityFactor = r / (1 - Math.pow(1 + r, -n));
-    const balloonAdjustment = B * r / (Math.pow(1 + r, n) - 1);
-    const monthlyPayment = P * annuityFactor - balloonAdjustment;
+    const balloonAdjustment = ballonPayment * r / (Math.pow(1 + r, n) - 1);
+    const monthlyPayment = principal * annuityFactor - balloonAdjustment;
 
-    let balance = P;
+    let balance = principal;
     const schedule = [];
     let totalInterest = 0;
 
@@ -1434,13 +1421,18 @@ export function calculateCarLoan(params: CarLoanParams): CarLoanResult {
         totalInterest += interest;
     }
 
-    if (B > 0) {
-        schedule.push({ month: n + 1, payment: B, principal: B, interest: 0, balance: 0 });
+    if (ballonPayment > 0) {
+        schedule.push({ month: n + 1, payment: ballonPayment, principal: ballonPayment, interest: 0, balance: 0 });
     }
 
-    const totalPayment = monthlyPayment * n + B;
+    const totalPayment = monthlyPayment * n + ballonPayment;
 
-    return { monthlyPayment, totalPayment, totalInterest, amortizationSchedule: schedule };
+    return {
+        monthlyPayment,
+        totalPayment,
+        totalInterest,
+        amortizationSchedule: schedule
+    };
 }
 
 export interface LoanPayoffParams {
@@ -2055,7 +2047,6 @@ export function calculateForexCompounding(params: ForexParams): ForexResult {
         paymentDate.setDate(startDate.getDate() + (period - 1) * daysPerCompoundingPeriod);
     }
 
-    // Handle fractional remaining time
     const remainingTime = (totalTimeInYears * compoundingFrequency) - totalCompoundingPeriods;
     if (remainingTime > 0.01) {
         const fractionalInterest = currentBalance * ratePerCompoundingPeriod * remainingTime;
