@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -12,12 +13,13 @@ import { ResultsDisplay } from "@/components/ui/results-display"
 
 const CONTRIBUTION_FREQUENCIES = [
     { label: "None", value: "0" },
-    { label: "Daily (365/yr)", value: "365" },
-    { label: "Weekly (52/yr)", value: "52" },
-    { label: "Monthly (12/yr)", value: "12" }
+    { label: "Daily", value: "365" },
+    { label: "Weekly", value: "52" },
+    { label: "Monthly", value: "12" }
 ]
 
 export function DailyCompoundInterestCalculator() {
+    const [contributionType, setContributionType] = useState<"1" | "-1">("1")
     const [params, setParams] = useState<DailyCompoundParams>({
         principal: 10000,
         rate: 5,
@@ -33,13 +35,24 @@ export function DailyCompoundInterestCalculator() {
     })
 
     const [results, setResults] = useState(() =>
-        calculateDailyCompoundInterest(params)
+        calculateDailyCompoundInterest({
+            ...params,
+            additionalContributions: params.additionalContributions * Number(contributionType)
+        })
     )
+
+    useEffect(() => {
+        setResults(
+            calculateDailyCompoundInterest({
+                ...params,
+                additionalContributions: params.additionalContributions * Number(contributionType)
+            })
+        )
+    }, [params, contributionType])
 
     const updateParam = (key: keyof DailyCompoundParams, value: any) => {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
-        setResults(calculateDailyCompoundInterest(newParams))
     }
 
     const toggleDay = (day: string, checked: boolean) => {
@@ -94,7 +107,7 @@ export function DailyCompoundInterestCalculator() {
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label>Rate Interval</Label>
+                                <Label>Rate Period</Label>
                                 <Select
                                     value={params.rateInterval}
                                     onValueChange={v => updateParam("rateInterval", v)}
@@ -207,13 +220,23 @@ export function DailyCompoundInterestCalculator() {
                     </div>
 
                     <Card className="p-4 grid sm:grid-cols-2 gap-4 optional">
+                        <Tabs
+                            value={contributionType}
+                            onValueChange={(value) => setContributionType(value as "-1" | "1")}
+                            className="col-span-2"
+                        >
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="1">Deposits</TabsTrigger>
+                                <TabsTrigger value="-1">Withdrawals</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
                         <div className="grid gap-2">
-                            <Label>Contribution Amount (₹)</Label>
+                            <Label>{contributionType === "1" ? "Deposit" : "Withdrawal"} Amount (₹)</Label>
                             <Input
                                 type="number"
                                 value={params.additionalContributions}
                                 onChange={e =>
-                                    updateParam("additionalContributions", Number(e.target.value))
+                                    updateParam("additionalContributions", Number(e.target.value) < 0 ? Number(e.target.value) * -1 : Number(e.target.value))
                                 }
                             />
                         </div>

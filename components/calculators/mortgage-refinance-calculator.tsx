@@ -72,7 +72,7 @@ export function MortgageRefinanceCalculator() {
                             />
                         </div>
                         <div className="space-y-1">
-                            <Label htmlFor="currentRate">Rate (%)</Label>
+                            <Label htmlFor="currentRate">Interest Rate (%)</Label>
                             <Input
                                 id="currentRate"
                                 value={params.currentRate}
@@ -91,7 +91,7 @@ export function MortgageRefinanceCalculator() {
                     <div className="space-y-4 pt-4 border-t">
                         <h3 className="font-medium text-lg">Refinance Options</h3>
                         <div className="space-y-1">
-                            <Label htmlFor="refinanceRate">Rate (%)</Label>
+                            <Label htmlFor="refinanceRate">Interest Rate (%)</Label>
                             <Input
                                 id="refinanceRate"
                                 value={params.refinanceRate}

@@ -168,11 +168,27 @@ export function InvestmentCalculator() {
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="annualDepositIncrease">Annual Deposit Increase (%)</Label>
+                                <Input
+                                    id="annualDepositIncrease"
+                                    type="number"
+                                    step="0.01"
+                                    value={params.annualDepositIncrease || 0}
+                                    onChange={(e) => {
+                                        if (Number(e.target.value) < 0)
+                                            return
+                                        updateParam('annualDepositIncrease', Number(e.target.value))
+                                    }}
+                                    placeholder="0"
+                                />
+                            </div>
                         </div>
                     </Card>
 
                     <Card className="space-y-4 optional p-4">
-                        <div className="grid gap-4 sm:grid-cols-3">
+                        <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-2">
                                 <Label htmlFor="regularWithdrawal">Withdrawal Amount ({params.withdrawalType === "fixed-amount" ? "₹" : "%"})</Label>
                                 <Input
@@ -186,23 +202,6 @@ export function InvestmentCalculator() {
                                     }}
                                     placeholder="0"
                                 />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="withdrawalType">Withdrawal Type</Label>
-                                <Select
-                                    value={params.withdrawalType}
-                                    onValueChange={(value) => updateParam('withdrawalType', value as any)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="fixed-amount">Fixed Amount (₹)</SelectItem>
-                                        <SelectItem value="percent-of-balance">% of Balance</SelectItem>
-                                        <SelectItem value="percent-of-interest">% of Interest</SelectItem>
-                                    </SelectContent>
-                                </Select>
                             </div>
 
                             <div className="grid gap-2">
@@ -230,19 +229,20 @@ export function InvestmentCalculator() {
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="annualDepositIncrease">Annual Deposit Increase (%)</Label>
-                                <Input
-                                    id="annualDepositIncrease"
-                                    type="number"
-                                    step="0.01"
-                                    value={params.annualDepositIncrease || 0}
-                                    onChange={(e) => {
-                                        if (Number(e.target.value) < 0)
-                                            return
-                                        updateParam('annualDepositIncrease', Number(e.target.value))
-                                    }}
-                                    placeholder="0"
-                                />
+                                <Label htmlFor="withdrawalType">Withdrawal Type</Label>
+                                <Select
+                                    value={params.withdrawalType}
+                                    onValueChange={(value) => updateParam('withdrawalType', value as any)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="fixed-amount">Fixed Amount (₹)</SelectItem>
+                                        <SelectItem value="percent-of-balance">% of Balance</SelectItem>
+                                        <SelectItem value="percent-of-interest">% of Interest</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {params.withdrawalType === "fixed-amount" && (

@@ -10,20 +10,20 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { ResultsDisplay } from "@/components/ui/results-display"
 
 const COMPOUND_FREQUENCIES = [
-    { label: "Yearly (1/yr)", value: "1" },
-    { label: "Half-yearly (2/yr)", value: "2" },
-    { label: "Quarterly (4/yr)", value: "4" },
-    { label: "Monthly (12/yr)", value: "12" },
-    { label: "Weekly (52/yr)", value: "52" },
     { label: "Daily (365/yr)", value: "365" },
+    { label: "Weekly (52/yr)", value: "52" },
+    { label: "Monthly (12/yr)", value: "12" },
+    { label: "Quarterly (4/yr)", value: "4" },
+    { label: "Half-yearly (2/yr)", value: "2" },
+    { label: "Yearly (1/yr)", value: "1" },
 ]
 
 const DEPOSIT_FREQUENCIES = [
     { label: "None", value: "0" },
-    { label: "Yearly (1/yr)", value: "1" },
-    { label: "Half-yearly (2/yr)", value: "2" },
-    { label: "Quarterly (4/yr)", value: "4" },
-    { label: "Monthly (12/yr)", value: "12" },
+    { label: "Monthly", value: "12" },
+    { label: "Quarterly", value: "4" },
+    { label: "Half-yearly", value: "2" },
+    { label: "Yearly", value: "1" },
 ]
 
 export function MMACalculator() {
@@ -141,7 +141,7 @@ export function MMACalculator() {
 
                     <Card className="grid sm:grid-cols-2 p-4 gap-4 optional">
                         <div className="grid gap-2">
-                            <Label htmlFor="depositAmount">Regular Deposit (₹)</Label>
+                            <Label htmlFor="depositAmount">Deposit Amount (₹)</Label>
                             <Input
                                 id="depositAmount"
                                 type="number"

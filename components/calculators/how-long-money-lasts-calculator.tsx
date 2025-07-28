@@ -84,41 +84,47 @@ export function HowLongMoneyLastsCalculator() {
                         />
                     </div>
 
-                    <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="grid gap-2 sm:grid-cols-3">
                         <div>
                             <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
-                            <div className="flex gap-2">
-                                <Input
-                                    id="interestRate"
-                                    type="number"
-                                    step="0.01"
-                                    value={params.annualInterestRate}
-                                    onChange={(e) => {
-                                        if (Number(e.target.value) < 0)
-                                            return
-                                        handleParamChange(
-                                            "annualInterestRate",
-                                            Number(e.target.value) || 0
-                                        )
-                                    }}
-                                    className="flex-1"
-                                />
-                                <div className="flex items-center space-x-2">
-                                    <Switch
-                                        checked={!params.isNominalRate}
-                                        onCheckedChange={(c) =>
-                                            handleParamChange("isNominalRate", !c)
-                                        }
-                                    />
-                                    <Label className="text-sm">
-                                        {params.isNominalRate ? "Nominal" : "APY"}
-                                    </Label>
-                                </div>
+                            <Input
+                                id="interestRate"
+                                type="number"
+                                step="0.01"
+                                value={params.annualInterestRate}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    handleParamChange(
+                                        "annualInterestRate",
+                                        Number(e.target.value) || 0
+                                    )
+                                }}
+                                className="flex-1"
+                            />
+                        </div>
+                        <div>
+                            <div className="grid gap-2">
+                                <Label>Rate Type</Label>
+                                <Select
+                                    value={params.isNominalRate ? "Nominal" : "APY"}
+                                    onValueChange={(v) =>
+                                        handleParamChange("isNominalRate", v === "Nominal")
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Nominal">Nominal</SelectItem>
+                                        <SelectItem value="APY">APY</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                         <div>
                             <div className="grid gap-2">
-                                <Label>Interest Compounded</Label>
+                                <Label>Compounded Frequency</Label>
                                 <Select
                                     value={params.compoundingFrequency}
                                     onValueChange={(v) =>
@@ -145,43 +151,44 @@ export function HowLongMoneyLastsCalculator() {
                         </div>
                     </div>
 
-                    <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="grid gap-2 sm:grid-cols-3">
                         <div>
                             <Label>
-                                Regular Withdrawal ({suffix})
+                                Withdrawal Amount ({suffix})
                             </Label>
-                            <div className="flex gap-2">
-                                <Input
-                                    type="number"
-                                    step={params.withdrawalType === "fixed" ? "1" : "0.1"}
-                                    value={params.withdrawalAmount}
-                                    onChange={(e) => {
-                                        if (Number(e.target.value) < 0)
-                                            return
-                                        handleParamChange(
-                                            "withdrawalAmount",
-                                            Number(e.target.value) || 0
-                                        )
-                                    }}
-                                    className="flex-1"
-                                />
-                                <Select
-                                    value={params.withdrawalFrequency}
-                                    onValueChange={(v) =>
-                                        handleParamChange("withdrawalFrequency", v as any)
-                                    }
-                                >
-                                    <SelectTrigger className="w-40">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="monthly">Monthly (12/yr)</SelectItem>
-                                        <SelectItem value="quarterly">Quarterly (4/yr)</SelectItem>
-                                        <SelectItem value="half-yearly">Half-Yearly (2/yr)</SelectItem>
-                                        <SelectItem value="annually">Annually (1/yr)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            <Input
+                                type="number"
+                                step={params.withdrawalType === "fixed" ? "1" : "0.1"}
+                                value={params.withdrawalAmount}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    handleParamChange(
+                                        "withdrawalAmount",
+                                        Number(e.target.value) || 0
+                                    )
+                                }}
+                                className="flex-1"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Withdrawal Frequency</Label>
+                            <Select
+                                value={params.withdrawalFrequency}
+                                onValueChange={(v) =>
+                                    handleParamChange("withdrawalFrequency", v as any)
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                                    <SelectItem value="half-yearly">Half-Yearly</SelectItem>
+                                    <SelectItem value="annually">Annually</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid gap-2">
                             <Label>Withdrawal Type</Label>
@@ -197,51 +204,48 @@ export function HowLongMoneyLastsCalculator() {
                                 <SelectContent>
                                     <SelectItem value="fixed">Fixed Amount</SelectItem>
                                     <SelectItem value="percentOfBalance">
-                                        Percentage of Balance
+                                        % of Balance
                                     </SelectItem>
                                     <SelectItem value="percentOfInterest">
-                                        Percentage of Interest
+                                        % of Interest
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label>Desired Duration</Label>
-                        <div className="flex gap-2">
-                            <div className="flex-1">
-                                <Input
-                                    type="number"
-                                    value={params.withdrawalYears}
-                                    onChange={(e) => {
-                                        if (Number(e.target.value) < 0)
-                                            return
-                                        handleParamChange("withdrawalYears", Number(e.target.value) || 0)
-                                    }}
-                                    placeholder="Years"
-                                />
-                                <Label className="text-xs text-gray-500">Years</Label>
-                            </div>
-                            <div className="flex-1">
-                                <Input
-                                    type="number"
-                                    value={params.withdrawalMonths}
-                                    onChange={(e) => {
-                                        if (Number(e.target.value) < 0) {
-                                            handleParamChange("withdrawalMonths", 0)
-                                            return
-                                        }
-                                        if (Number(e.target.value) > 11) {
-                                            handleParamChange("withdrawalMonths", 11)
-                                            return
-                                        }
-                                        handleParamChange("withdrawalMonths", Number(e.target.value) || 0)
-                                    }}
-                                    placeholder="Months"
-                                />
-                                <Label className="text-xs text-gray-500">Months</Label>
-                            </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label>Years</Label>
+                            <Input
+                                type="number"
+                                value={params.withdrawalYears}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    handleParamChange("withdrawalYears", Number(e.target.value) || 0)
+                                }}
+                                placeholder="Years"
+                            />
+                        </div>
+                        <div>
+                            <Label>Months</Label>
+                            <Input
+                                type="number"
+                                value={params.withdrawalMonths}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0) {
+                                        handleParamChange("withdrawalMonths", 0)
+                                        return
+                                    }
+                                    if (Number(e.target.value) > 11) {
+                                        handleParamChange("withdrawalMonths", 11)
+                                        return
+                                    }
+                                    handleParamChange("withdrawalMonths", Number(e.target.value) || 0)
+                                }}
+                                placeholder="Months"
+                            />
                         </div>
                     </div>
 
@@ -250,7 +254,7 @@ export function HowLongMoneyLastsCalculator() {
                             {params.withdrawalType === "fixed" && (
                                 <div className="grid gap-2">
                                     <Label htmlFor="yearlyIncrease">
-                                        Increase withdrawals yearly by (%)
+                                        Annual Withdrawal Increase (%)
                                     </Label>
                                     <Input
                                         id="yearlyIncrease"
@@ -260,12 +264,18 @@ export function HowLongMoneyLastsCalculator() {
                                         onChange={(e) => {
                                             if (Number(e.target.value) < 0)
                                                 return
+                                            if (Number(e.target.value) > 100) {
+                                                handleParamChange(
+                                                    "yearlyWithdrawalIncrease",
+                                                    100
+                                                )
+                                                return
+                                            }
                                             handleParamChange(
                                                 "yearlyWithdrawalIncrease",
                                                 Number(e.target.value) || 0
                                             )
-                                        }
-                                        }
+                                        }}
                                     />
                                 </div>
                             )}
@@ -329,6 +339,6 @@ export function HowLongMoneyLastsCalculator() {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 }

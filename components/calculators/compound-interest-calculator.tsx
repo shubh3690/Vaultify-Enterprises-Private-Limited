@@ -71,7 +71,7 @@ export function CompoundInterestCalculator() {
 
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label>Interest Rate</Label>
+                            <Label>Interest Rate (%)</Label>
                             <Input
                                 type="number"
                                 step="0.01"

@@ -51,7 +51,7 @@ export function MoneyCounterCalculator() {
                 <CardContent className="space-y-4">
                     <div className="space-y-3">
                         <h3 className="font-medium">Bills</h3>
-                        {["twoThousands", "fiveHundreds", "hundreds", "fifties", "twenties", "tens", "fives", "twos", "ones"].map((denom) => (
+                        {["twoThousands", "fiveHundreds", "hundreds", "fifties", "twenties", "tens", "fives", "twos", "ones"].reverse().map((denom) => (
                             <div key={denom} className="grid grid-cols-2 gap-2 items-center">
                                 <Label htmlFor={denom}>{denominationLabels[denom as keyof typeof denominationLabels]}</Label>
                                 <Input
@@ -86,7 +86,7 @@ export function MoneyCounterCalculator() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
-                            {Object.entries(results.breakdown).map(
+                            {Object.entries(results.breakdown).reverse().map(
                                 ([denom, data]) =>
                                     data.count > 0 && (
                                         <div key={denom} className="flex justify-between text-sm">

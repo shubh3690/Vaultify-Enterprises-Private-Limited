@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -167,7 +167,7 @@ export function SimpleInterestCalculator() {
 
                     <Card className="grid gap-4 sm:grid-cols-2 p-4 optional">
                         <Tabs
-                            value={contributionType.toString()}
+                            value={contributionType}
                             onValueChange={(value) => setContributionType(value as "-1" | "1")}
                             className="col-span-2"
                         >
@@ -192,7 +192,7 @@ export function SimpleInterestCalculator() {
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label>Contribution Frequency</Label>
+                            <Label>{contributionType === "1" ? "Deposit" : "Withdrawal"} Frequency</Label>
                             <Select value={contributionInterval} onValueChange={(value: "monthly" | "quarterly" | "half-yearly" | "yearly") => setContributionInterval(value)}>
                                 <SelectTrigger>
                                     <SelectValue />

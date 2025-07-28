@@ -80,7 +80,7 @@ export function ForexCompoundingCalculator() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="rateInterval">Rate Interval</Label>
+                            <Label htmlFor="rateInterval">Rate Period</Label>
                             <Select value={rateInterval} onValueChange={(value: "daily" | "weekly" | "monthly" | "yearly") => setRateInterval(value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select rate interval" />
@@ -169,7 +169,7 @@ export function ForexCompoundingCalculator() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="additionalDepositFrequency">Additional Deposit Frequency</Label>
+                            <Label htmlFor="additionalDepositFrequency">Deposit Frequency</Label>
                             <Select value={additionalDepositFrequency} onValueChange={(value: "monthly" | "quarterly" | "half-yearly" | "yearly") => setAdditionalDepositFrequency(value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select deposit frequency" />

@@ -58,21 +58,6 @@ export function CarLoanCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label className="optional" htmlFor="downPayment">Down Payment (₹)</Label>
-                        <Input
-                            id="downPayment"
-                            type="number"
-                            value={params.downPayment}
-                            onChange={(e) => {
-                                if (Number(e.target.value) < 0)
-                                    return
-                                updateParam("downPayment", Number(e.target.value))
-                            }}
-                            placeholder="5000"
-                        />
-                    </div>
-
-                    <div className="grid gap-2">
                         <Label>Loan Amount</Label>
                         <div className="p-2 bg-muted rounded text-sm">
                             {formatCurrency(params.principal)}
@@ -110,20 +95,37 @@ export function CarLoanCalculator() {
                         />
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="ballonPayment">Balloon Payment at End (₹)</Label>
-                        <Input
-                            id="ballonPayment"
-                            type="number"
-                            value={params.ballonPayment}
-                            onChange={(e) => {
-                                if (Number(e.target.value) < 0)
-                                    return
-                                updateParam("ballonPayment", Number(e.target.value))
-                            }}
-                            placeholder="0"
-                        />
-                    </div>
+                    <Card className="gap-4 p-4 grid sm:grid-cols-2 optional">
+                        <div className="grid gap-2">
+                            <Label htmlFor="downPayment">Down Payment (₹)</Label>
+                            <Input
+                                id="downPayment"
+                                type="number"
+                                value={params.downPayment}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("downPayment", Number(e.target.value))
+                                }}
+                                placeholder="5000"
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="ballonPayment">Balloon Payment at End (₹)</Label>
+                            <Input
+                                id="ballonPayment"
+                                type="number"
+                                value={params.ballonPayment}
+                                onChange={(e) => {
+                                    if (Number(e.target.value) < 0)
+                                        return
+                                    updateParam("ballonPayment", Number(e.target.value))
+                                }}
+                                placeholder="0"
+                            />
+                        </div>
+                    </Card>
                 </CardContent>
             </Card>
 

@@ -70,7 +70,7 @@ export function CAGRCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="years">Number of Years</Label>
+                        <Label htmlFor="years">Years</Label>
                         <Input
                             id="years"
                             type="number"

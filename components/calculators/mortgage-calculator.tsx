@@ -60,21 +60,6 @@ export function MortgageCalculator() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="downPayment">Down Payment (₹)</Label>
-                        <Input
-                            id="downPayment"
-                            type="number"
-                            value={params.downPayment}
-                            onChange={(e) => {
-                                if (Number(e.target.value) < 0)
-                                    return
-                                updateParam("downPayment", Number(e.target.value))
-                            }}
-                            placeholder="80000"
-                        />
-                    </div>
-
-                    <div className="grid gap-2">
                         <Label>Loan Amount</Label>
                         <div className="p-2 bg-muted rounded text-sm">
                             {formatCurrency(params.homePrice - params.downPayment)}
@@ -99,7 +84,7 @@ export function MortgageCalculator() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="interestInterval">Interest Interval</Label>
+                            <Label htmlFor="interestInterval">Rate Period</Label>
                             <Select
                                 value={params.interestInterval}
                                 onValueChange={(value) =>
@@ -131,6 +116,21 @@ export function MortgageCalculator() {
                             placeholder="30"
                         />
                     </div>
+
+                    <Card className="grid gap-2 optional p-4">
+                        <Label htmlFor="downPayment">Down Payment (₹)</Label>
+                        <Input
+                            id="downPayment"
+                            type="number"
+                            value={params.downPayment}
+                            onChange={(e) => {
+                                if (Number(e.target.value) < 0)
+                                    return
+                                updateParam("downPayment", Number(e.target.value))
+                            }}
+                            placeholder="80000"
+                        />
+                    </Card>
                 </CardContent>
             </Card>
 

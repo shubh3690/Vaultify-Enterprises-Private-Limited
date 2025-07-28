@@ -100,12 +100,12 @@ export function APYCalculator() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="365">Daily</SelectItem>
-                                    <SelectItem value="52">Weekly</SelectItem>
-                                    <SelectItem value="12">Monthly</SelectItem>
-                                    <SelectItem value="4">Quarterly</SelectItem>
-                                    <SelectItem value="2">Half-Yearly</SelectItem>
-                                    <SelectItem value="1">Yearly</SelectItem>
+                                    <SelectItem value="365">Daily (365/yr)</SelectItem>
+                                    <SelectItem value="52">Weekly (52/yr)</SelectItem>
+                                    <SelectItem value="12">Monthly (12/yr)</SelectItem>
+                                    <SelectItem value="4">Quarterly (4/yr)</SelectItem>
+                                    <SelectItem value="2">Half-Yearly (2/yr)</SelectItem>
+                                    <SelectItem value="1">Yearly (1/yr)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -153,7 +153,7 @@ export function APYCalculator() {
 
                     <Card className="grid gap-4 sm:grid-cols-2 p-4 optional">
                         <div className="grid gap-2">
-                            <Label htmlFor="regularDeposit">Regular Deposit Amount (₹)</Label>
+                            <Label htmlFor="regularDeposit">Deposit Amount (₹)</Label>
                             <Input
                                 id="regularDeposit"
                                 type="number"

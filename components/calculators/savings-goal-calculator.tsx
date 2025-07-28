@@ -111,10 +111,10 @@ export function SavingsGoalCalculator() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="daily">Daily (365/yr)</SelectItem>
-                                    <SelectItem value="weekly">Weekly (52/yr)</SelectItem>
-                                    <SelectItem value="fortnightly">Fortnightly (26/yr)</SelectItem>
-                                    <SelectItem value="monthly">Monthly (12/yr)</SelectItem>
+                                    <SelectItem value="daily">Daily</SelectItem>
+                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                    <SelectItem value="fortnightly">Fortnightly</SelectItem>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

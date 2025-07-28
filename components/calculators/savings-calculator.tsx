@@ -48,7 +48,6 @@ export function SavingsCalculator() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {/* Basic Parameters */}
                     <div className="grid gap-2">
                         <Label htmlFor="initialBalance">Initial Balance (₹)</Label>
                         <Input
@@ -81,7 +80,7 @@ export function SavingsCalculator() {
                             />
                         </div>
                         <div>
-                            <Label htmlFor="rateInterval">Rate Interval</Label>
+                            <Label htmlFor="rateInterval">Rate Period</Label>
                             <Select
                                 value={params.rateInterval}
                                 onValueChange={(value: "monthly" | "yearly") => updateParam("rateInterval", value)}
@@ -124,12 +123,12 @@ export function SavingsCalculator() {
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="1">Yearly (1/yr)</SelectItem>
-                                <SelectItem value="2">Half-Yearly (2/yr)</SelectItem>
-                                <SelectItem value="4">Quarterly (4/yr)</SelectItem>
-                                <SelectItem value="12">Monthly (12/yr)</SelectItem>
-                                <SelectItem value="52">Weekly (52/yr)</SelectItem>
                                 <SelectItem value="365">Daily (365/yr)</SelectItem>
+                                <SelectItem value="52">Weekly (52/yr)</SelectItem>
+                                <SelectItem value="12">Monthly (12/yr)</SelectItem>
+                                <SelectItem value="4">Quarterly (4/yr)</SelectItem>
+                                <SelectItem value="2">Half-Yearly (2/yr)</SelectItem>
+                                <SelectItem value="1">Yearly (1/yr)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -208,7 +207,7 @@ export function SavingsCalculator() {
                             </Select>
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="depositIncreaseRate">Annual Increase Rate (%)</Label>
+                            <Label htmlFor="depositIncreaseRate">Annual Deposit Increase (%)</Label>
                             <Input
                                 id="depositIncreaseRate"
                                 type="number"
@@ -289,7 +288,7 @@ export function SavingsCalculator() {
 
                         {params.withdrawalType === "fixed-amount" && (
                             <div className="grid gap-2">
-                                <Label htmlFor="withdrawalIncreaseRate">Annual Increase Rate (%)</Label>
+                                <Label htmlFor="withdrawalIncreaseRate">Annual Deposit Increase (%)</Label>
                                 <Input
                                     id="withdrawalIncreaseRate"
                                     type="number"
