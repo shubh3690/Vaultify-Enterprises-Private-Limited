@@ -34,7 +34,7 @@ export default function HomePage() {
                         <div className="flex flex-wrap justify-center gap-4 md:gap-6">
                             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
                                 {greenTick()}
-                                <span className="text-sm font-medium">30+ Financial Calculators</span>
+                                <span className="text-sm font-medium">29 Financial Calculators</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
                                 {greenTick()}

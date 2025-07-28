@@ -1124,52 +1124,142 @@ export function calculateCreditCardPayoff(params: CreditCardParams): CreditCardR
 }
 
 export interface RetirementParams {
+    currentIncome: number
+    desiredIncomePercent: number
+    inflationRate: number
+    SpendingAnnualDecrease65To74: number
+    SpendingAnnualDecrease75: number
     currentAge: number
     retirementAge: number
-    currentSavings: number
-    monthlyContribution: number
-    expectedReturn: number
-    inflationRate: number
-    desiredMonthlyIncome: number
+    lifeExpectancy: number
+    annualPension: number
+    annualPensionIncrease: number
+    investmentReturns: number
+    currentSavings?: number
 }
 
 export interface RetirementResult {
     totalSavingsAtRetirement: number
+    totalSavingsNeeded: number
     monthlyIncomeGenerated: number
     shortfall: number
     recommendedMonthlySavings: number
+    projectedAnnualIncome: number
+    yearlyBreakdown: Array<{
+        age: number
+        requiredIncome: number
+        pensionIncome: number
+        shortfallAmount: number
+        savingsBalance: number
+    }>
 }
 
 export function calculateRetirement(params: RetirementParams): RetirementResult {
-    const { currentAge, retirementAge, currentSavings, monthlyContribution, expectedReturn, inflationRate, desiredMonthlyIncome } = params
+    const { currentIncome, desiredIncomePercent, inflationRate, SpendingAnnualDecrease65To74, SpendingAnnualDecrease75, currentAge, retirementAge, lifeExpectancy, annualPension, annualPensionIncrease, investmentReturns, currentSavings = 0 } = params;
 
-    const yearsToRetirement = retirementAge - currentAge
-    const monthsToRetirement = yearsToRetirement * 12
-    const monthlyReturn = expectedReturn / 100 / 12
+    const inflationRateDecimal = inflationRate / 100;
+    const spendingDecrease65To74 = SpendingAnnualDecrease65To74 / 100;
+    const spendingDecrease75 = SpendingAnnualDecrease75 / 100;
+    const pensionIncreaseRate = annualPensionIncrease / 100;
+    const returnRate = investmentReturns / 100;
 
-    // Calculate total savings at retirement
-    const futureValueCurrentSavings = currentSavings * Math.pow(monthlyReturn + 1, monthsToRetirement)
-    const futureValueContributions = monthlyContribution * ((Math.pow(monthlyReturn + 1, monthsToRetirement) - 1) / monthlyReturn)
-    const totalSavingsAtRetirement = futureValueCurrentSavings + futureValueContributions
+    const yearsToRetirement = retirementAge - currentAge;
+    const retirementDuration = lifeExpectancy - retirementAge;
+    const desiredAnnualIncomeAtRetirement = (currentIncome * desiredIncomePercent / 100) * Math.pow(1 + inflationRateDecimal, yearsToRetirement);
 
-    // Calculate monthly income that can be generated (4% rule)
-    const monthlyIncomeGenerated = (totalSavingsAtRetirement * 0.04) / 12
+    const yearlyBreakdown: Array<{
+        age: number
+        requiredIncome: number
+        pensionIncome: number
+        shortfallAmount: number
+        savingsBalance: number
+    }> = [];
 
-    // Adjust desired income for inflation
-    const inflationAdjustedIncome = desiredMonthlyIncome * Math.pow(1 + inflationRate / 100, yearsToRetirement)
-    const shortfall = Math.max(0, inflationAdjustedIncome - monthlyIncomeGenerated)
+    let totalPresentValueOfShortfalls = 0;
+    for (let year = 0; year < retirementDuration; year++) {
+        const age = retirementAge + year;
+        let requiredIncome = desiredAnnualIncomeAtRetirement;
+        let spendingMultiplier = 1;
 
-    // Calculate recommended monthly savings to meet goal
-    const requiredSavings = (inflationAdjustedIncome * 12) / 0.04
-    const additionalSavingsNeeded = Math.max(0, requiredSavings - futureValueCurrentSavings)
-    const recommendedMonthlySavings = additionalSavingsNeeded / ((Math.pow(monthlyReturn + 1, monthsToRetirement) - 1) / monthlyReturn)
+        if (age >= 65 && age <= 74) {
+            const yearsInBracket = age - Math.max(64, retirementAge - 1);
+            spendingMultiplier *= Math.pow(1 - spendingDecrease65To74, yearsInBracket);
+        } else if (age >= 75) {
+            const years65To74 = Math.min(10, Math.max(0, 75 - Math.max(retirementAge, 65)));
+            if (years65To74 > 0) {
+                spendingMultiplier *= Math.pow(1 - spendingDecrease65To74, years65To74);
+            }
+            const years75Plus = age - Math.max(75, retirementAge) + 1;
+            if (years75Plus > 0) {
+                spendingMultiplier *= Math.pow(1 - spendingDecrease75, years75Plus);
+            }
+        }
+        requiredIncome *= spendingMultiplier;
+        requiredIncome *= Math.pow(1 + inflationRateDecimal, year);
+
+        const pensionIncome = annualPension * Math.pow(1 + pensionIncreaseRate, year);
+        const shortfallAmount = Math.max(0, requiredIncome - pensionIncome);
+        const presentValueOfShortfall = shortfallAmount / Math.pow(1 + returnRate, year);
+        totalPresentValueOfShortfalls += presentValueOfShortfall;
+
+        yearlyBreakdown.push({
+            age,
+            requiredIncome: Math.round(requiredIncome),
+            pensionIncome: Math.round(pensionIncome),
+            shortfallAmount: Math.round(shortfallAmount),
+            savingsBalance: 0
+        });
+    }
+
+    const totalSavingsNeeded = totalPresentValueOfShortfalls;
+    const currentSavingsAtRetirement = currentSavings * Math.pow(1 + returnRate, yearsToRetirement);
+    const additionalSavingsNeeded = Math.max(0, totalSavingsNeeded - currentSavingsAtRetirement);
+    const monthsToRetirement = yearsToRetirement * 12;
+    const monthlyReturnRate = returnRate / 12;
+
+    let recommendedMonthlySavings = 0;
+    if (monthsToRetirement > 0 && additionalSavingsNeeded > 0) {
+        if (monthlyReturnRate > 0) {
+            recommendedMonthlySavings = additionalSavingsNeeded * monthlyReturnRate /
+                (Math.pow(1 + monthlyReturnRate, monthsToRetirement) - 1);
+        } else {
+            recommendedMonthlySavings = additionalSavingsNeeded / monthsToRetirement;
+        }
+    }
+
+    let futureMonthlySavingsValue = 0;
+    if (recommendedMonthlySavings > 0 && monthsToRetirement > 0) {
+        if (monthlyReturnRate > 0) {
+            futureMonthlySavingsValue = recommendedMonthlySavings *
+                (Math.pow(1 + monthlyReturnRate, monthsToRetirement) - 1) / monthlyReturnRate;
+        } else {
+            futureMonthlySavingsValue = recommendedMonthlySavings * monthsToRetirement;
+        }
+    }
+
+    const totalSavingsAtRetirement = currentSavingsAtRetirement + futureMonthlySavingsValue;
+    const monthlyIncomeGenerated = totalSavingsAtRetirement * returnRate / 12;
+    const projectedAnnualIncome = annualPension;
+    const shortfall = yearlyBreakdown.length > 0 ? yearlyBreakdown[0].shortfallAmount : 0;
+    let remainingSavings = totalSavingsAtRetirement;
+    for (let i = 0; i < yearlyBreakdown.length; i++) {
+        if (i > 0) {
+            remainingSavings *= (1 + returnRate);
+        }
+
+        yearlyBreakdown[i].savingsBalance = Math.round(Math.max(0, remainingSavings));
+        remainingSavings = Math.max(0, remainingSavings - yearlyBreakdown[i].shortfallAmount);
+    }
 
     return {
-        totalSavingsAtRetirement,
-        monthlyIncomeGenerated,
-        shortfall,
-        recommendedMonthlySavings
-    }
+        totalSavingsAtRetirement: Math.round(totalSavingsAtRetirement),
+        totalSavingsNeeded: Math.round(totalSavingsNeeded),
+        monthlyIncomeGenerated: Math.round(monthlyIncomeGenerated),
+        shortfall: Math.round(shortfall),
+        recommendedMonthlySavings: Math.round(recommendedMonthlySavings),
+        projectedAnnualIncome: Math.round(projectedAnnualIncome),
+        yearlyBreakdown
+    };
 }
 
 export interface SavingsCalculatorParams {
