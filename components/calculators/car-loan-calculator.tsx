@@ -144,16 +144,16 @@ export function CarLoanCalculator() {
                         <CardTitle>Monthly Breakdown</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                            <div className="grid grid-cols-4 gap-2 text-sm font-medium border-b pb-2">
-                                <span>Month</span>
+                        <div className="space-y-2 max-h-60 overflow-auto">
+                            <div className="grid grid-cols-4 gap-2 text-sm font-medium border-b pb-2 min-w-[200%] sm:min-w-0">
+                                <span className="sticky left-0 bg-white z-10">Month</span>
                                 <span>Balance</span>
                                 <span>Interest</span>
                                 <span>Payment</span>
                             </div>
                             {results.amortizationSchedule.map((month) => (
-                                <div key={month.month} className="grid grid-cols-4 gap-2 text-sm">
-                                    <span>{month.month}</span>
+                                <div key={month.month} className="grid grid-cols-4 gap-2 text-sm min-w-[200%] sm:min-w-0">
+                                    <span className="sticky left-0 bg-white z-10">{month.month}</span>
                                     <span>{formatCurrency(month.balance)}</span>
                                     <span>{formatCurrency(month.interest)}</span>
                                     <span className="text-red-600">{formatCurrency(month.payment)}</span>

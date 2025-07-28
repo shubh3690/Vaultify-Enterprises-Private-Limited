@@ -285,17 +285,17 @@ export function DailyCompoundInterestCalculator() {
                         <CardDescription>Investment growth month by month</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                            <div className="grid grid-cols-5 gap-8 text-sm font-medium border-b pb-2">
-                                <span>Month</span>
+                        <div className="space-y-2 max-h-60 overflow-auto">
+                            <div className="grid grid-cols-5 gap-8 text-sm font-medium border-b pb-2 min-w-[200%] sm:min-w-0">
+                                <span className="sticky left-0 bg-white z-10">Month</span>
                                 <span>Balance</span>
                                 <span>Interest</span>
                                 <span>Deposits</span>
                                 <span>Withdrawals</span>
                             </div>
                             {results.monthlyBreakdown.map((month, index) => (
-                                <div key={index} className="grid grid-cols-5 gap-8 text-sm">
-                                    <span>{month.month + 1}</span>
+                                <div key={index} className="grid grid-cols-5 gap-8 text-sm min-w-[200%] sm:min-w-0">
+                                    <span className="sticky left-0 bg-white z-10">{month.month + 1}</span>
                                     <span>{formatCurrency(month.balance)}</span>
                                     <span className="text-green-600">{formatCurrency(month.interestEarned)}</span>
                                     <span className="text-blue-600">{formatCurrency(month.deposits)}</span>

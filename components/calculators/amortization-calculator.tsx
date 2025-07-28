@@ -320,7 +320,7 @@ export function AmortizationCalculator() {
                             <CardContent>
                                 <div className="space-y-2 max-h-60 overflow-auto">
                                     <div className="grid grid-cols-7 gap-2 text-sm font-medium border-b pb-2 min-w-[200%] sm:min-w-0">
-                                        <span>Payment</span>
+                                        <span className="sticky left-0 bg-white z-10">Payment</span>
                                         <span>Date</span>
                                         <span>Payment</span>
                                         <span>Principal</span>
@@ -330,7 +330,7 @@ export function AmortizationCalculator() {
                                     </div>
                                     {results.amortizationSchedule.map((payment) => (
                                         <div key={payment.paymentNumber} className="grid grid-cols-7 gap-2 text-sm min-w-[200%] sm:min-w-0">
-                                            <span>{payment.paymentNumber}</span>
+                                            <span className="sticky left-0 bg-white z-10">{payment.paymentNumber}</span>
                                             <span>{payment.paymentDate}</span>
                                             <span className="text-red-600">{formatCurrency(payment.monthlyPayment)}</span>
                                             <span>{formatCurrency(payment.principalPayment)}</span>

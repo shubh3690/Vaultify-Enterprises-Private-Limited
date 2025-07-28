@@ -208,17 +208,17 @@ export function RetirementPlanningCalculator() {
                             <CardTitle>Yearly Breakdown</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-2 max-h-60 overflow-y-auto">
-                                <div className="grid grid-cols-5 gap-2 text-sm font-medium border-b pb-2">
-                                    <span>Year</span>
+                            <div className="space-y-2 max-h-60 overflow-auto">
+                                <div className="grid grid-cols-5 gap-2 text-sm font-medium border-b pb-2 min-w-[200%] sm:min-w-0">
+                                    <span className="sticky left-0 bg-white z-10">Year</span>
                                     <span>Balance</span>
                                     <span>Pension Income</span>
                                     <span>Shortfall</span>
                                     <span>Required Income</span>
                                 </div>
                                 {results.yearlyBreakdown.map((year) => (
-                                    <div key={year.age} className="grid grid-cols-5 gap-2 text-sm">
-                                        <span>{year.age}</span>
+                                    <div key={year.age} className="grid grid-cols-5 gap-2 text-sm min-w-[200%] sm:min-w-0">
+                                        <span className="sticky left-0 bg-white z-10">{year.age}</span>
                                         <span>{formatCurrency(year.savingsBalance)}</span>
                                         <span className="text-green-600">{formatCurrency(year.pensionIncome)}</span>
                                         <span className="text-red-600">{formatCurrency(year.shortfallAmount)}</span>
