@@ -851,8 +851,195 @@ export function calculateCAGR(beginningValue: number, endingValue: number, years
     return (Math.pow(endingValue / beginningValue, 1 / years) - 1) * 100
 }
 
-export function calculateSimpleInterest(principal: number, rate: number, time: number): number {
-    return principal * (rate / 100) * time
+export interface SimpleInterestParams {
+    principal: number
+    rate: number
+    rateInterval: "yearly" | "monthly"
+    type: "time" | "dates"
+    years?: number
+    months?: number
+    startDate?: string
+    endDate?: string
+    regularContributions: number
+    contributionInterval: "monthly" | "quarterly" | "half-yearly" | "yearly"
+}
+
+export interface SimpleInterestResult {
+    finalBalance: number
+    totalInterest: number
+    initialBalance: number
+    totalWithdrawals: number
+    additionalDeposits: number
+    monthlyBreakdown: Array<{
+        month: number
+        balance: number
+        interestEarned: number
+        deposits: number
+        withdrawals: number
+    }>
+}
+
+export function calculateSimpleInterest(params: SimpleInterestParams): SimpleInterestResult {
+    const {
+        principal,
+        rate,
+        rateInterval,
+        type,
+        years,
+        months,
+        startDate,
+        endDate,
+        regularContributions,
+        contributionInterval
+    } = params;
+
+    // Calculate total time period
+    let totalYears: number;
+    let totalMonths: number;
+    
+    if (type === "time") {
+        totalMonths = (years || 0) * 12 + (months || 0);
+        totalYears = totalMonths / 12;
+    } else {
+        const start = new Date(startDate!);
+        const end = new Date(endDate!);
+        const timeDiff = end.getTime() - start.getTime();
+        const totalDays = timeDiff / (1000 * 60 * 60 * 24);
+        totalYears = totalDays / 365;
+        totalMonths = totalYears * 12;
+    }
+    
+    // Convert rate to annual decimal
+    let annualRateDecimal: number;
+    if (rateInterval === "yearly") {
+        annualRateDecimal = rate / 100;
+    } else {
+        annualRateDecimal = (rate / 100) * 12;
+    }
+    
+    const displayMonths = Math.ceil(totalMonths);
+    
+    let totalDeposits = 0;
+    let totalWithdrawals = 0;
+    
+    // Calculate contributions first
+    let contributionBalance = 0;
+    let contributionInterest = 0;
+    
+    for (let month = 1; month <= displayMonths && month <= totalMonths; month++) {
+        // Determine if this is a contribution month
+        let isContributionMonth = false;
+        if (regularContributions !== 0) {
+            switch (contributionInterval) {
+                case "monthly":
+                    isContributionMonth = true;
+                    break;
+                case "quarterly":
+                    isContributionMonth = month % 3 === 1;
+                    break;
+                case "half-yearly":
+                    isContributionMonth = month % 6 === 1;
+                    break;
+                case "yearly":
+                    isContributionMonth = month % 12 === 1;
+                    break;
+            }
+        }
+        
+        if (isContributionMonth) {
+            if (regularContributions > 0) {
+                totalDeposits += regularContributions;
+                contributionBalance += regularContributions;
+                
+                // Calculate simple interest for this contribution
+                const remainingYears = (totalMonths - month) / 12;
+                contributionInterest += regularContributions * annualRateDecimal * remainingYears;
+            } else {
+                totalWithdrawals += Math.abs(regularContributions);
+                contributionBalance -= Math.abs(regularContributions);
+                
+                // Subtract interest that would have been earned on withdrawn amount
+                const remainingYears = (totalMonths - month) / 12;
+                contributionInterest -= Math.abs(regularContributions) * annualRateDecimal * remainingYears;
+            }
+        }
+    }
+    
+    // Calculate simple interest on principal
+    const principalInterest = principal * annualRateDecimal * totalYears;
+    const totalInterest = principalInterest + contributionInterest;
+    
+    // Generate monthly breakdown for display
+    const monthlyBreakdown: Array<{
+        month: number;
+        balance: number;
+        interestEarned: number;
+        deposits: number;
+        withdrawals: number;
+    }> = [];
+
+    let runningDeposits = 0;
+    let runningWithdrawals = 0;
+    const monthlyInterestAmount = totalInterest / displayMonths;
+    
+    for (let month = 1; month <= displayMonths; month++) {
+        let monthlyDeposit = 0;
+        let monthlyWithdrawal = 0;
+        
+        // Check if contribution occurs this month
+        let isContributionMonth = false;
+        if (regularContributions !== 0) {
+            switch (contributionInterval) {
+                case "monthly":
+                    isContributionMonth = true;
+                    break;
+                case "quarterly":
+                    isContributionMonth = month % 3 === 1;
+                    break;
+                case "half-yearly":
+                    isContributionMonth = month % 6 === 1;
+                    break;
+                case "yearly":
+                    isContributionMonth = month % 12 === 1;
+                    break;
+            }
+        }
+        
+        if (isContributionMonth && month <= totalMonths) {
+            if (regularContributions > 0) {
+                monthlyDeposit = regularContributions;
+                runningDeposits += regularContributions;
+            } else {
+                monthlyWithdrawal = Math.abs(regularContributions);
+                runningWithdrawals += Math.abs(regularContributions);
+            }
+        }
+        
+        // For simple interest, interest accrues evenly over time
+        const currentMonthInterest = month <= totalMonths ? monthlyInterestAmount : 0;
+        const runningInterest = currentMonthInterest * month;
+        
+        const currentBalance = principal + runningDeposits - runningWithdrawals + runningInterest;
+        
+        monthlyBreakdown.push({
+            month,
+            balance: Math.round(currentBalance * 100) / 100,
+            interestEarned: Math.round(currentMonthInterest * 100) / 100,
+            deposits: Math.round(monthlyDeposit * 100) / 100,
+            withdrawals: Math.round(monthlyWithdrawal * 100) / 100
+        });
+    }
+
+    const finalBalance = principal + contributionBalance + totalInterest;
+
+    return {
+        finalBalance: Math.round(finalBalance * 100) / 100,
+        totalInterest: Math.round(totalInterest * 100) / 100,
+        initialBalance: principal,
+        totalWithdrawals: Math.round(totalWithdrawals * 100) / 100,
+        additionalDeposits: Math.round(totalDeposits * 100) / 100,
+        monthlyBreakdown: monthlyBreakdown
+    };
 }
 
 export interface SIPParams {
