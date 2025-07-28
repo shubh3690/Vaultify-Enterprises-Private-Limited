@@ -880,23 +880,11 @@ export interface SimpleInterestResult {
 }
 
 export function calculateSimpleInterest(params: SimpleInterestParams): SimpleInterestResult {
-    const {
-        principal,
-        rate,
-        rateInterval,
-        type,
-        years,
-        months,
-        startDate,
-        endDate,
-        regularContributions,
-        contributionInterval
-    } = params;
+    const { principal, rate, rateInterval, type, years, months, startDate, endDate, regularContributions, contributionInterval } = params;
 
-    // Calculate total time period
     let totalYears: number;
     let totalMonths: number;
-    
+
     if (type === "time") {
         totalMonths = (years || 0) * 12 + (months || 0);
         totalYears = totalMonths / 12;
@@ -908,26 +896,22 @@ export function calculateSimpleInterest(params: SimpleInterestParams): SimpleInt
         totalYears = totalDays / 365;
         totalMonths = totalYears * 12;
     }
-    
-    // Convert rate to annual decimal
+
     let annualRateDecimal: number;
     if (rateInterval === "yearly") {
         annualRateDecimal = rate / 100;
     } else {
         annualRateDecimal = (rate / 100) * 12;
     }
-    
+
     const displayMonths = Math.ceil(totalMonths);
-    
+
     let totalDeposits = 0;
     let totalWithdrawals = 0;
-    
-    // Calculate contributions first
     let contributionBalance = 0;
     let contributionInterest = 0;
-    
+
     for (let month = 1; month <= displayMonths && month <= totalMonths; month++) {
-        // Determine if this is a contribution month
         let isContributionMonth = false;
         if (regularContributions !== 0) {
             switch (contributionInterval) {
@@ -945,31 +929,27 @@ export function calculateSimpleInterest(params: SimpleInterestParams): SimpleInt
                     break;
             }
         }
-        
+
         if (isContributionMonth) {
             if (regularContributions > 0) {
                 totalDeposits += regularContributions;
                 contributionBalance += regularContributions;
-                
-                // Calculate simple interest for this contribution
+
                 const remainingYears = (totalMonths - month) / 12;
                 contributionInterest += regularContributions * annualRateDecimal * remainingYears;
             } else {
                 totalWithdrawals += Math.abs(regularContributions);
                 contributionBalance -= Math.abs(regularContributions);
-                
-                // Subtract interest that would have been earned on withdrawn amount
+
                 const remainingYears = (totalMonths - month) / 12;
                 contributionInterest -= Math.abs(regularContributions) * annualRateDecimal * remainingYears;
             }
         }
     }
-    
-    // Calculate simple interest on principal
+
     const principalInterest = principal * annualRateDecimal * totalYears;
     const totalInterest = principalInterest + contributionInterest;
-    
-    // Generate monthly breakdown for display
+
     const monthlyBreakdown: Array<{
         month: number;
         balance: number;
@@ -981,12 +961,11 @@ export function calculateSimpleInterest(params: SimpleInterestParams): SimpleInt
     let runningDeposits = 0;
     let runningWithdrawals = 0;
     const monthlyInterestAmount = totalInterest / displayMonths;
-    
+
     for (let month = 1; month <= displayMonths; month++) {
         let monthlyDeposit = 0;
         let monthlyWithdrawal = 0;
-        
-        // Check if contribution occurs this month
+
         let isContributionMonth = false;
         if (regularContributions !== 0) {
             switch (contributionInterval) {
@@ -1004,7 +983,7 @@ export function calculateSimpleInterest(params: SimpleInterestParams): SimpleInt
                     break;
             }
         }
-        
+
         if (isContributionMonth && month <= totalMonths) {
             if (regularContributions > 0) {
                 monthlyDeposit = regularContributions;
@@ -1014,13 +993,12 @@ export function calculateSimpleInterest(params: SimpleInterestParams): SimpleInt
                 runningWithdrawals += Math.abs(regularContributions);
             }
         }
-        
-        // For simple interest, interest accrues evenly over time
+
         const currentMonthInterest = month <= totalMonths ? monthlyInterestAmount : 0;
         const runningInterest = currentMonthInterest * month;
-        
+
         const currentBalance = principal + runningDeposits - runningWithdrawals + runningInterest;
-        
+
         monthlyBreakdown.push({
             month,
             balance: Math.round(currentBalance * 100) / 100,
