@@ -22,7 +22,6 @@ export function CurrencyConverter() {
     const [toCurrency, setToCurrency] = useState("EUR")
     const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({})
     const [convertedAmount, setConvertedAmount] = useState(0)
-    const [loading, setLoading] = useState(false)
     const [lastUpdated, setLastUpdated] = useState("")
     const [currencies, setCurrencies] = useState<CurrencyMap>({})
 
@@ -42,7 +41,6 @@ export function CurrencyConverter() {
 
     useEffect(() => {
         const fetchRates = async () => {
-            setLoading(true)
             try {
                 const response = await fetch(`https://api.frankfurter.app/latest?from=${fromCurrency}`)
                 const data = await response.json()
@@ -50,8 +48,6 @@ export function CurrencyConverter() {
                 setLastUpdated(data.date)
             } catch (error) {
                 console.error("Failed to fetch exchange rates:", error)
-            } finally {
-                setLoading(false)
             }
         }
 

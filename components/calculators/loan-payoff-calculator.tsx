@@ -55,12 +55,6 @@ export function LoanPayoffCalculator() {
         setResults(calculateLoanPayoff(newParams))
     }
 
-    const getPaymentAfterIncrease = (years: number) => {
-        const basePayment = amountParams.monthlyPayment || 0
-        const annualIncreaseRate = (amountParams.paymentIncrease || 0) / 100
-        return basePayment * Math.pow(1 + annualIncreaseRate, years)
-    }
-
     return (
         <div className="grid gap-6 lg:grid-cols-2">
             <Card>

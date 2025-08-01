@@ -50,7 +50,7 @@ export function DailyCompoundInterestCalculator() {
         )
     }, [params, contributionType])
 
-    const updateParam = (key: keyof DailyCompoundParams, value: any) => {
+    const updateParam = (key: keyof DailyCompoundParams, value: number | string | Array<string>) => {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
     }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { calculateInterestRate, type InterestRateParams, type InterestRateResult } from "@/lib/financial-calculations"
 import { formatCurrency, formatPercentage } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,7 +25,7 @@ export function InterestRateCalculator() {
         })
     )
 
-    const recalculate = (
+    const recalculate = useCallback((
         newPrincipal = presentValue,
         newSecondFigure = secondFigure,
         newSecondFigureType = secondFigureType,
@@ -40,11 +40,11 @@ export function InterestRateCalculator() {
             months: newMonths
         }
         setResult(calculateInterestRate(params))
-    }
+    }, [presentValue, secondFigure, secondFigureType, years, months]);
 
     useEffect(() => {
         recalculate()
-    }, [presentValue, secondFigure, secondFigureType, years, months])
+    }, [presentValue, secondFigure, secondFigureType, years, months, recalculate])
 
     const totalReturn = ((result.totalInterest ?? 0) / presentValue) * 100
 

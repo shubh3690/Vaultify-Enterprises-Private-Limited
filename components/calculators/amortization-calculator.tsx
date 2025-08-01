@@ -30,13 +30,13 @@ export function AmortizationCalculator() {
 
     const [results, setResults] = useState(calculateLoan(params))
 
-    const updateParam = (key: keyof LoanCalculatorParams, value: any) => {
+    const updateParam = (key: keyof LoanCalculatorParams, value: number | string | boolean | object) => {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
         setResults(calculateLoan(newParams))
     }
 
-    const updateOneTimePayment = (key: string, value: any) => {
+    const updateOneTimePayment = (key: string, value: number | string) => {
         const newOneTimePayment = { ...params.oneTimePayment!, [key]: value }
         updateParam('oneTimePayment', newOneTimePayment)
     }

@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { calculateSavingsWithdrawal, SavingsParams, SavingsResult } from "@/lib/financial-calculations";
 import { formatCurrency } from "@/lib/utils";
 import { ResultsDisplay } from "@/components/ui/results-display";
@@ -31,7 +30,7 @@ export function HowLongMoneyLastsCalculator() {
         monthlyWithdrawalToLastTerm: 0,
     });
 
-    const handleParamChange = (field: keyof SavingsParams, value: any) =>
+    const handleParamChange = (field: keyof SavingsParams, value: number | string | boolean) =>
         setParams((p) => ({ ...p, [field]: value }));
 
     useEffect(() => {
@@ -128,7 +127,7 @@ export function HowLongMoneyLastsCalculator() {
                                 <Select
                                     value={params.compoundingFrequency}
                                     onValueChange={(v) =>
-                                        handleParamChange("compoundingFrequency", v as any)
+                                        handleParamChange("compoundingFrequency", v as "daily" | "semi-weekly" | "weekly" | "biweekly" | "semi-monthly" | "monthly" | "bimonthly" | "quarterly" | "half-yearly" | "yearly")
                                     }
                                 >
                                     <SelectTrigger>
@@ -176,7 +175,7 @@ export function HowLongMoneyLastsCalculator() {
                             <Select
                                 value={params.withdrawalFrequency}
                                 onValueChange={(v) =>
-                                    handleParamChange("withdrawalFrequency", v as any)
+                                    handleParamChange("withdrawalFrequency", v as "monthly" | "quarterly" | "half-yearly" | "yearly")
                                 }
                             >
                                 <SelectTrigger>
@@ -195,7 +194,7 @@ export function HowLongMoneyLastsCalculator() {
                             <Select
                                 value={params.withdrawalType}
                                 onValueChange={(v) =>
-                                    handleParamChange("withdrawalType", v as any)
+                                    handleParamChange("withdrawalType", v as string)
                                 }
                             >
                                 <SelectTrigger>

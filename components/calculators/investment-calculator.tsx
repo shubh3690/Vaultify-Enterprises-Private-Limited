@@ -155,7 +155,7 @@ export function InvestmentCalculator() {
                                 <Label htmlFor="depositInterval">Deposit Frequency</Label>
                                 <Select
                                     value={params.depositInterval}
-                                    onValueChange={(value) => updateParam('depositInterval', value as any)}
+                                    onValueChange={(value) => updateParam('depositInterval', value as "monthly" | "quarterly" | "half-yearly" | "yearly")}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
@@ -208,7 +208,7 @@ export function InvestmentCalculator() {
                                 <Label htmlFor="withdrawalInterval">Withdrawal Frequency</Label>
                                 <Select
                                     value={params.withdrawalInterval}
-                                    onValueChange={(value) => updateParam('withdrawalInterval', value as any)}
+                                    onValueChange={(value) => updateParam('withdrawalInterval', value as "monthly" | "quarterly" | "half-yearly" | "yearly")}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
@@ -232,7 +232,7 @@ export function InvestmentCalculator() {
                                 <Label htmlFor="withdrawalType">Withdrawal Type</Label>
                                 <Select
                                     value={params.withdrawalType}
-                                    onValueChange={(value) => updateParam('withdrawalType', value as any)}
+                                    onValueChange={(value) => updateParam('withdrawalType', value as "fixed-amount" | "percent-of-balance" | "percent-of-interest")}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />

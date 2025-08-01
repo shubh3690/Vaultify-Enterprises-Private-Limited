@@ -303,7 +303,7 @@ export function calculateDailyCompoundInterest(params: DailyCompoundParams): Dai
         withdrawals: number;
     }> = [];
 
-    let currentDate = new Date(startDateObj);
+    const currentDate = new Date(startDateObj);
     let daysSinceLastContribution = 0;
     let currentMonth = 0;
     let monthlyInterest = 0;
@@ -687,7 +687,7 @@ export function calculateLoan(params: LoanCalculatorParams): LoanCalculatorResul
     let currentBalance = effectiveLoanAmount
     let cumulativeInterest = 0
     let paymentNumber = 1
-    let currentDate = new Date(startDate)
+    const currentDate = new Date(startDate)
     let balloonApplied = false
 
     const oneTimePaymentMonth = oneTimePayment?.type === 'at_date' && oneTimePayment.date ? Math.round((new Date(oneTimePayment.date).getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)) : null
@@ -1442,7 +1442,7 @@ export interface SavingsGoalResult {
 }
 
 export function calculateSavingsGoal(params: SavingsGoalParams): SavingsGoalResult {
-    const { targetAmount, currentSavings, depositAmount, depositFrequency, interestRate, compoundingFrequency } = params
+    const { targetAmount, currentSavings, depositAmount, depositFrequency, interestRate } = params
 
     const getMonthlyDepositAmount = (amount: number, frequency: string): number => {
         switch (frequency) {
@@ -1749,7 +1749,7 @@ function calculatePayoffByAmount(params: { currentBalance: number, monthlyRate: 
     let balance = currentBalance
     let totalInterest = 0
     let paymentNumber = 1
-    let currentDate = new Date(nextPaymentDate)
+    const currentDate = new Date(nextPaymentDate)
     let currentMonthlyPayment = monthlyPayment
 
     const amortizationSchedule: AmortizationEntry[] = []
@@ -1844,7 +1844,7 @@ function calculatePayoffByTime(params: { currentBalance: number, monthlyRate: nu
 
     let balance = currentBalance
     let totalInterest = 0
-    let currentDate = new Date()
+    const currentDate = new Date()
     const amortizationSchedule: AmortizationEntry[] = []
 
     for (let paymentNumber = 1; paymentNumber <= totalTargetMonths; paymentNumber++) {
@@ -2044,9 +2044,9 @@ function calculateIRRWithRegularTransfers(params: GeneralIRRParams, totalTimeInY
     const totalTransfers = Math.floor(totalTimeInYears * transfersPerYear)
     const timeInterval = 1 / transfersPerYear
 
+    const tolerance = 0.000001
+    const maxIterations = 1000
     let rate = 0.1
-    let tolerance = 0.000001
-    let maxIterations = 1000
     let iteration = 0
 
     while (iteration < maxIterations) {
@@ -2268,7 +2268,6 @@ export function calculateForexCompounding(params: ForexParams): ForexResult {
     let currentBalance = principal;
     let totalInterestEarned = 0;
     let totalAdditionalDeposits = 0;
-    let cumulativeInterest = 0;
 
     const startDate = new Date();
     const yearsPerCompoundingPeriod = 1 / compoundingFrequency;
@@ -2286,16 +2285,10 @@ export function calculateForexCompounding(params: ForexParams): ForexResult {
         const interestPayment = currentBalance * ratePerCompoundingPeriod;
         currentBalance += interestPayment;
         totalInterestEarned += interestPayment;
-        cumulativeInterest += interestPayment;
-
-        let extraPayment = 0;
-        let principalPayment = 0;
 
         if (additionalDeposits > 0 && depositPeriods.has(period)) {
-            extraPayment = additionalDeposits;
             currentBalance += additionalDeposits;
             totalAdditionalDeposits += additionalDeposits;
-            principalPayment = additionalDeposits;
         }
 
         const paymentDate = new Date(startDate);
@@ -2307,7 +2300,6 @@ export function calculateForexCompounding(params: ForexParams): ForexResult {
         const fractionalInterest = currentBalance * ratePerCompoundingPeriod * remainingTime;
         currentBalance += fractionalInterest;
         totalInterestEarned += fractionalInterest;
-        cumulativeInterest += fractionalInterest;
 
         const paymentDate = new Date(startDate);
         paymentDate.setDate(startDate.getDate() + totalCompoundingPeriods * daysPerCompoundingPeriod);

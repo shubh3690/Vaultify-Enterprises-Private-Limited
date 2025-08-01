@@ -25,7 +25,7 @@ export function MarginCalculator() {
         markupPercentage: 0,
     });
 
-    const handleParamChange = (field: keyof MarginParams, value: any) => {
+    const handleParamChange = (field: keyof MarginParams, value: number | string) => {
         setParams(prev => ({ ...prev, [field]: value }));
     };
 
@@ -122,12 +122,12 @@ export function MarginCalculator() {
 
                     {((params.input1Type === "margin" && params.input2Type === "markup") || (params.input1Type === "markup" && params.input2Type === "margin")) && (
                         <Card className="p-4 optional">
-                            Margin and Markup can't be selected together
+                            Margin and Markup can&apos;t be selected together
                         </Card>
                     )}
                     {(params.input1Type === params.input2Type) && (
                         <Card className="p-4 optional">
-                            Both inputs can't be of same type
+                            Both inputs can&apos;t be of same type
                         </Card>
                     )}
                 </CardContent>

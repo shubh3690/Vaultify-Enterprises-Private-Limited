@@ -171,7 +171,7 @@ export function APYCalculator() {
                             <Label className="optional" htmlFor="depositRate">Deposit Frequency</Label>
                             <Select
                                 value={params.depositRate || "monthly"}
-                                onValueChange={(value) => updateParam('depositRate', value as any)}
+                                onValueChange={(value) => updateParam('depositRate', value as "weekly" | "monthly" | "quarterly" | "half-yearly" | "yearly")}
                             >
                                 <SelectTrigger>
                                     <SelectValue />

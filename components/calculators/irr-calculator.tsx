@@ -34,17 +34,17 @@ export function IRRCalculator() {
     const [multipleMonths, setMultipleMonths] = useState(0)
     const irrForMultiple = calculateReturnMultipleIRR(returnMultiple, multipleYears, multipleMonths)
 
-    const updateCashFlow = (setFn: Function, flows: number[], index: number, value: number) => {
+    const updateCashFlow = (setFn: React.Dispatch<React.SetStateAction<number[]>>, flows: number[], index: number, value: number) => {
         const newFlows = [...flows]
         newFlows[index] = value
         setFn(newFlows)
     }
 
-    const addCashFlow = (setFn: Function, flows: number[]) => {
+    const addCashFlow = (setFn: React.Dispatch<React.SetStateAction<number[]>>, flows: number[]) => {
         setFn([...flows, 0])
     }
 
-    const removeCashFlow = (setFn: Function, flows: number[], index: number) => {
+    const removeCashFlow = (setFn: React.Dispatch<React.SetStateAction<number[]>>, flows: number[], index: number) => {
         if (flows.length > 2) {
             const newFlows = flows.filter((_, i) => i !== index)
             setFn(newFlows)

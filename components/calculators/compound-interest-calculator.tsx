@@ -42,7 +42,7 @@ export function CompoundInterestCalculator() {
 
     const [results, setResults] = useState(() => calculateCompoundInterest(params))
 
-    const updateParam = (key: keyof CompoundInterestParams, value: any) => {
+    const updateParam = (key: keyof CompoundInterestParams, value: number | string) => {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
         setResults(calculateCompoundInterest(newParams))

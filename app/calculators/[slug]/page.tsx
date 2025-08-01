@@ -31,7 +31,7 @@ import { PricePerSquareFeetCalculator } from "@/components/calculators/price-per
 import { MMACalculator } from "@/components/calculators/mma-calculator"
 import { CashBackCalculator } from "@/components/calculators/cash-back-calculator"
 import { SavingsGoalCalculator } from "@/components/calculators/savings-goal-calculator"
-import {InvestmentCalculator} from "@/components/calculators/investment-calculator"
+import { InvestmentCalculator } from "@/components/calculators/investment-calculator"
 
 const calculatorComponents = {
     "compound-interest": CompoundInterestCalculator,
@@ -72,11 +72,7 @@ export async function generateStaticParams() {
     }))
 }
 
-export default async function CalculatorPage({
-    params,
-}: {
-    params: { slug: string }
-}) {
+export default async function CalculatorPage({ params }: { params: { slug: string } }) {
     const { slug } = await params
     const calculators = getAllCalculators()
     const calculator = calculators.find((calc) => calc.slug === slug)
