@@ -95,5 +95,5 @@ body {
 
 .optional {
     color: gray;
-    @apply bg-gray-50
+    background-color: #f9fafb;
 }
