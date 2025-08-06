@@ -145,6 +145,12 @@ export const calculatorCategories: CalculatorCategory[] = [
                 description: "Compare current mortgage with refinancing options",
                 category: "loans-credit",
             },
+            {
+                slug: "loan-financing",
+                title: "Loan Financing Calculator",
+                description: "Compare financing options for a loan",
+                category: "loans-credit",
+            }
         ],
     },
     {

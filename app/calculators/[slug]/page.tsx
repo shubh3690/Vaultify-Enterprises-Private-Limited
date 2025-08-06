@@ -32,6 +32,7 @@ import { MMACalculator } from "@/components/calculators/mma-calculator"
 import { CashBackCalculator } from "@/components/calculators/cash-back-calculator"
 import { SavingsGoalCalculator } from "@/components/calculators/savings-goal-calculator"
 import { InvestmentCalculator } from "@/components/calculators/investment-calculator"
+import { LoanFinancingCalculator } from "@/components/calculators/financing-calculator"
 
 const calculatorComponents = {
     "compound-interest": CompoundInterestCalculator,
@@ -63,6 +64,7 @@ const calculatorComponents = {
     "mma-calculator": MMACalculator,
     "savings-goal": SavingsGoalCalculator,
     "investment-calculator": InvestmentCalculator,
+    "loan-financing": LoanFinancingCalculator
 }
 
 export async function generateStaticParams() {

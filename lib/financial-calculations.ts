@@ -68,13 +68,7 @@ export function calculateCompoundInterest(params: CompoundInterestParams): Compo
     let currentWithdrawalAmount = withdrawalAmount;
     let periodicInterestAccumulator = 0;
 
-    const monthlyBreakdown: Array<{
-        month: number;
-        balance: number;
-        interestEarned: number;
-        deposits: number;
-        withdrawals: number;
-    }> = [];
+    const monthlyBreakdown = [];
 
     for (let month = 1; month <= totalMonths; month++) {
         let monthlyInterest = 0;
@@ -295,13 +289,7 @@ export function calculateDailyCompoundInterest(params: DailyCompoundParams): Dai
     let totalDeposits = 0;
     let totalWithdrawals = 0;
 
-    const monthlyBreakdown: Array<{
-        month: number;
-        balance: number;
-        interestEarned: number;
-        deposits: number;
-        withdrawals: number;
-    }> = [];
+    const monthlyBreakdown = [];
 
     const currentDate = new Date(startDateObj);
     let daysSinceLastContribution = 0;
@@ -598,18 +586,6 @@ export interface LoanCalculatorParams {
     }
 }
 
-export interface AmortizationEntry {
-    paymentNumber: number
-    paymentDate: string
-    beginningBalance: number
-    monthlyPayment: number
-    principalPayment: number
-    interestPayment: number
-    extraPayment: number
-    endingBalance: number
-    cumulativeInterest: number
-}
-
 export interface LoanSummary {
     numberOfPayments: number
     totalOfPayments: number
@@ -625,9 +601,19 @@ export interface LoanCalculatorResult {
     payoffDate: string
     interestSavedWithExtra?: number
     timeSavedWithExtra?: number
-    amortizationSchedule: AmortizationEntry[]
     summary: LoanSummary
     effectiveLoanAmount: number
+    amortizationSchedule: Array<{
+        paymentNumber: number
+        paymentDate: string
+        beginningBalance: number
+        monthlyPayment: number
+        principalPayment: number
+        interestPayment: number
+        extraPayment: number
+        endingBalance: number
+        cumulativeInterest: number
+    }>
 }
 
 export function calculateLoan(params: LoanCalculatorParams): LoanCalculatorResult {
@@ -683,7 +669,7 @@ export function calculateLoan(params: LoanCalculatorParams): LoanCalculatorResul
         })
     }
 
-    const amortizationSchedule: AmortizationEntry[] = []
+    const amortizationSchedule = []
     let currentBalance = effectiveLoanAmount
     let cumulativeInterest = 0
     let paymentNumber = 1
@@ -950,13 +936,7 @@ export function calculateSimpleInterest(params: SimpleInterestParams): SimpleInt
     const principalInterest = principal * annualRateDecimal * totalYears;
     const totalInterest = principalInterest + contributionInterest;
 
-    const monthlyBreakdown: Array<{
-        month: number;
-        balance: number;
-        interestEarned: number;
-        deposits: number;
-        withdrawals: number;
-    }> = [];
+    const monthlyBreakdown = [];
 
     let runningDeposits = 0;
     let runningWithdrawals = 0;
@@ -1167,13 +1147,7 @@ export function calculateRetirement(params: RetirementParams): RetirementResult 
     const retirementDuration = lifeExpectancy - retirementAge;
     const desiredAnnualIncomeAtRetirement = (currentIncome * desiredIncomePercent / 100) * Math.pow(1 + inflationRateDecimal, yearsToRetirement);
 
-    const yearlyBreakdown: Array<{
-        age: number
-        requiredIncome: number
-        pensionIncome: number
-        shortfallAmount: number
-        savingsBalance: number
-    }> = [];
+    const yearlyBreakdown = [];
 
     let totalPresentValueOfShortfalls = 0;
     for (let year = 0; year < retirementDuration; year++) {
@@ -1220,8 +1194,7 @@ export function calculateRetirement(params: RetirementParams): RetirementResult 
     let recommendedMonthlySavings = 0;
     if (monthsToRetirement > 0 && additionalSavingsNeeded > 0) {
         if (monthlyReturnRate > 0) {
-            recommendedMonthlySavings = additionalSavingsNeeded * monthlyReturnRate /
-                (Math.pow(1 + monthlyReturnRate, monthsToRetirement) - 1);
+            recommendedMonthlySavings = additionalSavingsNeeded * monthlyReturnRate / (Math.pow(1 + monthlyReturnRate, monthsToRetirement) - 1);
         } else {
             recommendedMonthlySavings = additionalSavingsNeeded / monthsToRetirement;
         }
@@ -1230,8 +1203,7 @@ export function calculateRetirement(params: RetirementParams): RetirementResult 
     let futureMonthlySavingsValue = 0;
     if (recommendedMonthlySavings > 0 && monthsToRetirement > 0) {
         if (monthlyReturnRate > 0) {
-            futureMonthlySavingsValue = recommendedMonthlySavings *
-                (Math.pow(1 + monthlyReturnRate, monthsToRetirement) - 1) / monthlyReturnRate;
+            futureMonthlySavingsValue = recommendedMonthlySavings * (Math.pow(1 + monthlyReturnRate, monthsToRetirement) - 1) / monthlyReturnRate;
         } else {
             futureMonthlySavingsValue = recommendedMonthlySavings * monthsToRetirement;
         }
@@ -1334,13 +1306,7 @@ export function calculateSavings(params: SavingsCalculatorParams): SavingsCalcul
     let currentWithdrawalAmount = withdrawalAmount;
     let periodicInterestAccumulator = 0;
 
-    const monthlyBreakdown: Array<{
-        month: number;
-        balance: number;
-        interestEarned: number;
-        deposits: number;
-        withdrawals: number;
-    }> = [];
+    const monthlyBreakdown = [];
 
     const isFrequencyMonth = (month: number, frequency: string): boolean => {
         switch (frequency) {
@@ -1709,7 +1675,17 @@ export interface LoanPayoffResult {
     totalBalance: number
     loanPayoffDate: string
     calculatedMonthlyPayment?: number
-    amortizationSchedule?: AmortizationEntry[]
+    amortizationSchedule?: Array<{
+        paymentNumber: number
+        paymentDate: string
+        beginningBalance: number
+        monthlyPayment: number
+        principalPayment: number
+        interestPayment: number
+        extraPayment: number
+        endingBalance: number
+        cumulativeInterest: number
+    }>
 }
 
 export function calculateLoanPayoff(params: LoanPayoffParams): LoanPayoffResult {
@@ -1752,7 +1728,7 @@ function calculatePayoffByAmount(params: { currentBalance: number, monthlyRate: 
     const currentDate = new Date(nextPaymentDate)
     let currentMonthlyPayment = monthlyPayment
 
-    const amortizationSchedule: AmortizationEntry[] = []
+    const amortizationSchedule = []
 
     while (balance > 0.01) {
         const interestPayment = balance * monthlyRate
@@ -1829,9 +1805,7 @@ function calculatePayoffByTime(params: { currentBalance: number, monthlyRate: nu
     if (monthlyRate === 0) {
         requiredPayment = currentBalance / totalTargetMonths
     } else {
-        requiredPayment = currentBalance *
-            (monthlyRate * Math.pow(1 + monthlyRate, totalTargetMonths)) /
-            (Math.pow(1 + monthlyRate, totalTargetMonths) - 1)
+        requiredPayment = currentBalance * (monthlyRate * Math.pow(1 + monthlyRate, totalTargetMonths)) / (Math.pow(1 + monthlyRate, totalTargetMonths) - 1)
     }
 
     const formatDateString = (date: Date): string => {
@@ -1845,7 +1819,7 @@ function calculatePayoffByTime(params: { currentBalance: number, monthlyRate: nu
     let balance = currentBalance
     let totalInterest = 0
     const currentDate = new Date()
-    const amortizationSchedule: AmortizationEntry[] = []
+    const amortizationSchedule = []
 
     for (let paymentNumber = 1; paymentNumber <= totalTargetMonths; paymentNumber++) {
         const interestPayment = balance * monthlyRate
@@ -1995,9 +1969,7 @@ export function calculateMortgageRefinance(params: MortgageRefinanceParams): Mor
 
     return {
         newMonthlyPayment: parseFloat(newMonthlyPayment.toFixed(2)),
-        monthlyPaymentReduction: parseFloat(
-            monthlyPaymentReduction.toFixed(2)
-        ),
+        monthlyPaymentReduction: parseFloat(monthlyPaymentReduction.toFixed(2)),
         currentTotalInterest: parseFloat(currentTotalInterest.toFixed(2)),
         refinanceTotalInterest: parseFloat(refinanceTotalInterest.toFixed(2)),
         interestSaved: parseFloat(interestSaved.toFixed(2)),
@@ -2025,7 +1997,8 @@ export interface MultipleIRRParams {
 export function calculateGeneralIRR(params: GeneralIRRParams): number {
     const { initialInvestment, finalReturn, years, months, regularTransfer = 0 } = params
 
-    if (initialInvestment <= 0 || finalReturn <= 0 || (years === 0 && months === 0)) return 0
+    if (initialInvestment <= 0 || finalReturn <= 0 || (years === 0 && months === 0))
+        return 0
 
     const totalTimeInYears = years + (months / 12)
 
@@ -2519,4 +2492,118 @@ export function calculateMMA(params: MMAParams): MMAResult {
         totalInterest: parseFloat(totalInterest.toFixed(2)),
         totalDeposits: parseFloat(totalDeposits.toFixed(2)),
     }
+}
+
+export interface FinancingParams {
+    totalPayment: number;
+    maxDownpayment: number;
+    loanInterestRate: number;
+    loanRatePeriod: "yearly" | "monthly";
+    investmentReturnsRate: number;
+    investmentCompounding: number;
+    loanYears: number;
+    loanMonths: number;
+    inflationRate: number;
+}
+
+export interface FinancingResult {
+    optimalDownpayment: number;
+    maxProfit: number;
+    maxRealProfit: number;
+    details: Array<{
+        downpayment: number,
+        loanAmount: number,
+        totalLoanPayment: number,
+        investmentPrincipal: number,
+        investmentFinalValue: number,
+        netProfit: number,
+        realNetProfit: number
+    }>;
+}
+
+function calculateLoanTotalPayment(loanAmount: number, annualRate: number, ratePeriod: "yearly" | "monthly", years: number, months: number): number {
+    if (loanAmount <= 0)
+        return 0;
+
+    const totalMonths = years * 12 + months;
+    let monthlyRate: number;
+    if (ratePeriod === "monthly") {
+        monthlyRate = annualRate / 100;
+    } else {
+        monthlyRate = annualRate / 100 / 12;
+    }
+
+    const r = monthlyRate;
+    const n = totalMonths;
+    if (r === 0)
+        return loanAmount;
+
+    const emi = loanAmount * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+    return emi * n;
+}
+
+function calculateInvestmentFV(principal: number, annualRate: number, compounding: number, years: number, months: number): number {
+    if (principal <= 0) return 0;
+    const t = years + months / 12;
+    const n = compounding;
+    const r = annualRate / 100;
+    return principal * Math.pow(1 + r / n, n * t);
+}
+
+export function calculateFinancing(params: FinancingParams): FinancingResult {
+    const { totalPayment, maxDownpayment, loanInterestRate, loanRatePeriod, investmentReturnsRate, investmentCompounding, loanYears, loanMonths, inflationRate } = params;
+
+    const totalTermYears = loanYears + loanMonths / 12;
+    const details = [];
+    let optimalDownpayment = 0;
+    let maxProfit = -Infinity;
+    let maxRealProfit = -Infinity;
+
+    for (let downpayment = 0; downpayment <= maxDownpayment; downpayment += 50000) {
+        const actualDownpayment = Math.min(downpayment, totalPayment, maxDownpayment);
+        const loanAmount = totalPayment - actualDownpayment;
+        const investmentPrincipal = maxDownpayment - actualDownpayment;
+
+        const totalLoanPayment = calculateLoanTotalPayment(
+            loanAmount,
+            loanInterestRate,
+            loanRatePeriod,
+            loanYears,
+            loanMonths
+        );
+        const investmentFinalValue = calculateInvestmentFV(
+            investmentPrincipal,
+            investmentReturnsRate,
+            investmentCompounding,
+            loanYears,
+            loanMonths
+        );
+
+        const netProfit = investmentFinalValue - totalLoanPayment;
+        const inflationPower = Math.pow(1 + inflationRate / 100, totalTermYears);
+        const realNetProfit = (investmentFinalValue / inflationPower) - (totalLoanPayment / inflationPower);
+
+        details.push({
+            downpayment: actualDownpayment,
+            loanAmount,
+            totalLoanPayment,
+            investmentPrincipal,
+            investmentFinalValue,
+            netProfit,
+            realNetProfit,
+        });
+
+        if (realNetProfit > maxRealProfit) {
+            maxRealProfit = realNetProfit;
+            maxProfit = netProfit;
+            optimalDownpayment = actualDownpayment;
+        }
+    }
+
+    return {
+        optimalDownpayment,
+        maxProfit: Math.round(maxProfit * 100) / 100,
+        maxRealProfit: Math.round(maxRealProfit * 100) / 100,
+        details,
+    };
 }
