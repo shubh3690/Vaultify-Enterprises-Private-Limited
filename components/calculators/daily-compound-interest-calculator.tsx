@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { calculateDailyCompoundInterest, DailyCompoundParams } from "@/lib/financial-calculations"
+import { calculateDailyCompoundInterest, DailyCompoundInterestParams } from "@/lib/financial-calculations"
 import { formatCurrency } from "@/lib/utils"
 import { ResultsDisplay } from "@/components/ui/results-display"
 
@@ -20,7 +20,7 @@ const CONTRIBUTION_FREQUENCIES = [
 
 export function DailyCompoundInterestCalculator() {
     const [contributionType, setContributionType] = useState<"1" | "-1">("1")
-    const [params, setParams] = useState<DailyCompoundParams>({
+    const [params, setParams] = useState<DailyCompoundInterestParams>({
         principal: 10000,
         rate: 5,
         rateInterval: "yearly",
@@ -50,7 +50,7 @@ export function DailyCompoundInterestCalculator() {
         )
     }, [params, contributionType])
 
-    const updateParam = (key: keyof DailyCompoundParams, value: number | string | Array<string>) => {
+    const updateParam = (key: keyof DailyCompoundInterestParams, value: number | string | Array<string>) => {
         const newParams = { ...params, [key]: value }
         setParams(newParams)
     }

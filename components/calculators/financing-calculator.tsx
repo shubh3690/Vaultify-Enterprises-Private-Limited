@@ -1,27 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-} from "@/components/ui/select";
-import {
-    calculateFinancing,
-    type FinancingParams,
-    type FinancingResult,
-} from "@/lib/financial-calculations";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { calculateFinancing, type FinancingParams, type FinancingResult } from "@/lib/financial-calculations";
 import { formatCurrency } from "@/lib/utils";
 import { ResultsDisplay } from "@/components/ui/results-display";
 
@@ -75,7 +59,6 @@ export function LoanFinancingCalculator() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {/* Total Cost */}
                     <div className="grid gap-2">
                         <Label htmlFor="totalPayment">Total Cost (₹)</Label>
                         <Input
@@ -83,43 +66,37 @@ export function LoanFinancingCalculator() {
                             type="number"
                             min={0}
                             value={params.totalPayment}
-                            onChange={(e) =>
-                                updateParam("totalPayment", Math.max(0, Number(e.target.value)))
-                            }
+                            onChange={(e) => updateParam("totalPayment", Math.max(0, Number(e.target.value)))}
                             placeholder="1000000"
                         />
                     </div>
 
-                    {/* Max Downpayment */}
                     <div className="grid gap-2">
                         <Label htmlFor="maxDownpayment">Max Downpayment Possible (₹)</Label>
                         <Input
                             id="maxDownpayment"
                             type="number"
                             min={0}
+                            max={params.totalPayment}
                             value={params.maxDownpayment}
                             onChange={(e) => {
                                 let val = Math.max(0, Number(e.target.value));
-                                if (val > params.totalPayment) val = params.totalPayment;
+                                val = Math.min(val, params.totalPayment)
                                 updateParam("maxDownpayment", val);
                             }}
-                            max={params.totalPayment}
                         />
                     </div>
 
-                    {/* Loan Interest Rate and Rate Period */}
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="loanInterestRate">Loan Interest Rate (%)</Label>
                             <Input
                                 id="loanInterestRate"
                                 type="number"
-                                step="0.1"
+                                step={0.1}
                                 min={0}
                                 value={params.loanInterestRate}
-                                onChange={(e) =>
-                                    updateParam("loanInterestRate", Math.max(0, Number(e.target.value)))
-                                }
+                                onChange={(e) => updateParam("loanInterestRate", Math.max(0, Number(e.target.value)))}
                             />
                         </div>
 
@@ -143,19 +120,16 @@ export function LoanFinancingCalculator() {
                         </div>
                     </div>
 
-                    {/* Investment Return Rate and Compounding */}
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="investmentReturnsRate">Investment Return Rate (%)</Label>
                             <Input
                                 id="investmentReturnsRate"
                                 type="number"
-                                step="0.1"
+                                step={0.1}
                                 min={0}
                                 value={params.investmentReturnsRate}
-                                onChange={(e) =>
-                                    updateParam("investmentReturnsRate", Math.max(0, Number(e.target.value)))
-                                }
+                                onChange={(e) => updateParam("investmentReturnsRate", Math.max(0, Number(e.target.value)))}
                             />
                         </div>
 
@@ -179,7 +153,6 @@ export function LoanFinancingCalculator() {
                         </div>
                     </div>
 
-                    {/* Loan Term */}
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="loanYears">Loan Years</Label>
@@ -188,9 +161,7 @@ export function LoanFinancingCalculator() {
                                 type="number"
                                 min={0}
                                 value={params.loanYears}
-                                onChange={(e) =>
-                                    updateParam("loanYears", Math.max(0, Number(e.target.value)))
-                                }
+                                onChange={(e) => updateParam("loanYears", Math.max(0, Number(e.target.value)))}
                             />
                         </div>
 
@@ -204,36 +175,38 @@ export function LoanFinancingCalculator() {
                                 value={params.loanMonths}
                                 onChange={(e) => {
                                     let val = Math.max(0, Number(e.target.value));
-                                    if (val > 11) val = 11;
+                                    if (val > 11)
+                                        val = 11;
                                     updateParam("loanMonths", val);
                                 }}
                             />
                         </div>
                     </div>
 
-                    {/* Inflation Rate */}
                     <div className="grid gap-2">
                         <Label htmlFor="inflationRate">Inflation Rate (%)</Label>
                         <Input
                             id="inflationRate"
                             type="number"
-                            step="0.1"
+                            step={0.1}
                             min={0}
                             value={params.inflationRate}
-                            onChange={(e) =>
-                                updateParam("inflationRate", Math.max(0, Number(e.target.value)))
-                            }
+                            onChange={(e) => updateParam("inflationRate", Math.max(0, Number(e.target.value)))}
                         />
                     </div>
                 </CardContent>
             </Card>
 
             <div className="space-y-6">
-                <ResultsDisplay title="Summary" results={[
-                    { label: "Optimal Downpayment", value: formatCurrency(results.optimalDownpayment), classes: "text-green-600" },
-                    { label: "Maximum Nominal Profit", value: formatCurrency(results.maxProfit) },
-                    { label: "Maximum Profit (Inflation Adjusted)", value: formatCurrency(results.maxRealProfit) },
-                ]} />
+                <ResultsDisplay
+                    title="Summary"
+                    results={[
+                        { label: "Optimal Downpayment", value: formatCurrency(results.optimalDownpayment) },
+                        { label: "Maximum Nominal Profit", value: formatCurrency(results.maxProfit) },
+                        { label: "Maximum Real Profit", value: formatCurrency(results.maxRealProfit) },
+                        { label: "Benefit of Investment", value: formatCurrency(results.investmentBenefit), classes: `${results.investmentBenefit > 0 ? "text-green-600" : (results.investmentBenefit < 0 ? "text-red-600" : "text-yellow-600")}` }
+                    ]}
+                />
 
                 <Card>
                     <CardHeader>
@@ -250,17 +223,22 @@ export function LoanFinancingCalculator() {
                                 <span>Nominal Profit</span>
                                 <span>Real Profit</span>
                             </div>
-                            {results.details.map((downpayment) => (
-                                <div key={downpayment.downpayment} className="grid grid-cols-7 gap-2 text-sm min-w-[300%] sm:min-w-[200%]">
-                                    <span className="sticky left-0 bg-white z-10">{formatCurrency(downpayment.downpayment)}</span>
-                                    <span>{formatCurrency(downpayment.loanAmount)}</span>
-                                    <span>{formatCurrency(downpayment.investmentPrincipal)}</span>
-                                    <span>{formatCurrency(downpayment.totalLoanPayment)}</span>
-                                    <span>{formatCurrency(downpayment.investmentFinalValue)}</span>
-                                    <span className={`${downpayment.netProfit > 0 ? "text-green-600" : (downpayment.netProfit < 0 ? "text-red-600" : "text-yellow-600")}`}>{formatCurrency(downpayment.netProfit)}</span>
-                                    <span className={`${downpayment.realNetProfit > 0 ? "text-green-600" : (downpayment.realNetProfit < 0 ? "text-red-600" : "text-yellow-600")}`}>{formatCurrency(downpayment.realNetProfit)}</span>
-                                </div>
-                            ))}
+                            {results.details.map((item) => {
+                                const isOptimal = item.downpayment === results.optimalDownpayment;
+                                return (
+                                    <div
+                                        key={item.downpayment}
+                                        className={`grid grid-cols-7 gap-2 text-sm min-w-[300%] sm:min-w-[200%] ${isOptimal ? "bg-green-100 font-semibold" : ""}`}>
+                                        <span className={`sticky left-0 ${!isOptimal ? "bg-white" : "bg-green-100"} z-10`}>{formatCurrency(item.downpayment)}</span>
+                                        <span>{formatCurrency(item.loanAmount)}</span>
+                                        <span>{formatCurrency(item.totalLoanPayment)}</span>
+                                        <span>{formatCurrency(item.investmentPrincipal)}</span>
+                                        <span>{formatCurrency(item.investmentFinalValue)}</span>
+                                        <span className={`${item.netProfit > 0 ? "text-green-600" : item.netProfit < 0 ? "text-red-600" : "text-yellow-600"}`}>{formatCurrency(item.netProfit)}</span>
+                                        <span className={`${item.realNetProfit > 0 ? "text-green-600" : item.realNetProfit < 0 ? "text-red-600" : "text-yellow-600"}`}>{formatCurrency(item.realNetProfit)}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </CardContent>
                 </Card>
