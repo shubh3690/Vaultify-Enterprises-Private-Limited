@@ -1,5 +1,5 @@
 import type React from "react"
-import { TrendingUp, DollarSign, Home, BarChart3, Globe } from "lucide-react"
+import { TrendingUp, DollarSign, Home, BarChart3, Globe, Ghost } from "lucide-react"
 
 export interface CalculatorInfo {
     slug: string
@@ -145,12 +145,6 @@ export const calculatorCategories: CalculatorCategory[] = [
                 description: "Compare current mortgage with refinancing options",
                 category: "loans-credit",
             },
-            {
-                slug: "loan-financing",
-                title: "Loan Financing Calculator",
-                description: "Compare financing options for a loan",
-                category: "loans-credit",
-            }
         ],
     },
     {
@@ -237,6 +231,20 @@ export const calculatorCategories: CalculatorCategory[] = [
             },
         ],
     },
+    {
+        id: "myth-busting",
+        title: "Myth Busting",
+        description: "Expose myths and understand confusing or misinterpreted terms",
+        icon: <Ghost className="h-5 w-5 text-white" />,
+        calculators: [
+            {
+                slug: "loan-financing",
+                title: "Loan Financing Calculator",
+                description: "Compare financing options for a loan",
+                category: "myth-busting",
+            }
+        ]
+    }
 ]
 
 export function getAllCalculators(): CalculatorInfo[] {
