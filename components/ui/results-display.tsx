@@ -1,14 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-interface ResultItem {
-    label: string
-    value: string
-    classes?: string
-}
-
 interface ResultsDisplayProps {
     title: string
-    results: ResultItem[]
+    results: Array<{
+        label: string
+        value: string
+        classes?: string
+    }>
 }
 
 export function ResultsDisplay({ title, results }: ResultsDisplayProps) {
