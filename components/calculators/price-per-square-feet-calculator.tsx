@@ -13,12 +13,10 @@ export function PricePerSquareFeetCalculator() {
     const [area, setArea] = useState(2000)
     const [areaUnit, setAreaUnit] = useState("sqft")
 
-    // Convert area to different units
-    const areaInSqFt = areaUnit === "sqft" ? area : areaUnit === "sqm" ? area * 10.764 : area * 9   // sq yards to sq ft
-    const areaInSqM = areaUnit === "sqm" ? area : areaUnit === "sqft" ? area / 10.764 : area / 9    // sq yards to sq m
-    const areaInSqYd = areaUnit === "sqyd" ? area : areaUnit === "sqft" ? area / 9 : area / 9       // sq m to sq yards
+    const areaInSqFt = areaUnit === "sqft" ? area : areaUnit === "sqm" ? area * 10.764 : area * 9
+    const areaInSqM = areaUnit === "sqm" ? area : areaUnit === "sqft" ? area / 10.764 : area / 9
+    const areaInSqYd = areaUnit === "sqyd" ? area : areaUnit === "sqft" ? area / 9 : area / 9
 
-    // Calculate price per unit
     const pricePerSqFt = totalPrice / areaInSqFt
     const pricePerSqM = totalPrice / areaInSqM
     const pricePerSqYd = totalPrice / areaInSqYd

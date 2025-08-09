@@ -15,7 +15,6 @@ import { Plus, Minus } from "lucide-react"
 export function IRRCalculator() {
     const [tab, setTab] = useState<"general" | "cashflow" | "multiple">("cashflow")
 
-    // General IRR
     const [initialInvestment, setInitialInvestment] = useState(10000)
     const [finalReturn, setFinalReturn] = useState(20000)
     const [years, setYears] = useState(5)
@@ -24,11 +23,9 @@ export function IRRCalculator() {
     const [transferFrequency, setTransferFrequency] = useState<"weekly" | "monthly" | "quarterly" | "half-yearly" | "yearly">("monthly")
     const generalIRR = calculateGeneralIRR({ initialInvestment, finalReturn, years, months, regularTransfer, transferFrequency })
 
-    // Cash Flow IRR
     const [cashFlows, setCashFlows] = useState([-10000, 3000, 4000, 5000])
     const cashFlowIRR = calculateCashFlowIRR({ cashFlows })
 
-    // Return Multiple IRR
     const [returnMultiple, setReturnMultiple] = useState(2)
     const [multipleYears, setMultipleYears] = useState(2)
     const [multipleMonths, setMultipleMonths] = useState(0)
