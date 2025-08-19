@@ -2691,7 +2691,7 @@ function calculateTaxBenefit(loanAmount: number, annualInterestRate: number, rat
     let taxBenefitTotal = 0;
     for (let year = 0; year < years + (months > 0 ? 1 : 0); year++) {
         let interestThisYear = 0;
-        let monthsThisYear = year === years ? months : 12;
+        const monthsThisYear = year === years ? months : 12;
 
         for (let m = 0; m < monthsThisYear; m++) {
             const interestForMonth = outstandingPrincipal * monthlyRate;
