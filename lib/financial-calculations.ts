@@ -2615,3 +2615,157 @@ export function calculateFinancing(params: FinancingParams): FinancingResult {
         details,
     }
 }
+
+export interface HomeLoanParams {
+    homeValue: number
+    maxDownpayment: number
+    loanInterestRate: number
+    loanRatePeriod: "yearly" | "monthly"
+    loanYears: number
+    loanMonths: number
+    inflationRate: number
+    homeAppreciationRate: number
+    rentalYieldPercent: number
+    applicableTaxRate: number
+    maxLoanPeriodYears: number
+    investmentReturnsRate: number
+    investmentCompounding: number
+}
+
+export interface HomeLoanResult {
+    optimalDownpayment: number
+    maxNetBenefit: number
+    maxRealNetBenefit: number
+    taxBenefitTotal: number
+    homeValueEnd: number
+    rentalIncomeTotal: number
+    details: Array<{
+        downpayment: number
+        loanAmount: number
+        totalLoanPayment: number
+        interestPaid: number
+        taxBenefit: number
+        netBenefit: number
+        realNetBenefit: number
+        investmentFinalValue: number
+    }>;
+}
+
+function calculateInterestPaid(loanAmount: number, totalLoanPayment: number): number {
+    return totalLoanPayment - loanAmount;
+}
+
+function calculateHomeValueFuture(presentValue: number, appreciationRate: number, years: number, months: number): number {
+    const totalYears = years + months / 12;
+    const r = appreciationRate / 100;
+    return presentValue * Math.pow(1 + r, totalYears);
+}
+
+function calculateRentalIncome(homeValue: number, rentalYieldPercent: number, years: number, months: number, appreciationRate: number): number {
+    const totalYears = years + months / 12;
+    const fullYears = Math.floor(totalYears);
+    const partialYear = totalYears - fullYears;
+    let rentalIncome = 0;
+
+    for (let year = 0; year < fullYears; year++) {
+        const valueAtYear = homeValue * Math.pow(1 + appreciationRate / 100, year);
+        rentalIncome += (valueAtYear * rentalYieldPercent) / 100;
+    }
+
+    if (partialYear > 0) {
+        const valueAtYear = homeValue * Math.pow(1 + appreciationRate / 100, fullYears);
+        rentalIncome += (valueAtYear * rentalYieldPercent) / 100 * partialYear;
+    }
+
+    return rentalIncome;
+}
+
+function calculateTaxBenefit(loanAmount: number, annualInterestRate: number, ratePeriod: "yearly" | "monthly", years: number, months: number, taxRatePercent: number): number {
+    const totalMonths = years * 12 + months;
+    if (loanAmount <= 0) return 0;
+
+    const monthlyRate = ratePeriod === "monthly" ? annualInterestRate / 100 : annualInterestRate / 100 / 12;
+    const emi = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+
+    let outstandingPrincipal = loanAmount;
+    let taxBenefitTotal = 0;
+    for (let year = 0; year < years + (months > 0 ? 1 : 0); year++) {
+        let interestThisYear = 0;
+        let monthsThisYear = year === years ? months : 12;
+
+        for (let m = 0; m < monthsThisYear; m++) {
+            const interestForMonth = outstandingPrincipal * monthlyRate;
+            interestThisYear += interestForMonth;
+            const principalForMonth = emi - interestForMonth;
+            outstandingPrincipal -= principalForMonth;
+        }
+        const interestDeductible = Math.min(interestThisYear, 200000);
+        taxBenefitTotal += interestDeductible * (taxRatePercent / 100);
+    }
+
+    return taxBenefitTotal;
+}
+
+export function calculateHomeLoan(params: HomeLoanParams): HomeLoanResult {
+    const { homeValue, maxDownpayment, loanInterestRate, loanRatePeriod, loanYears, loanMonths, inflationRate, homeAppreciationRate, rentalYieldPercent, applicableTaxRate, maxLoanPeriodYears } = params;
+
+    let years = loanYears;
+    let months = loanMonths;
+    if (years > maxLoanPeriodYears || (years === maxLoanPeriodYears && months > 0)) {
+        years = maxLoanPeriodYears;
+        months = 0;
+    }
+
+    const totalTermYears = years + months / 12;
+    const details = [];
+    let optimalDownpayment = 0;
+    let maxNetBenefit = -Infinity;
+    let maxRealNetBenefit = -Infinity;
+    let taxBenefitAtOptimal = 0;
+
+    const homeValueEnd = calculateHomeValueFuture(homeValue, homeAppreciationRate, years, months);
+    const rentalIncomeTotal = calculateRentalIncome(homeValue, rentalYieldPercent, years, months, homeAppreciationRate);
+
+    for (let downpayment = 0; downpayment <= maxDownpayment; downpayment += 50000) {
+        const actualDownpayment = Math.min(downpayment, maxDownpayment, homeValue);
+        const loanAmount = homeValue - actualDownpayment;
+
+        const totalLoanPayment = calculateLoanTotalPayment(loanAmount, loanInterestRate, loanRatePeriod, years, months);
+        const interestPaid = calculateInterestPaid(loanAmount, totalLoanPayment);
+        const taxBenefit = calculateTaxBenefit(loanAmount, loanInterestRate, loanRatePeriod, years, months, applicableTaxRate);
+        const investmentPrincipal = maxDownpayment - actualDownpayment;
+        const investmentFinalValue = calculateInvestmentFV(investmentPrincipal, params.investmentReturnsRate, params.investmentCompounding, years, months);
+
+        const netBenefit = (homeValueEnd - homeValue) + rentalIncomeTotal + taxBenefit + investmentFinalValue - interestPaid;
+        const inflationPower = Math.pow(1 + inflationRate / 100, totalTermYears);
+        const realNetBenefit = netBenefit / inflationPower;
+
+        details.push({
+            downpayment: actualDownpayment,
+            loanAmount,
+            totalLoanPayment,
+            interestPaid,
+            taxBenefit,
+            netBenefit,
+            realNetBenefit,
+            investmentFinalValue
+        });
+
+        if (realNetBenefit > maxRealNetBenefit) {
+            maxRealNetBenefit = realNetBenefit;
+            maxNetBenefit = netBenefit;
+            optimalDownpayment = actualDownpayment;
+            taxBenefitAtOptimal = taxBenefit;
+        }
+    }
+
+    return {
+        optimalDownpayment,
+        maxNetBenefit: Math.round(maxNetBenefit * 100) / 100,
+        maxRealNetBenefit: Math.round(maxRealNetBenefit * 100) / 100,
+        taxBenefitTotal: Math.round(taxBenefitAtOptimal * 100) / 100,
+        homeValueEnd: Math.round(homeValueEnd * 100) / 100,
+        rentalIncomeTotal: Math.round(rentalIncomeTotal * 100) / 100,
+        details,
+    };
+}

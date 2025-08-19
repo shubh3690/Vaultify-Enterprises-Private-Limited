@@ -242,6 +242,12 @@ export const calculatorCategories: CalculatorCategory[] = [
                 title: "Loan Financing Calculator",
                 description: "Compare financing options for a loan",
                 category: "myth-busting",
+            },
+            {
+                slug: "home-loan-calculator",
+                title: "Home Loan Financing Calculator",
+                description: "Calculate best home loan for maximum benefits",
+                category: "myth=busting"
             }
         ]
     }

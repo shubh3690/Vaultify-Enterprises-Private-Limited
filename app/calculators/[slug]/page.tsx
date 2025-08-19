@@ -33,6 +33,7 @@ import { CashBackCalculator } from "@/components/calculators/cash-back-calculato
 import { SavingsGoalCalculator } from "@/components/calculators/savings-goal-calculator"
 import { InvestmentCalculator } from "@/components/calculators/investment-calculator"
 import { LoanFinancingCalculator } from "@/components/calculators/financing-calculator"
+import { HomeLoanCalculator } from "@/components/calculators/home-loan-calculator"
 
 const calculatorComponents = {
     "compound-interest": CompoundInterestCalculator,
@@ -64,7 +65,8 @@ const calculatorComponents = {
     "mma-calculator": MMACalculator,
     "savings-goal": SavingsGoalCalculator,
     "investment-calculator": InvestmentCalculator,
-    "loan-financing": LoanFinancingCalculator
+    "loan-financing": LoanFinancingCalculator,
+    "home-loan-calculator": HomeLoanCalculator
 }
 
 export async function generateStaticParams() {
