@@ -315,7 +315,7 @@ export function SavingsCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Savings Results"
+                    title="Results"
                     results={[
                         { label: "Final Balance", value: formatCurrency(results.finalBalance) },
                         { label: "Total Interest Earned", value: formatCurrency(results.totalInterest) },

@@ -191,7 +191,7 @@ export function RetirementPlanningCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Retirement Planning Results"
+                    title="Results"
                     results={[
                         { label: "Total Savings Needed", value: formatCurrency(results.totalSavingsNeeded) },
                         { label: "Total Savings at Retirement", value: formatCurrency(results.totalSavingsAtRetirement) },

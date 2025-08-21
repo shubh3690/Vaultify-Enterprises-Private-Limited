@@ -131,7 +131,7 @@ export function CarLoanCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Car Loan Results"
+                    title="Results"
                     results={[
                         { label: "Monthly Payment", value: formatCurrency(results.monthlyPayment) },
                         { label: "Total Payment", value: formatCurrency(results.totalPayment) },

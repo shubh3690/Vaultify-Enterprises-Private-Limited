@@ -191,7 +191,7 @@ export function APYCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="APY & Investment Results"
+                    title="Results"
                     results={[
                         { label: "Annual Percentage Yield (APY)", value: `${result.APYRate}%` },
                         { label: "Final Balance", value: formatCurrency(result.finalBalance) },

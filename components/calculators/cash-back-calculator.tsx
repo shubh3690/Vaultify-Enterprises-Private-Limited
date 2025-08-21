@@ -82,7 +82,7 @@ export function CashBackCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Cash Back Results"
+                    title="Results"
                     results={[
                         { label: "Cash Back Earned", value: formatCurrency(results.cashBackEarned) },
                         { label: "Purchase Amount", value: formatCurrency(params.purchaseAmount) },

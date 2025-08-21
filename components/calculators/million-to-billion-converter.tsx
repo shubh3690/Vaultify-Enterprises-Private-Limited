@@ -96,7 +96,7 @@ export function MillionToBillionConverter() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Conversion Results"
+                    title="Results"
                     results={[
                         { label: `${formatNumber(value)} ${fromUnit}`, value: `${formatNumber(result, 2)} ${toUnit}` },
                         { label: "Scientific Notation", value: result.toExponential(3) },

@@ -174,7 +174,7 @@ export function SIPCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="SIP Investment Results"
+                    title="Results"
                     results={[
                         { label: "Maturity Amount", value: formatCurrency(results.maturityAmount) },
                         { label: "Total Investment", value: formatCurrency(results.totalInvestment) },

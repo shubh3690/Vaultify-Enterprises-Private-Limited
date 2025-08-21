@@ -199,7 +199,7 @@ export function LoanFinancingCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Summary"
+                    title="Results"
                     results={[
                         { label: "Optimal Downpayment", value: formatCurrency(results.optimalDownpayment) },
                         { label: "Maximum Nominal Profit", value: formatCurrency(results.maxProfit) },

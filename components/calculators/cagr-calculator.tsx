@@ -89,7 +89,7 @@ export function CAGRCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="CAGR Results"
+                    title="Results"
                     results={[
                         { label: "CAGR", value: formatPercentage(cagr) },
                         { label: "Total Return", value: formatPercentage(totalReturn) },

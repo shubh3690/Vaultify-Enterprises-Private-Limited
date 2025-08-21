@@ -175,7 +175,7 @@ export function MMACalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Money Market Account Results"
+                    title="Results"
                     results={[
                         { label: "Final Balance", value: formatCurrency(results.finalBalance) },
                         { label: "Total Interest Earned", value: formatCurrency(results.totalInterest) },

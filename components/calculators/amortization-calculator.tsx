@@ -220,7 +220,7 @@ export function AmortizationCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Loan Payment Results"
+                    title="Results"
                     results={[
                         { label: "Effective Loan Amount", value: formatCurrency(results.effectiveLoanAmount) },
                         { label: "Monthly Payment", value: formatCurrency(results.monthlyPayment) },

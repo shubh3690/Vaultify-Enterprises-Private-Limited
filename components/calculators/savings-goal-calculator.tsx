@@ -140,7 +140,7 @@ export function SavingsGoalCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Savings Goal Results"
+                    title="Results"
                     results={[
                         { label: "Time to Goal", value: `${results.yearsToGoal.toFixed(1)} years (${results.monthsToGoal} months)` },
                         { label: "Total Contributions", value: formatCurrency(results.totalContributions) },

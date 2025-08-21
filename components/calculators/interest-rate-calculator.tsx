@@ -155,7 +155,7 @@ export function InterestRateCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Required Interest Rate"
+                    title="Results"
                     results={[
                         { label: "Nominal Annual Rate", value: formatPercentage(result.nominalRate) },
                         { label: "Effective Annual Rate (APY)", value: formatPercentage(result.apyRate) },

@@ -188,7 +188,7 @@ export function ForexCompoundingCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Forex Compounding Results"
+                    title="Results"
                     results={[
                         { label: "Final Balance", value: formatCurrency(results.finalBalance) },
                         { label: "Total Profit", value: formatCurrency(results.totalEarning) },

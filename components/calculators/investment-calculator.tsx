@@ -269,7 +269,7 @@ export function InvestmentCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Investment Results"
+                    title="Results"
                     results={[
                         { label: "Final Balance", value: formatCurrency(result.finalBalance) },
                         { label: "Initial Balance", value: formatCurrency(result.initialBalance) },

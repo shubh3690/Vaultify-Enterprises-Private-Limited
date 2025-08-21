@@ -255,7 +255,7 @@ export function LoanCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Loan Payment Results"
+                    title="Results"
                     results={[
                         { label: "Effective Loan Amount", value: formatCurrency(results.effectiveLoanAmount) },
                         { label: "Monthly Payment", value: formatCurrency(results.monthlyPayment) },
@@ -267,7 +267,7 @@ export function LoanCalculator() {
 
                 {(params.extraPayments || 0) > 0 && (
                     <ResultsDisplay
-                        title="Additional Payment Benefits"
+                        title="Results"
                         results={[
                             { label: "Interest Saved", value: formatCurrency(results.interestSavedWithExtra || 0) },
                             { label: "Time Saved", value: `${results.timeSavedWithExtra || 0} months` },

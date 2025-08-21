@@ -97,12 +97,9 @@ export function CreditCardRepaymentCalculator() {
                     </Card>
                 ) : (
                     <ResultsDisplay
-                        title="Credit Card Payoff Results"
+                        title="Results"
                         results={[
-                            {
-                                label: "Payoff Time",
-                                value: `${results.payoffTime} months (${(results.payoffTime / 12).toFixed(1)} years)`,
-                            },
+                            { label: "Payoff Time", value: `${results.payoffTime} months (${(results.payoffTime / 12).toFixed(1)} years)` },
                             { label: "Total Interest Paid", value: formatCurrency(results.totalInterest) },
                             { label: "Total Amount Paid", value: formatCurrency(results.totalPayment) },
                             { label: "Current Balance", value: formatCurrency(params.balance) },

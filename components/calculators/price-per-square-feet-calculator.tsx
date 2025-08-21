@@ -86,7 +86,7 @@ export function PricePerSquareFeetCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Price per Unit Area"
+                    title="Results"
                     results={[
                         { label: "Price per Square Foot", value: formatCurrency(pricePerSqFt) },
                         { label: "Price per Square Meter", value: formatCurrency(pricePerSqM) },

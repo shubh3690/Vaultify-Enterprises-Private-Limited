@@ -211,7 +211,7 @@ export function SimpleInterestCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Simple Interest Results"
+                    title="Results"
                     results={[
                         { label: "Final Balance", value: formatCurrency(results.finalBalance) },
                         { label: "Total Interest", value: formatCurrency(results.totalInterest) },

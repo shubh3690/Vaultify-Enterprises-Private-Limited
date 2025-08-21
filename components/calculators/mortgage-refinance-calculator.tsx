@@ -158,7 +158,7 @@ export function MortgageRefinanceCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Refinance Analysis"
+                    title="Results"
                     results={[
                         { label: "New Monthly Payment", value: formatCurrency(results.newMonthlyPayment) },
                         { label: "Monthly Payment Reduction", value: formatCurrency(results.monthlyPaymentReduction) },

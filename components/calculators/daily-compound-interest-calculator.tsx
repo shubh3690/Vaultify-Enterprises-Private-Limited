@@ -265,7 +265,7 @@ export function DailyCompoundInterestCalculator() {
             {/* Results */}
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Daily Compound Interest Results"
+                    title="Results"
                     results={[
                         { label: "Final Amount", value: formatCurrency(results.finalAmount) },
                         { label: "Initial Principal", value: formatCurrency(params.principal) },

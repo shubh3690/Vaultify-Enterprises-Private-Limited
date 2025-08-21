@@ -123,7 +123,7 @@ export function CurrencyConverter() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Conversion Results"
+                    title="Results"
                     results={[
                         { label: `${amount} ${fromCurrency}`, value: `${formatNumber(convertedAmount, 2)} ${toCurrency}` },
                         { label: "Exchange Rate", value: `1 ${fromCurrency} = ${formatNumber(exchangeRate, 4)} ${toCurrency}` },

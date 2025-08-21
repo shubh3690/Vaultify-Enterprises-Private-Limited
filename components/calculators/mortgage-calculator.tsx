@@ -136,7 +136,7 @@ export function MortgageCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Capital & Repayment Mortgage"
+                    title="Results"
                     results={[
                         { label: "Monthly Payment", value: params.interestInterval === "monthly" ? formatCurrency(results.capitalAndRepayment.monthlyPayment) : formatCurrency(results.capitalAndRepayment.monthlyPayment / 12) },
                         { label: "Yearly Payment", value: params.interestInterval === "monthly" ? formatCurrency(results.capitalAndRepayment.yearlyPayment) : formatCurrency(results.capitalAndRepayment.monthlyPayment) },
@@ -146,7 +146,7 @@ export function MortgageCalculator() {
                 />
 
                 <ResultsDisplay
-                    title="Interest-Only Mortgage"
+                    title="Results"
                     results={[
                         { label: "Monthly Payment", value: params.interestInterval === "monthly" ? formatCurrency(results.interestOnly.monthlyPayment) : formatCurrency(results.interestOnly.monthlyPayment / 12) },
                         { label: "Yearly Payment", value: params.interestInterval === "monthly" ? formatCurrency(results.interestOnly.yearlyPayment) : formatCurrency(results.interestOnly.monthlyPayment) },

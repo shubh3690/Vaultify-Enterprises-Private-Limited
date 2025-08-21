@@ -227,14 +227,9 @@ export function LoanPayoffCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Loan Payoff Results"
+                    title="Results"
                     results={[
-                        {
-                            label: calculationType === "amount" ? "Payoff Time" : "Target Time",
-                            value: calculationType === "amount"
-                                ? `${Math.floor(results.monthsToPayoff / 12)} years ${results.monthsToPayoff % 12} months`
-                                : `${timeParams.targetYears || 0} years ${timeParams.targetMonths || 0} months`,
-                        },
+                        { label: calculationType === "amount" ? "Payoff Time" : "Target Time", value: calculationType === "amount" ? `${Math.floor(results.monthsToPayoff / 12)} years ${results.monthsToPayoff % 12} months` : `${timeParams.targetYears || 0} years ${timeParams.targetMonths || 0} months` },
                         { label: "Total Interest", value: formatCurrency(results.totalInterest) },
                         { label: "Total Amount Paid", value: formatCurrency(results.totalBalance) },
                         { label: "Payoff Date", value: results.loanPayoffDate },

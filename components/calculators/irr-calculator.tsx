@@ -206,7 +206,7 @@ export function IRRCalculator() {
             <div className="space-y-6">
                 {tab === "general" && (
                     <ResultsDisplay
-                        title="General IRR Result"
+                        title="Results"
                         results={[
                             { label: "Internal Rate of Return (IRR)", value: formatPercentage(generalIRR) },
                             { label: "Initial Investment", value: `₹${initialInvestment.toLocaleString()}` },
@@ -218,7 +218,7 @@ export function IRRCalculator() {
 
                 {tab === "cashflow" && (
                     <ResultsDisplay
-                        title="Cash Flow IRR Result"
+                        title="Results"
                         results={[
                             { label: "Internal Rate of Return (IRR)", value: formatPercentage(cashFlowIRR) },
                             { label: "Initial Investment", value: `₹${Math.abs(cashFlows[0]).toLocaleString()}` },
@@ -233,7 +233,7 @@ export function IRRCalculator() {
 
                 {tab === "multiple" && (
                     <ResultsDisplay
-                        title="Return Multiple IRR Result"
+                        title="Results"
                         results={[
                             { label: "Return Multiple", value: `${returnMultiple}x` },
                             { label: "Period", value: `${multipleYears} years ${multipleMonths} months` },

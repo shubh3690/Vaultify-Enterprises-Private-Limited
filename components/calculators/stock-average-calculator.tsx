@@ -110,7 +110,7 @@ export function StockAverageCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Stock Average Results"
+                    title="Results"
                     results={[
                         { label: "Average Price per Share", value: formatCurrency(averagePrice) },
                         { label: "Total Shares", value: formatNumber(totalShares) },

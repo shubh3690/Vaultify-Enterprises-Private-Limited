@@ -285,7 +285,7 @@ export function HowLongMoneyLastsCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Money Duration Results"
+                    title="Results"
                     results={[
                         { label: "Money Will Last", value: results.yearsUntilZero > 0 || results.monthsUntilZero > 0 ? `${results.yearsUntilZero} years, ${results.monthsUntilZero} months` : "Not sustainable", classes: `${(results.yearsUntilZero > params.withdrawalYears) ? "text-green-600" : ((results.yearsUntilZero < params.withdrawalYears) ? "text-red-600" : (results.yearsUntilZero === params.withdrawalYears && results.monthsUntilZero < params.withdrawalMonths) ? "text-red-600" : "text-green-600")}` },
                         { label: "Future Savings Balance", value: formatCurrency(results.futureBalance) },

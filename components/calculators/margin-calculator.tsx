@@ -135,7 +135,7 @@ export function MarginCalculator() {
 
             <div className="space-y-6">
                 <ResultsDisplay
-                    title="Calculation Results"
+                    title="Results"
                     results={[
                         { label: "Cost", value: formatCurrency(results.cost) },
                         { label: "Selling Price", value: formatCurrency(results.sellingPrice) },
